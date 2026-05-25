@@ -20,7 +20,9 @@ from collections import Counter
 import psycopg
 
 import db
+import event_matching
 import wcl
+from wcl_synthesis import LEADER_CHARACTERS as LEADER_CHAR_LOOKUP
 
 
 GUILD_ID = int(os.environ.get("WCL_GUILD_ID", "819778"))
@@ -50,20 +52,28 @@ DIFFICULTY_MAP = {
 }
 
 
-def _find_matching_event(conn: psycopg.Connection, start_unix_sec: int) -> str | None:
-    lo = start_unix_sec - MATCH_WINDOW_SEC
-    hi = start_unix_sec + MATCH_WINDOW_SEC
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            SELECT raid_id FROM events
-            WHERE unixtime BETWEEN %s AND %s
-            ORDER BY ABS(unixtime - %s) ASC LIMIT 1
-            """,
-            (lo, hi, start_unix_sec),
-        )
-        row = cur.fetchone()
-        return row["raid_id"] if row else None
+# Mains we consider authoritative for "this is leader X's raid" — taken from
+# wcl_synthesis.LEADER_CHARACTERS (gap-fill leader detection) so the matcher
+# and the gap-fill pipeline agree on which characters identify which leaders.
+_LEADER_MAIN_NAMES: tuple[str, ...] = tuple(c for c, _ in LEADER_CHAR_LOOKUP.values())
+
+
+def _find_matching_event(
+    conn: psycopg.Connection,
+    start_unix_sec: int,
+    *,
+    roster: list[dict] | None = None,
+    wcl_difficulty: str | None = None,
+) -> str | None:
+    raid_id, _info = event_matching.find_matching_event(
+        conn,
+        start_unix_sec,
+        roster=roster,
+        wcl_difficulty=wcl_difficulty,
+        match_window_sec=MATCH_WINDOW_SEC,
+        leader_characters=_LEADER_MAIN_NAMES,
+    )
+    return raid_id
 
 
 def _derive_difficulty(fights_payload: dict) -> str | None:
@@ -133,9 +143,13 @@ def _enrich_one(
     title = list_meta.get("title")
     zone = (list_meta.get("zone") or {}).get("name")
     owner = (list_meta.get("owner") or {}).get("name")
-    raid_id = _find_matching_event(conn, start_ms // 1000)
     roster = (roster_detail or {}).get("masterData", {}).get("actors") or []
     difficulty = _derive_difficulty(fights_payload) if fights_payload else None
+    # Roster + difficulty feed into the matcher's scoring so we don't pick a
+    # time-adjacent event that doesn't actually share players or difficulty.
+    raid_id = _find_matching_event(
+        conn, start_ms // 1000, roster=roster, wcl_difficulty=difficulty,
+    )
 
     with conn.cursor() as cur:
         cur.execute(
