@@ -50,30 +50,70 @@ PROGRESSION_FILTER_SQL = """
 def _dedupe_reports(rows: list[dict]) -> list[dict]:
     """Return one representative report per raid session.
 
-    Multiple people often upload the same raid. To avoid double-counting kills,
-    we group reports by their actual raid:
-      - matched reports (raid_id set) → group by raid_id
-      - unmatched reports → cluster by (title-hint, time bucket) since we don't
-        know the leader at this layer; use start time bucketed to 3-hour windows
-        and the report title's hash so different leaders' parallel raids stay
-        separate
+    Multiple people often upload the same raid. We detect that by comparing
+    each report's set of (encounter_id, absolute_fight_start_time) — two logs
+    of the same physical raid have identical fight timestamps within seconds
+    (modulo small clock skew between uploaders). This is more robust than
+    keying by raid_id, since the same raid uploaded by two players may end up
+    matched to two different raid-helper events (e.g. parallel Ragz/Piian
+    events at the same time).
 
-    Within each group, pick the report with the most boss fights — usually the
-    most complete log.
+    Two reports are considered the same raid when they share ≥3 boss fights
+    at the same wall-clock moment (10-second bucket) AND those shared fights
+    are ≥50% of the smaller report's fights. Within each cluster we keep the
+    log with the most boss fights — usually the most complete one.
     """
     from collections import defaultdict
-    BUCKET_MS = 3 * 3600 * 1000
+    BUCKET_SEC = 10  # absorb sub-10s clock skew between uploaders
 
-    groups: dict[Any, list[dict]] = defaultdict(list)
-    for r in rows:
-        if r.get("raid_id"):
-            key: Any = ("matched", r["raid_id"])
-        else:
-            bucket = (r["start_time_ms"] or 0) // BUCKET_MS
-            # Distinguish parallel raids on the same evening by owner+title hash
-            title_hint = (r.get("title") or "")[:40].lower()
-            key = ("unmatched", bucket, r.get("owner_name") or "", title_hint)
-        groups[key].append(r)
+    def _sig(r: dict) -> set[tuple[int, int]]:
+        fights_blob = r.get("fights") or {}
+        report_start = fights_blob.get("report_start_ms") or r.get("start_time_ms") or 0
+        out: set[tuple[int, int]] = set()
+        for f in fights_blob.get("fights") or []:
+            eid = f.get("encounterID") or 0
+            if eid <= 0:
+                continue
+            abs_ms = (f.get("startTime") or 0) + report_start
+            out.add((eid, abs_ms // (BUCKET_SEC * 1000)))
+        return out
+
+    sigs = [_sig(r) for r in rows]
+
+    # Union-find clustering. O(n²) but n stays in the hundreds in practice;
+    # an inverted index can replace this if it ever gets slow.
+    parent = list(range(len(rows)))
+
+    def find(x: int) -> int:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for i in range(len(rows)):
+        if not sigs[i]:
+            continue
+        for j in range(i + 1, len(rows)):
+            if not sigs[j]:
+                continue
+            inter = len(sigs[i] & sigs[j])
+            if inter == 0:
+                continue
+            smaller = min(len(sigs[i]), len(sigs[j]))
+            # Merge if either:
+            #  - The smaller report's fights are fully contained in the larger
+            #    (partial upload of the same raid — handles tiny early uploads).
+            #  - Substantial overlap: ≥3 shared fights AND ≥50% of the smaller.
+            #    Coincidental collisions on (encounter_id, 10s_bucket) tuples
+            #    across unrelated raids are astronomically unlikely at this scale.
+            if inter == smaller or (inter >= 3 and inter / smaller >= 0.5):
+                a, b = find(i), find(j)
+                if a != b:
+                    parent[a] = b
+
+    groups: dict[int, list[dict]] = defaultdict(list)
+    for i, r in enumerate(rows):
+        groups[find(i)].append(r)
 
     def boss_fight_count(r: dict) -> int:
         fights = ((r.get("fights") or {}).get("fights")) or []
