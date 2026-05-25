@@ -55,7 +55,10 @@ DIFFICULTY_MAP = {
 # Mains we consider authoritative for "this is leader X's raid" — taken from
 # wcl_synthesis.LEADER_CHARACTERS (gap-fill leader detection) so the matcher
 # and the gap-fill pipeline agree on which characters identify which leaders.
-_LEADER_MAIN_NAMES: tuple[str, ...] = tuple(c for c, _ in LEADER_CHAR_LOOKUP.values())
+# The dict KEYS are the WoW character names (Ragz, Gryphandrus, Rezuk, Piian)
+# that actually appear in WCL rosters. The values are the (display_name,
+# discord_id) the frontend renders — those don't match roster entries.
+_LEADER_MAIN_NAMES: tuple[str, ...] = tuple(LEADER_CHAR_LOOKUP.keys())
 
 
 def _find_matching_event(

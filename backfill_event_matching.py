@@ -21,7 +21,9 @@ import db
 import event_matching
 from wcl_synthesis import LEADER_CHARACTERS as LEADER_CHAR_LOOKUP
 
-LEADER_MAINS = tuple(c for c, _ in LEADER_CHAR_LOOKUP.values())
+# Use the dict KEYS — those are the WoW character names in WCL rosters.
+# The values are (display_name, discord_id) for the frontend, not roster matches.
+LEADER_MAINS = tuple(LEADER_CHAR_LOOKUP.keys())
 MATCH_WINDOW_SEC = 3 * 3600
 
 
