@@ -14,6 +14,8 @@ import json
 import os
 import time
 
+import psycopg
+
 import db
 import wcl
 from wcl_synthesis import SEASON_START_TS
@@ -34,6 +36,30 @@ def _needs_backfill(fights_blob: dict | None) -> bool:
         if (f.get("encounterID") or 0) > 0 and "fightPercentage" not in f:
             return True
     return False
+
+
+def _persist_with_reconnect(conn, code: str, fights_payload: dict):
+    """Persist one row, reconnecting once if the Railway proxy idle-dropped us.
+    Long-running scripts over the public Postgres proxy are prone to this."""
+    for attempt in (1, 2):
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE wcl_reports SET fights = %s WHERE code = %s",
+                    (json.dumps(fights_payload), code),
+                )
+            conn.commit()
+            return conn
+        except psycopg.OperationalError as exc:
+            if attempt == 2:
+                raise
+            print(f"  reconnecting after DB drop: {exc}", flush=True)
+            try:
+                conn.close()
+            except Exception:
+                pass
+            conn = db.connect()
+    return conn  # unreachable
 
 
 def main() -> None:
@@ -64,12 +90,13 @@ def main() -> None:
             failed += 1
             time.sleep(REQUEST_DELAY)
             continue
-        with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE wcl_reports SET fights = %s WHERE code = %s",
-                (json.dumps(fights_payload), code),
-            )
-        conn.commit()
+        try:
+            conn = _persist_with_reconnect(conn, code, fights_payload)
+        except Exception as exc:
+            print(f"  {code} db update failed: {exc}", flush=True)
+            failed += 1
+            time.sleep(REQUEST_DELAY)
+            continue
         updated += 1
         if updated % 25 == 0:
             print(f"  {updated}/{len(candidates)} updated", flush=True)
