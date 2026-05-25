@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>lp-spec-stats · admin</title>
+  <style>
+    :root {
+      --bg: #0a0d1a;
+      --surface: #131829;
+      --surface-2: #1a2238;
+      --border-soft: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.14);
+      --text: #e6e8f0;
+      --text-muted: #8b91a7;
+      --gold: #e0a526;
+      --danger: #ef4444;
+      --ok: #10b981;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 28px 24px 80px; }
+    h1 { margin: 0 0 6px; font-weight: 600; }
+    .sub { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 1px solid var(--border-soft); }
+    .tab { background: none; border: none; color: var(--text-muted); padding: 10px 16px; cursor: pointer;
+      font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; transition: color 120ms; }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+    .toolbar input[type="text"] { flex: 1; padding: 8px 12px; font-size: 13px;
+      background: var(--surface); border: 1px solid var(--border-soft); border-radius: 6px;
+      color: var(--text); }
+    .row {
+      display: grid; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 6px;
+      background: var(--surface); border: 1px solid var(--border-soft);
+      margin-bottom: 4px; font-size: 13px;
+    }
+    .row.events { grid-template-columns: 110px 1fr 110px 100px 60px 70px; }
+    .row.wcl    { grid-template-columns: 110px 100px 1fr 80px 110px 60px 70px; }
+    .row.head   { background: transparent; border: none; color: var(--text-muted); font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 12px; }
+    .row.has-override { border-left: 3px solid var(--gold); }
+    .row.excluded { opacity: 0.5; border-left: 3px solid var(--danger); }
+    .row.expanded { background: var(--surface-2); }
+    .mono { font-family: "JetBrains Mono", "Fira Code", monospace; color: var(--text-muted); }
+    .title-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px;
+      background: var(--surface-2); border: 1px solid var(--border-soft);
+      font-size: 11px; color: var(--text-muted); }
+    .pill.diff-Mythic { color: #c084fc; border-color: rgba(192,132,252,0.4); }
+    .pill.diff-Heroic { color: #60a5fa; border-color: rgba(96,165,250,0.4); }
+    .pill.diff-Normal { color: #10b981; border-color: rgba(16,185,129,0.4); }
+    .pill.diff-LFR    { color: #94a3b8; }
+    .pill.over { background: rgba(224,165,38,0.12); color: var(--gold); border-color: rgba(224,165,38,0.4); }
+    button.btn { background: var(--surface-2); border: 1px solid var(--border-soft);
+      color: var(--text); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;
+      transition: background 120ms, border-color 120ms; }
+    button.btn:hover { border-color: var(--border); background: var(--surface); }
+    button.btn.primary { background: rgba(224,165,38,0.15); color: var(--gold); border-color: rgba(224,165,38,0.5); }
+    button.btn.danger { color: var(--danger); }
+    .edit-panel { grid-column: 1 / -1; margin-top: 8px; padding-top: 12px;
+      border-top: 1px solid var(--border-soft);
+      display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
+    .edit-panel label { display: flex; flex-direction: column; gap: 4px; font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+    .edit-panel input, .edit-panel select, .edit-panel textarea {
+      background: var(--bg); border: 1px solid var(--border-soft); color: var(--text);
+      padding: 6px 8px; border-radius: 4px; font-size: 13px; font-family: inherit;
+    }
+    .edit-panel textarea { min-height: 50px; resize: vertical; }
+    .edit-panel .checkbox-row { flex-direction: row; align-items: center; gap: 8px; text-transform: none; }
+    .edit-panel .actions { grid-column: 1 / -1; display: flex; gap: 6px; justify-content: flex-end; }
+    .empty { padding: 32px; text-align: center; color: var(--text-muted); }
+    .auth-prompt { max-width: 360px; margin: 80px auto; padding: 24px;
+      background: var(--surface); border: 1px solid var(--border-soft); border-radius: 8px;
+      text-align: center; }
+    .auth-prompt input { width: 100%; padding: 10px; margin: 12px 0; font-size: 13px;
+      background: var(--bg); border: 1px solid var(--border-soft); color: var(--text); border-radius: 6px; }
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 18px;
+      background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+      font-size: 13px; z-index: 100; box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+    .toast.ok { border-color: rgba(16,185,129,0.5); }
+    .toast.err { border-color: rgba(239,68,68,0.5); color: var(--danger); }
+    a { color: var(--gold); }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app"><div class="empty">Loading…</div></div>
+
+  <script>
+  // ============ Auth ============
+  const TOKEN_KEY = "lpss-admin-token";
+  function getToken() { return localStorage.getItem(TOKEN_KEY) || ""; }
+  function setToken(t) { localStorage.setItem(TOKEN_KEY, t); }
+  function clearToken() { localStorage.removeItem(TOKEN_KEY); }
+
+  async function api(path, options = {}) {
+    const headers = { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` };
+    const res = await fetch(`/api/admin${path}`, { ...options, headers });
+    if (res.status === 401 || res.status === 403) {
+      clearToken();
+      renderAuth();
+      throw new Error("Auth failed");
+    }
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`API ${res.status}: ${text}`);
+    }
+    return res.json();
+  }
+
+  function toast(msg, kind = "ok") {
+    const el = document.createElement("div");
+    el.className = `toast ${kind}`;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+  }
+
+  function renderAuth() {
+    document.getElementById("app").innerHTML = `
+      <div class="auth-prompt">
+        <h2>lp-spec-stats admin</h2>
+        <p class="sub">Enter the admin token to continue.</p>
+        <input type="password" id="token-input" placeholder="ADMIN_TOKEN" autofocus>
+        <button class="btn primary" id="auth-btn" style="width:100%">Sign in</button>
+      </div>
+    `;
+    document.getElementById("auth-btn").addEventListener("click", () => {
+      const v = document.getElementById("token-input").value.trim();
+      if (!v) return;
+      setToken(v);
+      main();
+    });
+    document.getElementById("token-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") document.getElementById("auth-btn").click();
+    });
+  }
+
+  // ============ State ============
+  let currentTab = "events";
+  let eventsCache = null;
+  let reportsCache = null;
+  let search = "";
+
+  // ============ Helpers ============
+  function fmtDate(unix) {
+    return new Date(unix * 1000).toISOString().slice(0, 10);
+  }
+  function fmtDateMs(ms) {
+    return new Date(ms).toISOString().slice(0, 10);
+  }
+  const DIFFICULTY_OPTIONS = ["", "Mythic", "Heroic", "Normal", "LFR", "Other"];
+
+  // ============ Events tab ============
+  async function loadEvents() {
+    if (eventsCache) return eventsCache;
+    const data = await api("/events");
+    eventsCache = data.events;
+    return eventsCache;
+  }
+
+  function renderEvents(rows) {
+    const filtered = rows.filter(r => {
+      if (!search) return true;
+      const s = search.toLowerCase();
+      return (r.title || "").toLowerCase().includes(s)
+        || (r.leader_name || "").toLowerCase().includes(s)
+        || (r.raid_id || "").toLowerCase().includes(s);
+    });
+    if (filtered.length === 0) return `<div class="empty">No events match.</div>`;
+    return `
+      <div class="row events head">
+        <div>Date</div><div>Title</div><div>Leader</div>
+        <div>Difficulty</div><div>Excluded</div><div></div>
+      </div>
+      ${filtered.map(r => renderEventRow(r)).join("")}
+    `;
+  }
+
+  function renderEventRow(r) {
+    const hasOverride = !!(r.difficulty || r.series_suffix || r.excluded || (r.wcl_codes && r.wcl_codes.length));
+    const diff = r.difficulty
+      ? `<span class="pill diff-${r.difficulty} over">${r.difficulty}</span>`
+      : `<span class="pill" style="opacity:0.6">auto</span>`;
+    const excl = r.excluded
+      ? `<span class="pill" style="color:var(--danger);border-color:rgba(239,68,68,0.5)">yes</span>`
+      : `<span class="pill" style="opacity:0.4">no</span>`;
+    const classes = ["row", "events"];
+    if (hasOverride) classes.push("has-override");
+    if (r.excluded) classes.push("excluded");
+    return `
+      <div class="${classes.join(" ")}" data-event="${r.raid_id}">
+        <div class="mono">${fmtDate(r.unixtime)}</div>
+        <div class="title-cell" title="${r.title || ""}">${r.title || "(no title)"}</div>
+        <div>${r.leader_name || "?"}</div>
+        <div>${diff}</div>
+        <div>${excl}</div>
+        <div style="text-align:right">
+          <button class="btn" data-act="edit" data-event="${r.raid_id}">Edit</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderEventEditPanel(r) {
+    const codes = (r.wcl_codes || []).join(", ");
+    return `
+      <div class="edit-panel">
+        <label>
+          Difficulty override
+          <select data-field="difficulty">
+            ${DIFFICULTY_OPTIONS.map(d => `<option value="${d}" ${r.difficulty === d ? "selected" : ""}>${d || "(auto-detect)"}</option>`).join("")}
+          </select>
+        </label>
+        <label>
+          Series suffix override
+          <input type="text" data-field="series_suffix" value="${r.series_suffix || ""}" placeholder="e.g. Heroic, Mythic, M+">
+        </label>
+        <label>
+          WCL codes to force-link to this event (comma-separated)
+          <input type="text" data-field="wcl_codes" value="${codes}" placeholder="abc123, def456">
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" data-field="excluded" ${r.excluded ? "checked" : ""}> Hide this event from all charts
+        </label>
+        <label style="grid-column: 1 / -1">
+          Notes
+          <textarea data-field="notes" placeholder="Why this override exists">${r.notes || ""}</textarea>
+        </label>
+        <div class="actions">
+          <button class="btn danger" data-act="clear" data-event="${r.raid_id}">Clear override</button>
+          <button class="btn" data-act="cancel" data-event="${r.raid_id}">Cancel</button>
+          <button class="btn primary" data-act="save" data-event="${r.raid_id}">Save</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ============ WCL reports tab ============
+  async function loadReports() {
+    if (reportsCache) return reportsCache;
+    const data = await api("/wcl-reports");
+    reportsCache = data.reports;
+    return reportsCache;
+  }
+
+  function renderReports(rows) {
+    const filtered = rows.filter(r => {
+      if (!search) return true;
+      const s = search.toLowerCase();
+      return (r.title || "").toLowerCase().includes(s)
+        || (r.code || "").toLowerCase().includes(s)
+        || (r.owner_name || "").toLowerCase().includes(s)
+        || (r.auto_raid_id || "").toLowerCase().includes(s);
+    });
+    if (filtered.length === 0) return `<div class="empty">No reports match.</div>`;
+    return `
+      <div class="row wcl head">
+        <div>Date</div><div>Code</div><div>Title</div>
+        <div>Owner</div><div>Linked raid_id</div><div>Excluded</div><div></div>
+      </div>
+      ${filtered.map(r => renderReportRow(r)).join("")}
+    `;
+  }
+
+  function renderReportRow(r) {
+    const hasOverride = !!(r.excluded || r.forced_raid_id);
+    const linked = r.forced_raid_id
+      ? `<span class="pill over mono">${r.forced_raid_id}</span>`
+      : r.auto_raid_id
+        ? `<span class="pill mono" style="opacity:0.7">${r.auto_raid_id}</span>`
+        : `<span class="pill" style="opacity:0.4">none</span>`;
+    const excl = r.excluded
+      ? `<span class="pill" style="color:var(--danger);border-color:rgba(239,68,68,0.5)">yes</span>`
+      : `<span class="pill" style="opacity:0.4">no</span>`;
+    const classes = ["row", "wcl"];
+    if (hasOverride) classes.push("has-override");
+    if (r.excluded) classes.push("excluded");
+    return `
+      <div class="${classes.join(" ")}" data-report="${r.code}">
+        <div class="mono">${fmtDateMs(r.start_time_ms)}</div>
+        <div class="mono"><a href="https://www.warcraftlogs.com/reports/${r.code}" target="_blank" rel="noopener">${r.code}</a></div>
+        <div class="title-cell" title="${r.title || ""}">${r.title || "(no title)"}</div>
+        <div>${r.owner_name || "?"}</div>
+        <div>${linked}</div>
+        <div>${excl}</div>
+        <div style="text-align:right">
+          <button class="btn" data-act="edit-report" data-report="${r.code}">Edit</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderReportEditPanel(r) {
+    return `
+      <div class="edit-panel">
+        <label>
+          Force link to raid_id
+          <input type="text" data-field="forced_raid_id" value="${r.forced_raid_id || ""}" placeholder="raid-helper event id">
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" data-field="excluded" ${r.excluded ? "checked" : ""}> Exclude from all charts
+        </label>
+        <label style="grid-column: 1 / -1">
+          Notes
+          <textarea data-field="notes" placeholder="Why this override exists">${r.notes || ""}</textarea>
+        </label>
+        <div class="actions">
+          <button class="btn danger" data-act="clear-report" data-report="${r.code}">Clear override</button>
+          <button class="btn" data-act="cancel-report" data-report="${r.code}">Cancel</button>
+          <button class="btn primary" data-act="save-report" data-report="${r.code}">Save</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ============ Main render ============
+  async function main() {
+    const app = document.getElementById("app");
+    app.innerHTML = `
+      <h1>lp-spec-stats admin</h1>
+      <div class="sub">
+        Manual overrides for events &amp; WCL reports.
+        <a href="/" style="margin-left:8px">← back to dashboard</a>
+        <a href="#" id="signout" style="margin-left:8px">sign out</a>
+      </div>
+      <div class="tabs">
+        <button class="tab ${currentTab === "events" ? "active" : ""}" data-tab="events">Events</button>
+        <button class="tab ${currentTab === "wcl" ? "active" : ""}" data-tab="wcl">WCL reports</button>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="search" placeholder="Search by title, leader, code, raid_id…" value="${search}">
+        <button class="btn" id="refresh">Reload</button>
+      </div>
+      <div id="list"><div class="empty">Loading…</div></div>
+    `;
+
+    document.getElementById("signout").addEventListener("click", e => {
+      e.preventDefault();
+      clearToken();
+      renderAuth();
+    });
+    document.querySelectorAll(".tab").forEach(t => {
+      t.addEventListener("click", () => {
+        currentTab = t.dataset.tab;
+        main();
+      });
+    });
+    document.getElementById("refresh").addEventListener("click", () => {
+      eventsCache = null;
+      reportsCache = null;
+      drawList();
+    });
+    document.getElementById("search").addEventListener("input", e => {
+      search = e.target.value;
+      drawList();
+    });
+    document.getElementById("list").addEventListener("click", onListClick);
+
+    drawList();
+  }
+
+  async function drawList() {
+    const list = document.getElementById("list");
+    list.innerHTML = `<div class="empty">Loading…</div>`;
+    try {
+      if (currentTab === "events") {
+        const rows = await loadEvents();
+        list.innerHTML = renderEvents(rows);
+      } else {
+        const rows = await loadReports();
+        list.innerHTML = renderReports(rows);
+      }
+    } catch (e) {
+      list.innerHTML = `<div class="empty" style="color:var(--danger)">${e.message}</div>`;
+    }
+  }
+
+  function onListClick(e) {
+    const btn = e.target.closest("button[data-act]");
+    if (!btn) return;
+    const act = btn.dataset.act;
+    if (act === "edit") openEditEvent(btn.dataset.event);
+    else if (act === "save") saveEvent(btn.dataset.event);
+    else if (act === "cancel") drawList();
+    else if (act === "clear") clearEvent(btn.dataset.event);
+    else if (act === "edit-report") openEditReport(btn.dataset.report);
+    else if (act === "save-report") saveReport(btn.dataset.report);
+    else if (act === "cancel-report") drawList();
+    else if (act === "clear-report") clearReport(btn.dataset.report);
+  }
+
+  function openEditEvent(raidId) {
+    const r = eventsCache.find(x => x.raid_id === raidId);
+    if (!r) return;
+    const rowEl = document.querySelector(`.row.events[data-event="${CSS.escape(raidId)}"]`);
+    if (!rowEl) return;
+    rowEl.classList.add("expanded");
+    rowEl.insertAdjacentHTML("beforeend", renderEventEditPanel(r));
+  }
+
+  function readEventForm(raidId) {
+    const rowEl = document.querySelector(`.row.events[data-event="${CSS.escape(raidId)}"]`);
+    const fields = rowEl.querySelectorAll("[data-field]");
+    const out = {};
+    fields.forEach(f => {
+      if (f.type === "checkbox") out[f.dataset.field] = f.checked;
+      else out[f.dataset.field] = f.value.trim();
+    });
+    out.wcl_codes = out.wcl_codes ? out.wcl_codes.split(",").map(s => s.trim()).filter(Boolean) : [];
+    return out;
+  }
+
+  async function saveEvent(raidId) {
+    try {
+      const body = readEventForm(raidId);
+      await api(`/events/${encodeURIComponent(raidId)}`, { method: "POST", body: JSON.stringify(body) });
+      toast("Saved");
+      eventsCache = null;
+      drawList();
+    } catch (e) { toast(e.message, "err"); }
+  }
+
+  async function clearEvent(raidId) {
+    if (!confirm("Remove all overrides on this event?")) return;
+    try {
+      await api(`/events/${encodeURIComponent(raidId)}`, { method: "DELETE" });
+      toast("Cleared");
+      eventsCache = null;
+      drawList();
+    } catch (e) { toast(e.message, "err"); }
+  }
+
+  function openEditReport(code) {
+    const r = reportsCache.find(x => x.code === code);
+    if (!r) return;
+    const rowEl = document.querySelector(`.row.wcl[data-report="${CSS.escape(code)}"]`);
+    if (!rowEl) return;
+    rowEl.classList.add("expanded");
+    rowEl.insertAdjacentHTML("beforeend", renderReportEditPanel(r));
+  }
+
+  function readReportForm(code) {
+    const rowEl = document.querySelector(`.row.wcl[data-report="${CSS.escape(code)}"]`);
+    const fields = rowEl.querySelectorAll("[data-field]");
+    const out = {};
+    fields.forEach(f => {
+      if (f.type === "checkbox") out[f.dataset.field] = f.checked;
+      else out[f.dataset.field] = f.value.trim();
+    });
+    return out;
+  }
+
+  async function saveReport(code) {
+    try {
+      const body = readReportForm(code);
+      await api(`/wcl-reports/${encodeURIComponent(code)}`, { method: "POST", body: JSON.stringify(body) });
+      toast("Saved");
+      reportsCache = null;
+      drawList();
+    } catch (e) { toast(e.message, "err"); }
+  }
+
+  async function clearReport(code) {
+    if (!confirm("Remove all overrides on this WCL report?")) return;
+    try {
+      await api(`/wcl-reports/${encodeURIComponent(code)}`, { method: "DELETE" });
+      toast("Cleared");
+      reportsCache = null;
+      drawList();
+    } catch (e) { toast(e.message, "err"); }
+  }
+
+  // ============ Boot ============
+  if (!getToken()) renderAuth();
+  else main();
+  </script>
+</body>
+</html>
