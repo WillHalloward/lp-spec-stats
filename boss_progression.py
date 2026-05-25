@@ -51,37 +51,62 @@ def _dedupe_reports(rows: list[dict]) -> list[dict]:
     """Return one representative report per raid session.
 
     Multiple people often upload the same raid. We detect that by comparing
-    each report's set of (encounter_id, absolute_fight_start_time) — two logs
-    of the same physical raid have identical fight timestamps within seconds
-    (modulo small clock skew between uploaders). This is more robust than
-    keying by raid_id, since the same raid uploaded by two players may end up
-    matched to two different raid-helper events (e.g. parallel Ragz/Piian
-    events at the same time).
+    each report's boss-fight timestamps — two logs of the same physical raid
+    have fight startTimes within a few seconds of each other (clock skew
+    between uploaders). This is more robust than keying by raid_id, since
+    the same raid uploaded by two players may get matched to two different
+    raid-helper events (e.g. parallel Ragz/Piian events at the same time).
 
-    Two reports are considered the same raid when they share ≥3 boss fights
-    at the same wall-clock moment (10-second bucket) AND those shared fights
-    are ≥50% of the smaller report's fights. Within each cluster we keep the
-    log with the most boss fights — usually the most complete one.
+    Two reports merge when either:
+      - The smaller report's fights are all near-matched in the larger
+        (partial upload of the same raid).
+      - They share ≥3 fights at near-identical times AND those shared fights
+        are ≥50% of the smaller report's fights.
+
+    Within each cluster we keep the log with the most boss fights.
     """
+    from bisect import bisect_left
     from collections import defaultdict
-    BUCKET_SEC = 10  # absorb sub-10s clock skew between uploaders
 
-    def _sig(r: dict) -> set[tuple[int, int]]:
+    TOLERANCE_MS = 5000  # ±5s clock-skew tolerance per fight
+
+    def _fight_times(r: dict) -> dict[int, list[int]]:
+        """encounterID -> sorted list of absolute fight start times (ms)."""
+        out: dict[int, list[int]] = defaultdict(list)
         fights_blob = r.get("fights") or {}
         report_start = fights_blob.get("report_start_ms") or r.get("start_time_ms") or 0
-        out: set[tuple[int, int]] = set()
         for f in fights_blob.get("fights") or []:
             eid = f.get("encounterID") or 0
             if eid <= 0:
                 continue
-            abs_ms = (f.get("startTime") or 0) + report_start
-            out.add((eid, abs_ms // (BUCKET_SEC * 1000)))
+            out[eid].append((f.get("startTime") or 0) + report_start)
+        for v in out.values():
+            v.sort()
         return out
 
-    sigs = [_sig(r) for r in rows]
+    def _total_fights(times: dict[int, list[int]]) -> int:
+        return sum(len(v) for v in times.values())
 
-    # Union-find clustering. O(n²) but n stays in the hundreds in practice;
-    # an inverted index can replace this if it ever gets slow.
+    def _near_match_count(a: dict[int, list[int]], b: dict[int, list[int]]) -> int:
+        """Count how many fights in b have a same-encounter match in a within
+        TOLERANCE_MS. Each b-fight matches at most one a-fight."""
+        n = 0
+        for eid, b_times in b.items():
+            a_times = a.get(eid)
+            if not a_times:
+                continue
+            for t in b_times:
+                i = bisect_left(a_times, t)
+                # Closest a_time is at index i or i-1; check both.
+                for j in (i - 1, i):
+                    if 0 <= j < len(a_times) and abs(a_times[j] - t) <= TOLERANCE_MS:
+                        n += 1
+                        break
+        return n
+
+    fight_times = [_fight_times(r) for r in rows]
+    totals = [_total_fights(ft) for ft in fight_times]
+
     parent = list(range(len(rows)))
 
     def find(x: int) -> int:
@@ -91,21 +116,22 @@ def _dedupe_reports(rows: list[dict]) -> list[dict]:
         return x
 
     for i in range(len(rows)):
-        if not sigs[i]:
+        if totals[i] == 0:
             continue
         for j in range(i + 1, len(rows)):
-            if not sigs[j]:
+            if totals[j] == 0:
                 continue
-            inter = len(sigs[i] & sigs[j])
+            # Compare b against a where a is the larger one (consistent direction
+            # makes the "subset of larger" rule symmetric).
+            if totals[i] >= totals[j]:
+                a_ft, b_ft, smaller = fight_times[i], fight_times[j], totals[j]
+            else:
+                a_ft, b_ft, smaller = fight_times[j], fight_times[i], totals[i]
+            inter = _near_match_count(a_ft, b_ft)
             if inter == 0:
                 continue
-            smaller = min(len(sigs[i]), len(sigs[j]))
-            # Merge if either:
-            #  - The smaller report's fights are fully contained in the larger
-            #    (partial upload of the same raid — handles tiny early uploads).
-            #  - Substantial overlap: ≥3 shared fights AND ≥50% of the smaller.
-            #    Coincidental collisions on (encounter_id, 10s_bucket) tuples
-            #    across unrelated raids are astronomically unlikely at this scale.
+            # Merge if smaller is fully (or near-fully) contained in larger,
+            # or there's substantial overlap.
             if inter == smaller or (inter >= 3 and inter / smaller >= 0.5):
                 a, b = find(i), find(j)
                 if a != b:
@@ -115,11 +141,7 @@ def _dedupe_reports(rows: list[dict]) -> list[dict]:
     for i, r in enumerate(rows):
         groups[find(i)].append(r)
 
-    def boss_fight_count(r: dict) -> int:
-        fights = ((r.get("fights") or {}).get("fights")) or []
-        return sum(1 for f in fights if (f.get("encounterID") or 0) > 0)
-
-    return [max(rs, key=boss_fight_count) for rs in groups.values()]
+    return [max(rs, key=lambda r: _total_fights(_fight_times(r))) for rs in groups.values()]
 
 
 def aggregate(conn: psycopg.Connection) -> dict[str, Any]:
