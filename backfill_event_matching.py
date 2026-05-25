@@ -64,6 +64,7 @@ def main() -> None:
     newly_matched = 0
     rematched = 0
     unmatched_now = 0
+    unlinked_zero_overlap = 0
     skipped_pinned = 0
     score_too_low_keep_existing = 0
 
@@ -83,17 +84,42 @@ def main() -> None:
             wcl_difficulty=r["difficulty"],
             match_window_sec=MATCH_WINDOW_SEC,
             leader_characters=LEADER_MAINS,
+            debug=True,  # need per-candidate breakdown to inspect old's overlap
         )
 
         if old == new:
             unchanged += 1
             continue
 
-        # If new == None but the old match existed, that means the new matcher
-        # didn't find anything above the threshold. Be conservative: keep the
-        # old link rather than turning a (possibly correct) match into a
-        # gap-fill. The backfill is meant to fix wrong matches, not destroy data.
+        # If new is None but old exists, the new matcher refused to endorse
+        # any candidate. Find the old link's overlap in the debug breakdown:
+        #  - If overlap with the OLD event was 0 → smoking gun that the old
+        #    match was wrong (no shared player names). Drop the link.
+        #  - Otherwise the new matcher just couldn't score anything high
+        #    enough (borderline / few-signups events). Conservatively keep
+        #    the existing link.
         if new is None and old is not None:
+            old_overlap = None
+            for cand in info.get("all", []):
+                if cand["raid_id"] == old:
+                    old_overlap = cand["overlap"]
+                    break
+            if old_overlap is not None and old_overlap == 0.0:
+                # Confirmed wrong match — record this as an unlink.
+                unlinked_zero_overlap += 1
+                changes.append({
+                    "code": code,
+                    "start": datetime.fromtimestamp(r["start_time_ms"] // 1000, timezone.utc).isoformat(),
+                    "title": (r["title"] or "")[:60],
+                    "old_raid_id": old,
+                    "new_raid_id": None,
+                    "score": None,
+                    "overlap": 0.0,
+                    "delta_min": None,
+                    "diff_match": None,
+                    "reason": "zero-overlap with old link",
+                })
+                continue
             score_too_low_keep_existing += 1
             continue
 
@@ -120,6 +146,7 @@ def main() -> None:
     print(f"unchanged                 : {unchanged}")
     print(f"newly matched (None→id)   : {newly_matched}")
     print(f"re-matched (id→differentid): {rematched}")
+    print(f"unlinked (zero overlap)   : {unlinked_zero_overlap}")
     print(f"kept stale (new<min_score, old kept): {score_too_low_keep_existing}")
     print(f"skipped (admin-pinned)    : {skipped_pinned}")
     print(f"still unmatched           : {unmatched_now}")
@@ -132,12 +159,19 @@ def main() -> None:
 
     print(f"=== {len(changes)} changes ===")
     for c in changes[:50]:
+        # The unlinked-zero-overlap rows carry None for score/delta/diff_match
+        # (we didn't pick a new candidate), so format defensively.
+        score = c.get("score")
+        delta = c.get("delta_min")
+        score_s = f"{score:>5}" if score is not None else "  —  "
+        delta_s = f"{delta:+d}min" if delta is not None else "  — "
+        reason = c.get("reason", "")
         print(
             f"  {c['code']}  {c['start']}  "
-            f"score={c['score']:>5}  overlap={c['overlap']:<5}  diff_match={c['diff_match']}  "
-            f"Δ={c['delta_min']:+d}min  "
-            f"{c['old_raid_id'] or 'None':>20s} -> {c['new_raid_id'] or 'None':>20s}  "
-            f"{c['title']}"
+            f"score={score_s}  overlap={c['overlap']:<5}  diff_match={c['diff_match']}  "
+            f"Δ={delta_s}  "
+            f"{(c['old_raid_id'] or 'None'):>20} -> {(c['new_raid_id'] or 'None'):>20}  "
+            f"{reason or c['title']}"
         )
     if len(changes) > 50:
         print(f"  ... and {len(changes) - 50} more.")
