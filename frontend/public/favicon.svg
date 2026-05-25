@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background: dashboard dark navy with a soft gold border to match the
+       site's chrome. Rounded corners for the modern app-icon look. -->
+  <rect x="0" y="0" width="64" height="64" rx="12" ry="12" fill="#070912"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="11" ry="11"
+        fill="none" stroke="#c08c1c" stroke-opacity="0.6" stroke-width="1.5"/>
+
+  <!-- LP monogram. We stack a serif font with system fallbacks; at favicon
+       sizes the exact face doesn't matter much, but the heavy weight + serif
+       feel ties to the dashboard's Cinzel headers. -->
+  <text x="32" y="46"
+        text-anchor="middle"
+        font-family="'Cinzel', 'Trajan Pro', Georgia, 'Times New Roman', serif"
+        font-size="44"
+        font-weight="700"
+        letter-spacing="-1"
+        fill="#e0a526">LP</text>
+</svg>
