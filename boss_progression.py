@@ -226,6 +226,11 @@ def attempts_for_boss(
                 "report_code": r["code"],
                 "fight_id": f.get("id"),
                 "last_phase": f.get("lastPhase"),
+                # Frontend joins this against the events array to render the
+                # series label (leader name). May be null for unmatched reports;
+                # in that case the frontend falls back to `wcl:<report_code>`
+                # to find the corresponding gap-fill event.
+                "raid_id": r["raid_id"],
             })
     out.sort(key=lambda a: a["ts_ms"])
     return out

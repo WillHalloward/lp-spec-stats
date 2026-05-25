@@ -1,5 +1,6 @@
 import { fetchBossAttempts, type BossStat, type BossAttempt } from "../api";
 import type { FilterState } from "../state";
+import type { Event } from "../types";
 import { DIFFICULTY_COLORS, THEME } from "../theme";
 import { RAIDS, raidForEncounter } from "../normalize";
 
@@ -158,6 +159,7 @@ export function renderBossCellDetail(
   encounterID: number,
   difficulty: string,
   bossName: string,
+  events: Event[],
 ): HTMLElement {
   const wrap = document.createElement("div");
   wrap.className = "boss-cell-detail";
@@ -170,13 +172,36 @@ export function renderBossCellDetail(
   `;
   const body = wrap.querySelector(".bcd-body") as HTMLElement;
 
+  // Build a (raid_id | wcl:code) -> leader display name lookup so each attempt
+  // row can show "Piian" instead of an opaque WCL code. The seriesLabel format
+  // is "Leader — Suffix" (em-dash with spaces); we strip the suffix because the
+  // user already knows the difficulty from the cell they clicked.
+  const seriesByRaidId = new Map<string, string>();
+  for (const e of events) {
+    const label = e.seriesLabel ?? "";
+    const dash = label.indexOf(" — ");
+    const leader = dash === -1 ? label : label.slice(0, dash);
+    if (e.raidId) seriesByRaidId.set(String(e.raidId), leader);
+  }
+
   fetchBossAttempts(encounterID, difficulty).then(attempts => {
-    body.replaceChildren(renderAttemptList(attempts));
+    body.replaceChildren(renderAttemptList(attempts, seriesByRaidId));
   }).catch(err => {
     body.innerHTML = `<div class="loading">Failed to load: ${String(err)}</div>`;
   });
 
   return wrap;
+}
+
+
+function leaderForAttempt(a: BossAttempt, seriesByRaidId: Map<string, string>): string | null {
+  if (a.raid_id) {
+    const hit = seriesByRaidId.get(a.raid_id);
+    if (hit) return hit;
+  }
+  // Unmatched WCL reports surface as gap-fill events with raidid "wcl:<code>".
+  const fromGap = seriesByRaidId.get(`wcl:${a.report_code}`);
+  return fromGap ?? null;
 }
 
 
@@ -191,7 +216,7 @@ function fmtDuration(ms: number): string {
   return `${m}:${String(rem).padStart(2, "0")}`;
 }
 
-function renderAttemptList(attempts: BossAttempt[]): HTMLElement {
+function renderAttemptList(attempts: BossAttempt[], seriesByRaidId: Map<string, string>): HTMLElement {
   const out = document.createElement("div");
   if (attempts.length === 0) {
     out.className = "bcd-empty";
@@ -271,7 +296,7 @@ function renderAttemptList(attempts: BossAttempt[]): HTMLElement {
     const visible = showAll
       ? annotated
       : annotated.filter(r => r.a.kill || r.improved);
-    tableHost.replaceChildren(buildTable(visible, showAll));
+    tableHost.replaceChildren(buildTable(visible, showAll, seriesByRaidId));
   }
   paint(false);
 
@@ -289,7 +314,15 @@ type AnnotatedAttempt = {
   isOverallBest: boolean;
 };
 
-function buildTable(rows: AnnotatedAttempt[], showAll: boolean): HTMLElement {
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function buildTable(
+  rows: AnnotatedAttempt[],
+  showAll: boolean,
+  seriesByRaidId: Map<string, string>,
+): HTMLElement {
   const table = document.createElement("div");
   table.className = "bcd-table";
   if (rows.length === 0) {
@@ -303,6 +336,7 @@ function buildTable(rows: AnnotatedAttempt[], showAll: boolean): HTMLElement {
       <div>Result</div>
       <div>Wipe %</div>
       <div>Duration</div>
+      <div>Series</div>
       <div>Log</div>
     </div>
     ${rows.map(row => {
@@ -318,14 +352,16 @@ function buildTable(rows: AnnotatedAttempt[], showAll: boolean): HTMLElement {
         : a.fight_pct != null
           ? `<div class="pct${isOverallBest ? " best" : improved ? " improved" : ""}">${a.fight_pct.toFixed(1)}%${improved && !isOverallBest ? " ↓" : ""}${isOverallBest ? " ★" : ""}</div>`
           : `<div class="pct dim">—</div>`;
+      const leader = leaderForAttempt(a, seriesByRaidId);
+      const seriesCell = leader
+        ? `<div class="series">${escapeHtml(leader)}</div>`
+        : `<div class="series dim">—</div>`;
       const classes = [
         "bcd-row",
         a.kill ? "is-kill" : "is-wipe",
         isOverallBest ? "is-best" : "",
         improved && !isOverallBest ? "is-improved" : "",
       ].filter(Boolean).join(" ");
-      // In "record-breakers only" mode the original pull number is useful context.
-      // In "show all" the row index already matches the original index, so use it directly.
       const idxLabel = showAll ? origIdx : `#${origIdx}`;
       return `<div class="${classes}">
         <div class="idx">${idxLabel}</div>
@@ -333,6 +369,7 @@ function buildTable(rows: AnnotatedAttempt[], showAll: boolean): HTMLElement {
         ${resultCell}
         ${pctCell}
         <div class="dur">${fmtDuration(a.duration_ms)}</div>
+        ${seriesCell}
         <div class="log"><a href="${href}" target="_blank" rel="noopener">${a.report_code}</a></div>
       </div>`;
     }).join("")}

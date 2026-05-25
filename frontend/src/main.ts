@@ -539,7 +539,7 @@ async function main(): Promise<void> {
         const diff = bossCell.dataset.difficulty ?? "";
         const name = bossCell.dataset.bossName ?? "";
         if (eid && diff) {
-          openModal(renderBossCellDetail(eid, diff, name));
+          openModal(renderBossCellDetail(eid, diff, name, events));
           return;
         }
       }

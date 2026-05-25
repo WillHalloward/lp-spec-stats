@@ -47,6 +47,10 @@ export interface BossAttempt {
   report_code: string;
   fight_id: number | null;
   last_phase: number | null;
+  /** raid-helper event id this WCL report is linked to (auto or overridden).
+   *  Null for unmatched reports; in that case the frontend looks up the
+   *  gap-fill event by raidid="wcl:<report_code>" instead. */
+  raid_id: string | null;
 }
 
 export async function fetchBossAttempts(
