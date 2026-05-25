@@ -18,7 +18,7 @@ from collections import defaultdict  # noqa: F401
 
 import psycopg
 
-from wcl_synthesis import EXCLUDED_CODES, all_excluded_codes, effective_report_links
+from wcl_synthesis import EXCLUDED_CODES, _match_leader, all_excluded_codes, effective_report_links
 
 
 DIFFICULTY_NAME = {
@@ -253,7 +253,8 @@ def attempts_for_boss(
 
     with conn.cursor() as cur:
         cur.execute(
-            f"SELECT code, start_time_ms, raid_id, fights FROM wcl_reports "
+            f"SELECT code, start_time_ms, raid_id, fights, title, owner_name, roster "
+            f"FROM wcl_reports "
             f"WHERE {PROGRESSION_FILTER_SQL} AND code != ALL(%s)",
             (list(all_excluded_codes(conn)),),
         )
@@ -265,11 +266,41 @@ def attempts_for_boss(
 
     rows = _dedupe_reports(rows)
 
+    # Resolve the leader (series label) for each surviving report once, so each
+    # attempt row carries it directly. Avoids the frontend having to look up the
+    # matched event (which may not even exist as a gap-fill — see the
+    # "Vorasius shows —" bug). For matched reports we prefer the raid-helper
+    # event's leadername; for unmatched we run the same _match_leader logic that
+    # gap-fill synthesis uses (title patterns, then leader-character-in-roster).
+    leader_by_code: dict[str, str | None] = {}
+    raid_ids_to_lookup = {r["raid_id"] for r in rows if r["raid_id"]}
+    event_leaders: dict[str, str] = {}
+    if raid_ids_to_lookup:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT raid_id, data->>'leadername' AS leadername "
+                "FROM events WHERE raid_id = ANY(%s)",
+                (list(raid_ids_to_lookup),),
+            )
+            for ev in cur.fetchall():
+                # Strip realm suffix to match the frontend's leader display.
+                raw = ev["leadername"] or ""
+                event_leaders[ev["raid_id"]] = raw.split(" - ")[0].split("-")[0].strip() or raw
+    for r in rows:
+        if r["raid_id"] and r["raid_id"] in event_leaders:
+            leader_by_code[r["code"]] = event_leaders[r["raid_id"]]
+        else:
+            name, _lid, confident = _match_leader(
+                r.get("title"), r.get("owner_name"), r.get("roster") or []
+            )
+            leader_by_code[r["code"]] = name if confident else None
+
     out: list[dict] = []
     for r in rows:
         fights_blob = r["fights"] or {}
         fights = fights_blob.get("fights") or []
         report_start_ms = fights_blob.get("report_start_ms") or r["start_time_ms"]
+        leader = leader_by_code.get(r["code"])
         for f in fights:
             if (f.get("encounterID") or 0) != encounter_id:
                 continue
@@ -287,6 +318,7 @@ def attempts_for_boss(
                 "duration_ms": max(0, f_end - f_start),
                 "report_code": r["code"],
                 "fight_id": f.get("id"),
+                "series_leader": leader,
                 "last_phase": f.get("lastPhase"),
                 # Frontend joins this against the events array to render the
                 # series label (leader name). May be null for unmatched reports;

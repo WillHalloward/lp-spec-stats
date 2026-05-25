@@ -195,11 +195,14 @@ export function renderBossCellDetail(
 
 
 function leaderForAttempt(a: BossAttempt, seriesByRaidId: Map<string, string>): string | null {
+  // Backend now resolves the leader per attempt — prefer that. The lookup
+  // below stays as a fallback for older /api/boss-attempts payloads cached
+  // on the client (or pre-deploy responses) that don't include series_leader.
+  if (a.series_leader) return a.series_leader;
   if (a.raid_id) {
     const hit = seriesByRaidId.get(a.raid_id);
     if (hit) return hit;
   }
-  // Unmatched WCL reports surface as gap-fill events with raidid "wcl:<code>".
   const fromGap = seriesByRaidId.get(`wcl:${a.report_code}`);
   return fromGap ?? null;
 }
