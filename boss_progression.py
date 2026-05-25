@@ -151,12 +151,11 @@ def aggregate(conn: psycopg.Connection) -> dict[str, Any]:
                     stat["latest_kill_ms"] = f_start
             else:
                 stat["wipes"] += 1
-                # WCL returns fightPercentage in basis points (0..10000) so 9543 = 95.43%.
-                # Convert once here so the API hands the frontend a real percentage.
-                raw_pct = f.get("fightPercentage")
-                pct = raw_pct / 100.0 if isinstance(raw_pct, (int, float)) else None
-                if pct is not None and (stat["best_pull_pct"] is None or pct < stat["best_pull_pct"]):
-                    stat["best_pull_pct"] = pct
+                # fightPercentage is already a 0..100 boss-HP-remaining value
+                # (verified empirically against WCL's report UI). Keep it as-is.
+                pct = f.get("fightPercentage")
+                if isinstance(pct, (int, float)) and (stat["best_pull_pct"] is None or pct < stat["best_pull_pct"]):
+                    stat["best_pull_pct"] = float(pct)
                     stat["best_pull_code"] = r["code"]
                     stat["best_pull_fight_id"] = f.get("id")
 
@@ -217,7 +216,8 @@ def attempts_for_boss(
             f_start = (f.get("startTime") or 0) + (report_start_ms or 0)
             f_end = (f.get("endTime") or 0) + (report_start_ms or 0)
             raw_pct = f.get("fightPercentage")
-            pct = raw_pct / 100.0 if isinstance(raw_pct, (int, float)) else None
+            # Already 0..100 — see comment in aggregate() above.
+            pct = float(raw_pct) if isinstance(raw_pct, (int, float)) else None
             out.append({
                 "ts_ms": f_start,
                 "kill": bool(f.get("kill")),
