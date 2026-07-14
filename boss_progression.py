@@ -18,7 +18,7 @@ from collections import defaultdict  # noqa: F401
 
 import psycopg
 
-from wcl_synthesis import EXCLUDED_CODES, _match_leader, all_excluded_codes, effective_report_links
+from wcl_synthesis import EXCLUDED_CODES, LP_ZONES_SQL, _match_leader, all_excluded_codes, effective_report_links
 
 
 DIFFICULTY_NAME = {
@@ -37,9 +37,9 @@ MIN_ATTEMPTS = 50
 # Roster > 50 is almost always a multi-night farm pool log (aggregated across days)
 # and not a single raid — exclude those from boss progression counts.
 # Escapes %% so psycopg doesn't read e.g. %p as a placeholder when bound vars are present.
-PROGRESSION_FILTER_SQL = """
+PROGRESSION_FILTER_SQL = f"""
     fights IS NOT NULL
-    AND zone_name = 'VS / DR / MQD'
+    AND zone_name IN ({LP_ZONES_SQL})
     AND COALESCE(title, '') NOT ILIKE '%%pug%%'
     AND COALESCE(title, '') NOT ILIKE '%%mythic+%%'
     AND COALESCE(title, '') NOT ILIKE '%%farm%%'

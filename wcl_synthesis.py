@@ -63,6 +63,12 @@ CLASS_MAP: dict[str, str] = {
 # Season cutoff lives in normalize.ts on the frontend; we apply it here too for the SQL filter.
 SEASON_START_TS = 1742083200  # 2026-03-16 UTC
 
+# WCL zone names that count as LP raid content. Reports in any other zone are
+# ignored by progression stats and gap-fill. Keep in sync with RAIDS in
+# frontend/src/normalize.ts when a new raid zone appears.
+LP_ZONE_NAMES = ("VS / DR / MQD", "Sporefall", "The Venomous Abyss")
+LP_ZONES_SQL = ", ".join(f"'{z}'" for z in LP_ZONE_NAMES)
+
 # Manual exclusion list — WCL reports the maintainer has flagged as false positives
 # (pugs, alt-runs, etc.) that pass our automatic filters.
 EXCLUDED_CODES: set[str] = {
@@ -402,11 +408,11 @@ def load_gap_fill_events(conn: psycopg.Connection) -> list[dict]:
     forced_codes = list(effective_report_links(conn).keys())
     with conn.cursor() as cur:
         cur.execute(
-            """
+            f"""
             SELECT code, start_time_ms, end_time_ms, title, zone_name, owner_name, roster, difficulty, player_details, fights
             FROM wcl_reports
             WHERE raid_id IS NULL
-              AND zone_name = 'VS / DR / MQD'
+              AND zone_name IN ({LP_ZONES_SQL})
               AND start_time_ms / 1000 >= %s
               AND jsonb_array_length(roster) BETWEEN 8 AND 40
               AND COALESCE(title, '') NOT ILIKE '%%pug%%'

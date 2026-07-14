@@ -67,9 +67,12 @@ Frontend (`frontend/src/`):
   `wcl_synthesis.py` (hard-coded historical false positives) and
   `wcl_report_overrides.excluded = TRUE` (admin-managed). Use
   `all_excluded_codes(conn)` to combine them.
-- **Season / patch tables** live on the frontend (`normalize.ts`). The one
-  exception is `SEASON_START_TS` in `wcl_synthesis.py`, which gates gap-fill
-  candidates at the SQL level.
+- **Season / patch tables** live on the frontend (`normalize.ts`). Two
+  exceptions in `wcl_synthesis.py`: `SEASON_START_TS`, which gates gap-fill
+  candidates at the SQL level, and `LP_ZONE_NAMES`, the WCL zone allowlist
+  used by progression stats and gap-fill. Adding a raid means editing both
+  `RAIDS` in `normalize.ts` **and** `LP_ZONE_NAMES` (with the WCL zone name,
+  which may differ from the display name).
 - **No tests.** There's no test runner wired up. Verify changes by running
   `archive.py` against a scratch DB or by hitting the API locally.
 
