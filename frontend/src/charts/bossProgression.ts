@@ -214,8 +214,10 @@ function fmtTs(ms: number): string {
 
 function fmtDuration(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(s / 60);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
   const rem = s % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(rem).padStart(2, "0")}`;
   return `${m}:${String(rem).padStart(2, "0")}`;
 }
 
