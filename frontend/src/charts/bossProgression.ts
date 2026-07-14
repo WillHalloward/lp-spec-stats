@@ -221,6 +221,8 @@ function fmtDuration(ms: number): string {
   return `${m}:${String(rem).padStart(2, "0")}`;
 }
 
+const UNATTRIBUTED = "Unattributed";
+
 function renderAttemptList(attempts: BossAttempt[], seriesByRaidId: Map<string, string>): HTMLElement {
   const out = document.createElement("div");
   if (attempts.length === 0) {
@@ -229,60 +231,18 @@ function renderAttemptList(attempts: BossAttempt[], seriesByRaidId: Map<string, 
     return out;
   }
 
-  const kills = attempts.filter(a => a.kill);
-  const wipes = attempts.filter(a => !a.kill);
-  // A kill is effectively a 0% pull — once the boss has died, no wipe can
-  // "break the record". The "best wipe %" stat is only meaningful before the
-  // first kill, so compute it from pre-kill wipes only.
-  const firstKillIdx = attempts.findIndex(a => a.kill);
-  const preKillWipes = firstKillIdx === -1 ? wipes : attempts.slice(0, firstKillIdx).filter(a => !a.kill);
-  const bestPct = preKillWipes.reduce<number | null>(
-    (acc, a) => a.fight_pct != null && (acc == null || a.fight_pct < acc) ? a.fight_pct : acc,
-    null,
-  );
-  const totalTimeMs = attempts.reduce((acc, a) => acc + a.duration_ms, 0);
+  // Series (leader) filter: one chip per series that has attempts on this
+  // boss+difficulty. Selecting chips scopes EVERYTHING below — the summary
+  // stats, the record-breaking-wipe annotations, and the attempt numbering —
+  // to just those teams, so "best pull" means that team's best pull.
+  const leaderOf = attempts.map(a => leaderForAttempt(a, seriesByRaidId) ?? UNATTRIBUTED);
+  const seriesCounts = new Map<string, number>();
+  for (const l of leaderOf) seriesCounts.set(l, (seriesCounts.get(l) ?? 0) + 1);
+  const selected = new Set<string>();
 
-  // Annotate each attempt with its running-best and overall-best status, then
-  // we can flip between the two display modes without re-computing. Kills are
-  // a hard floor — anything after the first kill can't be an improvement.
-  let runningBest: number | null = null;
-  let killed = false;
-  const annotated = attempts.map((a, i) => {
-    let improved = false;
-    if (a.kill) {
-      killed = true;
-    } else if (!killed && a.fight_pct != null) {
-      if (runningBest === null || a.fight_pct < runningBest) {
-        runningBest = a.fight_pct;
-        improved = true;
-      }
-    }
-    return {
-      a,
-      origIdx: i + 1,
-      improved,
-      isOverallBest: !a.kill && bestPct !== null && a.fight_pct === bestPct && (firstKillIdx === -1 || i < firstKillIdx),
-    };
-  });
-
-  // Header summary
   const summary = document.createElement("div");
   summary.className = "bcd-summary";
-  summary.innerHTML = [
-    `<div class="bcd-stat"><div class="label">Attempts</div><div class="value">${attempts.length}</div></div>`,
-    `<div class="bcd-stat"><div class="label">Kills</div><div class="value">${kills.length}</div></div>`,
-    `<div class="bcd-stat"><div class="label">Wipes</div><div class="value">${wipes.length}</div></div>`,
-    // Best-pull stat: pre-kill wipe% if no kill yet; otherwise the boss is dead,
-    // which is more useful info than "best pre-kill wipe was 4%".
-    kills.length === 0 && bestPct !== null
-      ? `<div class="bcd-stat"><div class="label">Best pull</div><div class="value">${bestPct.toFixed(1)}%</div></div>`
-      : "",
-    `<div class="bcd-stat"><div class="label">Time on boss</div><div class="value">${fmtDuration(totalTimeMs)}</div></div>`,
-  ].join("");
-  out.appendChild(summary);
 
-  // Toggle: default to record-breakers only (terser, matches the "lowest %" intent
-  // of the feature). Users who want the full play-by-play can flip it.
   const controls = document.createElement("div");
   controls.className = "bcd-controls";
   controls.innerHTML = `
@@ -292,22 +252,96 @@ function renderAttemptList(attempts: BossAttempt[], seriesByRaidId: Map<string, 
     </label>
     <span class="bcd-toggle-hint">Default: kills and record-breaking wipes only.</span>
   `;
-  out.appendChild(controls);
 
   const tableHost = document.createElement("div");
-  out.appendChild(tableHost);
+  let showAll = false;
 
-  function paint(showAll: boolean): void {
+  function render(): void {
+    const subset = selected.size === 0
+      ? attempts
+      : attempts.filter((_, i) => selected.has(leaderOf[i]));
+
+    const kills = subset.filter(a => a.kill);
+    const wipes = subset.filter(a => !a.kill);
+    // A kill is effectively a 0% pull — once the boss has died, no wipe can
+    // "break the record". The "best wipe %" stat is only meaningful before the
+    // first kill, so compute it from pre-kill wipes only.
+    const firstKillIdx = subset.findIndex(a => a.kill);
+    const preKillWipes = firstKillIdx === -1 ? wipes : subset.slice(0, firstKillIdx).filter(a => !a.kill);
+    const bestPct = preKillWipes.reduce<number | null>(
+      (acc, a) => a.fight_pct != null && (acc == null || a.fight_pct < acc) ? a.fight_pct : acc,
+      null,
+    );
+    const totalTimeMs = subset.reduce((acc, a) => acc + a.duration_ms, 0);
+
+    summary.innerHTML = [
+      `<div class="bcd-stat"><div class="label">Attempts</div><div class="value">${subset.length}</div></div>`,
+      `<div class="bcd-stat"><div class="label">Kills</div><div class="value">${kills.length}</div></div>`,
+      `<div class="bcd-stat"><div class="label">Wipes</div><div class="value">${wipes.length}</div></div>`,
+      // Best-pull stat: pre-kill wipe% if no kill yet; otherwise the boss is dead,
+      // which is more useful info than "best pre-kill wipe was 4%".
+      kills.length === 0 && bestPct !== null
+        ? `<div class="bcd-stat"><div class="label">Best pull</div><div class="value">${bestPct.toFixed(1)}%</div></div>`
+        : "",
+      `<div class="bcd-stat"><div class="label">Time on boss</div><div class="value">${fmtDuration(totalTimeMs)}</div></div>`,
+    ].join("");
+
+    // Annotate each attempt with its running-best and overall-best status.
+    // Kills are a hard floor — anything after the first kill can't improve.
+    let runningBest: number | null = null;
+    let killed = false;
+    const annotated = subset.map((a, i) => {
+      let improved = false;
+      if (a.kill) {
+        killed = true;
+      } else if (!killed && a.fight_pct != null) {
+        if (runningBest === null || a.fight_pct < runningBest) {
+          runningBest = a.fight_pct;
+          improved = true;
+        }
+      }
+      return {
+        a,
+        origIdx: i + 1,
+        improved,
+        isOverallBest: !a.kill && bestPct !== null && a.fight_pct === bestPct && (firstKillIdx === -1 || i < firstKillIdx),
+      };
+    });
+
     const visible = showAll
       ? annotated
       : annotated.filter(r => r.a.kill || r.improved);
     tableHost.replaceChildren(buildTable(visible, showAll, seriesByRaidId));
   }
-  paint(false);
+
+  // Only offer the filter when there's actually more than one series to pick.
+  if (seriesCounts.size > 1) {
+    const filter = document.createElement("div");
+    filter.className = "bcd-series-filter";
+    filter.innerHTML = Array.from(seriesCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, n]) =>
+        `<button class="chip" data-series="${escapeHtml(label)}">${escapeHtml(label)} <span class="chip-tag">${n}</span></button>`)
+      .join("");
+    filter.addEventListener("click", e => {
+      const btn = (e.target as HTMLElement).closest("[data-series]") as HTMLElement | null;
+      if (!btn) return;
+      const key = btn.dataset.series!;
+      if (selected.has(key)) selected.delete(key); else selected.add(key);
+      btn.classList.toggle("active", selected.has(key));
+      render();
+    });
+    out.appendChild(filter);
+  }
+
+  out.appendChild(summary);
+  out.appendChild(controls);
+  out.appendChild(tableHost);
 
   const checkbox = controls.querySelector(".bcd-show-all") as HTMLInputElement;
-  checkbox.addEventListener("change", () => paint(checkbox.checked));
+  checkbox.addEventListener("change", () => { showAll = checkbox.checked; render(); });
 
+  render();
   return out;
 }
 
