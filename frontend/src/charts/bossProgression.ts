@@ -320,13 +320,15 @@ function renderAttemptList(attempts: BossAttempt[], seriesByRaidId: Map<string, 
     filter.className = "bcd-series-filter";
     filter.innerHTML = Array.from(seriesCounts.entries())
       .sort((a, b) => b[1] - a[1])
+      // NB: not data-series — the delegated click handler in main.ts opens the
+      // series-detail modal for anything matching [data-series].
       .map(([label, n]) =>
-        `<button class="chip" data-series="${escapeHtml(label)}">${escapeHtml(label)} <span class="chip-tag">${n}</span></button>`)
+        `<button class="chip" data-bcd-series="${escapeHtml(label)}">${escapeHtml(label)} <span class="chip-tag">${n}</span></button>`)
       .join("");
     filter.addEventListener("click", e => {
-      const btn = (e.target as HTMLElement).closest("[data-series]") as HTMLElement | null;
+      const btn = (e.target as HTMLElement).closest("[data-bcd-series]") as HTMLElement | null;
       if (!btn) return;
-      const key = btn.dataset.series!;
+      const key = btn.dataset.bcdSeries!;
       if (selected.has(key)) selected.delete(key); else selected.add(key);
       btn.classList.toggle("active", selected.has(key));
       render();
