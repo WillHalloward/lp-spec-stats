@@ -10,7 +10,11 @@ export interface Season {
 }
 
 export const SEASONS: Season[] = [
-  { id: "midnight-s1",  label: "Midnight S1",            start: "2026-03-16", current: true },
+  // Midnight S2 opens with the Venomous Abyss raid, one week after patch 12.1
+  // (expected 2026-08-11). Adjust `start` if Blizzard slips, then move the
+  // `current` flag here and update SEASON_START_TS in wcl_synthesis.py.
+  { id: "midnight-s2",  label: "Midnight S2",            start: "2026-08-18" },
+  { id: "midnight-s1",  label: "Midnight S1",            start: "2026-03-16", end: "2026-08-18", current: true },
   { id: "manaforge",    label: "Manaforge Omega",        start: "2025-09-23", end: "2026-03-16" },
   { id: "undermine",    label: "Liberation of Undermine", start: "2025-03-04", end: "2025-09-23" },
   { id: "nerub-ar",     label: "Nerub-ar Palace",        start: "2024-09-10", end: "2025-03-04" },
@@ -40,7 +44,9 @@ export interface Patch {
 
 export const PATCHES: Patch[] = [
   // Midnight (12.x). Sources: wowhead.com, blizzardwatch.com (May 2026).
-  { id: "12.0.7", label: "12.0.7 Revelations",      start: "2026-06-16" },
+  // 12.1 date is Blizzard's expected window (blizzardwatch.com, June 2026), not confirmed.
+  { id: "12.1.0", label: "12.1 Curse of Ula'tek",   start: "2026-08-11" },
+  { id: "12.0.7", label: "12.0.7 Revelations",      start: "2026-06-16", end: "2026-08-11" },
   { id: "12.0.5", label: "12.0.5 Lingering Shadows", start: "2026-04-21", end: "2026-06-16" },
   { id: "12.0.0", label: "12.0 Midnight",            start: "2026-03-02", end: "2026-04-21" },
   // TWW (11.x). Dates approximate based on Blizzard's typical ~8-week schedule.
@@ -79,6 +85,22 @@ export interface Raid {
 
 export const RAIDS: Raid[] = [
   {
+    // 12.1 / Midnight S2 raid (patch "Curse of Ula'tek"). No data until the
+    // season opens; the UI only renders raids that have attempts.
+    id: "venomous-abyss",
+    name: "The Venomous Abyss",
+    encounters: [
+      3470,  // Nek'zali the Soulcoiler
+      3445,  // Entombed Sentinels
+      3455,  // Vashnik the Malignant
+      3497,  // The Lost Explorers
+      3420,  // Sszorak
+      3421,  // The Twin Fangs
+      3429,  // The Coiled Altar
+      3492,  // Ula'tek
+    ],
+  },
+  {
     id: "voidspire",
     name: "Voidspire",
     encounters: [
@@ -94,6 +116,11 @@ export const RAIDS: Raid[] = [
     id: "dreamrift",
     name: "Dreamrift",
     encounters: [3306],                      // Chimaerus, the Undreamt God
+  },
+  {
+    id: "sporefall",
+    name: "Sporefall",
+    encounters: [3159],                      // Rotmire
   },
   {
     id: "mqd",
@@ -113,6 +140,8 @@ export function raidForEncounter(encounterID: number): Raid | null {
 /** Title keyword fallback for raid-series classification when an event has no
  *  WCL encounter data attached. Order matters: longer/more specific phrases first. */
 const RAID_TITLE_PATTERNS: { id: string; patterns: RegExp[] }[] = [
+  { id: "venomous-abyss", patterns: [/venomous abyss/i, /ula[' ]?tek/i, /curse of ula/i] },
+  { id: "sporefall", patterns: [/sporefall/i, /rotmire/i] },
   { id: "dreamrift", patterns: [/dreamrift/i, /chimaerus/i, /undreamt/i] },
   { id: "mqd",       patterns: [/march on quel/i, /\bmoqd\b/i, /quel[' ]?danas/i, /belo[' ]?ren/i, /midnight falls/i, /child of al[' ]?ar/i] },
   { id: "voidspire", patterns: [/voidspire/i, /imperator averzian/i, /vorasius/i, /salhadaar/i, /vaelgor/i, /lightblinded/i, /crown of the cosmos/i] },
