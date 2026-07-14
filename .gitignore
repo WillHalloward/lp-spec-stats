@@ -19,3 +19,4 @@ infographic.html
 # Frontend
 frontend/node_modules/
 frontend/dist/
+.playwright-mcp/
