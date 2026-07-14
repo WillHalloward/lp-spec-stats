@@ -67,49 +67,76 @@ def _dedupe_reports(rows: list[dict]) -> list[dict]:
     Two reports merge when either:
       - The smaller report's fights are all near-matched in the larger
         (partial upload of the same raid).
-      - They share ≥3 fights at near-identical times AND those shared fights
-        are ≥50% of the smaller report's fights.
+      - They share ≥3 fights AND those shared fights are ≥50% of the smaller
+        report's fights.
+
+    Uploader clocks can disagree by minutes (observed: 110s between two logs
+    of the same night), so fights are matched on their clock-skew-independent
+    signature — same encounter, same kill flag, near-identical duration —
+    and the matched pairs must agree on ONE consistent start-time offset
+    (the largest cluster of pairwise offsets wins). Matching on absolute
+    start times with a small tolerance misses skewed duplicate uploads.
 
     Within each cluster we keep the log with the most boss fights.
     """
     from bisect import bisect_left
     from collections import defaultdict
 
-    TOLERANCE_MS = 5000  # ±5s clock-skew tolerance per fight
+    TOLERANCE_MS = 5000            # matched fights must agree on the offset within ±5s
+    MAX_SKEW_MS = 10 * 60 * 1000   # bridge uploader clocks up to 10 minutes apart
+    DURATION_TOL_MS = 2000         # same physical pull ⇒ near-identical duration
 
-    def _fight_times(r: dict) -> dict[int, list[int]]:
-        """encounterID -> sorted list of absolute fight start times (ms)."""
-        out: dict[int, list[int]] = defaultdict(list)
+    def _fight_times(r: dict) -> dict[int, list[tuple[int, int, bool]]]:
+        """encounterID -> list of (abs start ms, duration ms, kill), sorted by start."""
+        out: dict[int, list[tuple[int, int, bool]]] = defaultdict(list)
         fights_blob = r.get("fights") or {}
         report_start = fights_blob.get("report_start_ms") or r.get("start_time_ms") or 0
         for f in fights_blob.get("fights") or []:
             eid = f.get("encounterID") or 0
             if eid <= 0:
                 continue
-            out[eid].append((f.get("startTime") or 0) + report_start)
+            start = (f.get("startTime") or 0) + report_start
+            dur = max(0, (f.get("endTime") or 0) - (f.get("startTime") or 0))
+            out[eid].append((start, dur, bool(f.get("kill"))))
         for v in out.values():
             v.sort()
         return out
 
-    def _total_fights(times: dict[int, list[int]]) -> int:
+    def _total_fights(times: dict[int, list[tuple[int, int, bool]]]) -> int:
         return sum(len(v) for v in times.values())
 
-    def _near_match_count(a: dict[int, list[int]], b: dict[int, list[int]]) -> int:
-        """Count how many fights in b have a same-encounter match in a within
-        TOLERANCE_MS. Each b-fight matches at most one a-fight."""
-        n = 0
-        for eid, b_times in b.items():
-            a_times = a.get(eid)
-            if not a_times:
+    def _near_match_count(
+        a: dict[int, list[tuple[int, int, bool]]],
+        b: dict[int, list[tuple[int, int, bool]]],
+    ) -> int:
+        """Max number of b-fights that match a-fights (same encounter + kill
+        flag, duration within DURATION_TOL_MS, start within MAX_SKEW_MS) at
+        one consistent clock offset."""
+        diffs: list[int] = []
+        for eid, b_fights in b.items():
+            a_fights = a.get(eid)
+            if not a_fights:
                 continue
-            for t in b_times:
-                i = bisect_left(a_times, t)
-                # Closest a_time is at index i or i-1; check both.
-                for j in (i - 1, i):
-                    if 0 <= j < len(a_times) and abs(a_times[j] - t) <= TOLERANCE_MS:
-                        n += 1
-                        break
-        return n
+            a_starts = [t for t, _, _ in a_fights]
+            for bt, bd, bk in b_fights:
+                i = bisect_left(a_starts, bt - MAX_SKEW_MS)
+                while i < len(a_fights) and a_starts[i] <= bt + MAX_SKEW_MS:
+                    at, ad, ak = a_fights[i]
+                    if ak == bk and abs(ad - bd) <= DURATION_TOL_MS:
+                        diffs.append(at - bt)
+                    i += 1
+        if not diffs:
+            return 0
+        # Largest cluster of offsets within a 2×TOLERANCE window. Two pulls of
+        # the same encounter are at least a pull apart, so each b-fight lands
+        # at most once in any given cluster.
+        diffs.sort()
+        best, j = 0, 0
+        for i in range(len(diffs)):
+            while diffs[i] - diffs[j] > 2 * TOLERANCE_MS:
+                j += 1
+            best = max(best, i - j + 1)
+        return best
 
     fight_times = [_fight_times(r) for r in rows]
     totals = [_total_fights(ft) for ft in fight_times]
