@@ -18,6 +18,9 @@ export interface BossStat {
   encounterID: number;
   name: string;
   difficulty: string;
+  /** WCL zone the encounter belongs to. Used to auto-group encounters that
+   *  have no manual RAIDS mapping (see registerAutoRaids in normalize.ts). */
+  zone?: string | null;
   kills: number;
   wipes: number;
   first_kill_ms: number | null;

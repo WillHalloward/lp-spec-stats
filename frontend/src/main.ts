@@ -1,6 +1,6 @@
 import "./style.css";
 import { fetchEvents, fetchBosses } from "./api";
-import { normalizeEvents, attendingSignups, SEASONS, PATCHES, RAIDS, raidForEncounter } from "./normalize";
+import { normalizeEvents, attendingSignups, SEASONS, PATCHES, RAIDS, raidForEncounter, registerAutoRaids } from "./normalize";
 import { filterStore } from "./state";
 import { CLASS_COLORS, ROLE_COLORS } from "./theme";
 import { classIconUrl, indexSpecIcons } from "./icons";
@@ -435,6 +435,10 @@ async function main(): Promise<void> {
     app.innerHTML = `<div class="loading">Failed to load: ${String(e)}</div>`;
     return;
   }
+
+  // Fold auto-detected raids into RAIDS before normalizeEvents so event→raid
+  // classification (encounters and title patterns) sees them too.
+  registerAutoRaids(bossesPayload.bosses);
 
   indexSpecIcons(payload.events);
   const events = normalizeEvents(payload.events);

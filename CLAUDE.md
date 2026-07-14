@@ -67,12 +67,16 @@ Frontend (`frontend/src/`):
   `wcl_synthesis.py` (hard-coded historical false positives) and
   `wcl_report_overrides.excluded = TRUE` (admin-managed). Use
   `all_excluded_codes(conn)` to combine them.
-- **Season / patch tables** live on the frontend (`normalize.ts`). Two
-  exceptions in `wcl_synthesis.py`: `SEASON_START_TS`, which gates gap-fill
-  candidates at the SQL level, and `LP_ZONE_NAMES`, the WCL zone allowlist
-  used by progression stats and gap-fill. Adding a raid means editing both
-  `RAIDS` in `normalize.ts` **and** `LP_ZONE_NAMES` (with the WCL zone name,
-  which may differ from the display name).
+- **Season / patch tables** live on the frontend (`normalize.ts`). The one
+  exception is `SEASON_START_TS` in `wcl_synthesis.py`, which gates gap-fill
+  and raid-zone detection at the SQL level.
+- **Raids are auto-detected.** `wcl_synthesis.lp_zone_names()` treats a WCL
+  zone as LP raid content once it has ≥ `MIN_ATTEMPTS` raid-difficulty pulls
+  this season (plus the `LP_ZONE_SEED` safety list). `/api/bosses` carries
+  each boss's `zone`, and `registerAutoRaids` in `normalize.ts` builds raid
+  groups for encounters no manual `RAIDS` entry claims. A new raid therefore
+  needs **zero config**; add a `RAIDS` entry only to curate (split a shared
+  zone like VS / DR / MQD, control boss order, or rename).
 - **No tests.** There's no test runner wired up. Verify changes by running
   `archive.py` against a scratch DB or by hitting the API locally.
 
@@ -84,9 +88,12 @@ Frontend (`frontend/src/`):
 - **Adjust filters:** logic lives in `state.ts` (store) and the chart files
   (they each consume `filterStore.state`). The chip UI is in
   `renderGlobalFilters` in `main.ts`.
-- **Add a season/patch/raid:** edit `SEASONS` / `PATCHES` / `RAIDS` in
+- **Add a season/patch:** edit `SEASONS` / `PATCHES` in
   `frontend/src/normalize.ts`. The frontend only renders chips for entries that
   have data, so you can add future seasons safely.
+- **Add a raid:** usually nothing — new WCL zones are auto-detected (see
+  Conventions). Optionally add a `RAIDS` entry in `normalize.ts` to curate
+  boss order / naming, and title patterns for pre-raid signup events.
 - **Mark a WCL log as not-LP:** prefer the `/admin` UI (`wcl_report_overrides`).
   Only add to the hard-coded `EXCLUDED_CODES` set if it's an early/bootstrap
   case you want to ship in code.
@@ -108,7 +115,7 @@ Frontend (`frontend/src/`):
   `wcl_synthesis._unwrap` exist because WCL inconsistently nests
   `playerDetails` under `{data: {playerDetails: {...}}}`. If you touch
   player-details handling, unwrap defensively.
-- Boss attempt counts (`MIN_ATTEMPTS = 50`) and roster size filters
+- Boss attempt counts (`MIN_ATTEMPTS = 50`, now in `wcl_synthesis.py`) and roster size filters
   (`8 ≤ size ≤ 50` for progression, `8 ≤ size ≤ 40` for gap-fill candidates)
   are heuristics tuned to keep M+ and pool-log noise out. Adjust together if
   you adjust at all.

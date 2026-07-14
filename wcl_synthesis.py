@@ -11,6 +11,7 @@ Strategy:
 """
 
 import re
+import time
 from typing import Any
 
 import psycopg
@@ -61,13 +62,64 @@ CLASS_MAP: dict[str, str] = {
 
 
 # Season cutoff lives in normalize.ts on the frontend; we apply it here too for the SQL filter.
-SEASON_START_TS = 1742083200  # 2026-03-16 UTC
+# (Was 1742083200 for over a year — that's 2025-03-16, not 2026; the zone
+# allowlist masked the error. Keep the value and the date comment in sync!)
+SEASON_START_TS = 1773619200  # 2026-03-16 UTC
 
-# WCL zone names that count as LP raid content. Reports in any other zone are
-# ignored by progression stats and gap-fill. Keep in sync with RAIDS in
-# frontend/src/normalize.ts when a new raid zone appears.
-LP_ZONE_NAMES = ("VS / DR / MQD", "Sporefall", "The Venomous Abyss")
-LP_ZONES_SQL = ", ".join(f"'{z}'" for z in LP_ZONE_NAMES)
+# Zones we always treat as LP raid content, even when the attempt-volume
+# heuristic below wouldn't (re)discover them (e.g. thin early-season data).
+LP_ZONE_SEED = ("VS / DR / MQD", "Sporefall", "The Venomous Abyss")
+
+# Minimum raid-difficulty pulls for an encounter (in boss_progression) or a
+# whole zone (in lp_zone_names) to count as real LP raid content. Empirically
+# LP bosses sit at 250+ attempts while M+ / unrelated content is ≤25, so 50
+# leaves comfortable headroom either way.
+MIN_ATTEMPTS = 50
+
+# Normal/Heroic/Mythic difficulty codes as they appear in WCL fight data.
+# LFR (1/17) and M+ (10) are deliberately absent.
+_RAID_DIFF_CODES = (3, 4, 5, 14, 15, 16)
+
+_zone_cache: tuple[float, list[str]] | None = None
+
+
+def lp_zone_names(conn: psycopg.Connection) -> list[str]:
+    """WCL zone names that count as LP raid content: the seed list plus any
+    zone auto-detected from the data. A zone qualifies once the guild has
+    logged MIN_ATTEMPTS raid-difficulty pulls in it this season, in reports
+    that pass the usual roster-size/title filters — so a brand-new raid shows
+    up here (and everywhere downstream) with no code change.
+
+    Cached for 5 minutes per process; new zones appear after the first raid
+    night in them, not mid-request.
+    """
+    global _zone_cache
+    now = time.time()
+    if _zone_cache and now - _zone_cache[0] < 300:
+        return _zone_cache[1]
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT zone_name
+            FROM wcl_reports, jsonb_array_elements(fights->'fights') f
+            WHERE fights IS NOT NULL
+              AND zone_name IS NOT NULL
+              AND zone_name NOT ILIKE '%%mythic+%%'
+              AND start_time_ms / 1000 >= %s
+              AND jsonb_array_length(roster) BETWEEN 8 AND 50
+              AND COALESCE(title, '') NOT ILIKE '%%pug%%'
+              AND COALESCE(title, '') NOT ILIKE '%%farm%%'
+              AND (f->>'encounterID')::int > 0
+              AND (f->>'difficulty')::int = ANY(%s)
+            GROUP BY zone_name
+            HAVING count(*) >= %s
+            """,
+            (SEASON_START_TS, list(_RAID_DIFF_CODES), MIN_ATTEMPTS),
+        )
+        detected = [r["zone_name"] for r in cur.fetchall()]
+    zones = list(dict.fromkeys([*LP_ZONE_SEED, *detected]))
+    _zone_cache = (now, zones)
+    return zones
 
 # Manual exclusion list — WCL reports the maintainer has flagged as false positives
 # (pugs, alt-runs, etc.) that pass our automatic filters.
@@ -408,11 +460,11 @@ def load_gap_fill_events(conn: psycopg.Connection) -> list[dict]:
     forced_codes = list(effective_report_links(conn).keys())
     with conn.cursor() as cur:
         cur.execute(
-            f"""
+            """
             SELECT code, start_time_ms, end_time_ms, title, zone_name, owner_name, roster, difficulty, player_details, fights
             FROM wcl_reports
             WHERE raid_id IS NULL
-              AND zone_name IN ({LP_ZONES_SQL})
+              AND zone_name = ANY(%s)
               AND start_time_ms / 1000 >= %s
               AND jsonb_array_length(roster) BETWEEN 8 AND 40
               AND COALESCE(title, '') NOT ILIKE '%%pug%%'
@@ -422,7 +474,7 @@ def load_gap_fill_events(conn: psycopg.Connection) -> list[dict]:
               AND code != ALL(%s)
             ORDER BY start_time_ms
             """,
-            (SEASON_START_TS, excluded, forced_codes),
+            (lp_zone_names(conn), SEASON_START_TS, excluded, forced_codes),
         )
         rows = cur.fetchall()
 

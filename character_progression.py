@@ -11,7 +11,7 @@ import psycopg
 
 import boss_progression
 from boss_progression import DIFFICULTY_NAME
-from wcl_synthesis import EXCLUDED_CODES, LP_ZONES_SQL
+from wcl_synthesis import EXCLUDED_CODES, lp_zone_names
 
 
 def _unwrap(pd: Any) -> Any:
@@ -38,15 +38,15 @@ def first_kills(conn: psycopg.Connection, character_names: list[str]) -> list[di
 
     with conn.cursor() as cur:
         cur.execute(
-            f"""
+            """
             SELECT code, fights, player_details, start_time_ms
             FROM wcl_reports
             WHERE player_details IS NOT NULL
               AND fights IS NOT NULL
-              AND zone_name IN ({LP_ZONES_SQL})
+              AND zone_name = ANY(%s)
               AND code != ALL(%s)
             """,
-            (list(EXCLUDED_CODES),),
+            (lp_zone_names(conn), list(EXCLUDED_CODES)),
         )
         rows = cur.fetchall()
 

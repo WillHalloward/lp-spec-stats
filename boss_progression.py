@@ -18,7 +18,14 @@ from collections import defaultdict  # noqa: F401
 
 import psycopg
 
-from wcl_synthesis import EXCLUDED_CODES, LP_ZONES_SQL, _match_leader, all_excluded_codes, effective_report_links
+from wcl_synthesis import (
+    EXCLUDED_CODES,
+    MIN_ATTEMPTS,
+    _match_leader,
+    all_excluded_codes,
+    effective_report_links,
+    lp_zone_names,
+)
 
 
 DIFFICULTY_NAME = {
@@ -28,18 +35,18 @@ DIFFICULTY_NAME = {
     5: "Mythic", 16: "Mythic",
 }
 
-# Minimum attempts (across all difficulties combined) for an encounter to count
-# as an LP raid boss. Empirically the LP bosses are all 250+ while M+ /
-# unrelated content sits at ≤25, so 50 leaves comfortable headroom either way.
-MIN_ATTEMPTS = 50
+# MIN_ATTEMPTS (imported above) gates which encounters count as LP raid
+# bosses; the same threshold drives zone auto-detection in wcl_synthesis.
 
 # Only include LP-shape reports (raid zone, raid-sized roster).
 # Roster > 50 is almost always a multi-night farm pool log (aggregated across days)
 # and not a single raid — exclude those from boss progression counts.
 # Escapes %% so psycopg doesn't read e.g. %p as a placeholder when bound vars are present.
-PROGRESSION_FILTER_SQL = f"""
+# NOTE: contains one %s placeholder (the LP zone list) — every query using
+# this must pass lp_zone_names(conn) as its first parameter.
+PROGRESSION_FILTER_SQL = """
     fights IS NOT NULL
-    AND zone_name IN ({LP_ZONES_SQL})
+    AND zone_name = ANY(%s)
     AND COALESCE(title, '') NOT ILIKE '%%pug%%'
     AND COALESCE(title, '') NOT ILIKE '%%mythic+%%'
     AND COALESCE(title, '') NOT ILIKE '%%farm%%'
@@ -147,9 +154,9 @@ def _dedupe_reports(rows: list[dict]) -> list[dict]:
 def aggregate(conn: psycopg.Connection) -> dict[str, Any]:
     with conn.cursor() as cur:
         cur.execute(
-            f"SELECT code, start_time_ms, raid_id, owner_name, title, fights "
+            f"SELECT code, start_time_ms, raid_id, owner_name, title, zone_name, fights "
             f"FROM wcl_reports WHERE {PROGRESSION_FILTER_SQL} AND code != ALL(%s)",
-            (list(all_excluded_codes(conn)),),
+            (lp_zone_names(conn), list(all_excluded_codes(conn))),
         )
         rows = cur.fetchall()
 
@@ -186,6 +193,9 @@ def aggregate(conn: psycopg.Connection) -> dict[str, Any]:
                 "encounterID": eid,
                 "name": name,
                 "difficulty": diff,
+                # WCL zone the encounter belongs to — lets the frontend build
+                # raid groups for encounters it has no manual mapping for.
+                "zone": r["zone_name"],
                 "kills": 0,
                 "wipes": 0,
                 "first_kill_ms": None,
@@ -256,7 +266,7 @@ def attempts_for_boss(
             f"SELECT code, start_time_ms, raid_id, fights, title, owner_name, roster "
             f"FROM wcl_reports "
             f"WHERE {PROGRESSION_FILTER_SQL} AND code != ALL(%s)",
-            (list(all_excluded_codes(conn)),),
+            (lp_zone_names(conn), list(all_excluded_codes(conn))),
         )
         rows = cur.fetchall()
 
@@ -343,7 +353,7 @@ def per_event_first_kills(conn: psycopg.Connection) -> list[dict]:
         cur.execute(
             f"SELECT code, start_time_ms, raid_id, fights FROM wcl_reports "
             f"WHERE {PROGRESSION_FILTER_SQL} AND code != ALL(%s)",
-            (list(all_excluded_codes(conn)),),
+            (lp_zone_names(conn), list(all_excluded_codes(conn))),
         )
         rows = cur.fetchall()
 

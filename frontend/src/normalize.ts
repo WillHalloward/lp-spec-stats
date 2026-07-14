@@ -71,8 +71,13 @@ export function eventPatch(unixtime: number): string {
 }
 
 
-/** Boss → raid grouping for Midnight Season 1 (LP guild's current zones).
- * Order here is the order rendered top-to-bottom in the boss-kill UI.
+/** Manual boss → raid grouping. Order here is the order rendered
+ * top-to-bottom in the boss-kill UI (auto-detected raids render after).
+ *
+ * New raids do NOT need an entry: any encounter the backend serves that no
+ * entry below claims gets auto-grouped by its WCL zone (registerAutoRaids).
+ * Add an entry only to curate — split a shared WCL zone into several display
+ * raids (like VS / DR / MQD), control boss order, or pick a nicer name.
  *
  * To re-organize: drop encounter IDs into a different raid's `encounters`
  * array. To re-order raids: shuffle the entries below.
@@ -117,11 +122,8 @@ export const RAIDS: Raid[] = [
     name: "Dreamrift",
     encounters: [3306],                      // Chimaerus, the Undreamt God
   },
-  {
-    id: "sporefall",
-    name: "Sporefall",
-    encounters: [3159],                      // Rotmire
-  },
+  // Sporefall (3159 Rotmire) intentionally has no entry — it's picked up by
+  // registerAutoRaids from its WCL zone, as any future raid will be.
   {
     id: "mqd",
     name: "March on Quel'Danas",
@@ -137,11 +139,44 @@ export function raidForEncounter(encounterID: number): Raid | null {
   return null;
 }
 
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Create raid groups for encounters no manual RAIDS entry claims, grouped by
+ * their WCL zone (from the /api/bosses payload). This is how new raids appear
+ * with zero config: the backend auto-detects the zone, and this folds it into
+ * RAIDS (and the title-pattern fallback) before anything renders.
+ *
+ * Must be called once, after fetching bosses and before normalizeEvents /
+ * chart rendering. Encounter order within an auto raid follows the payload,
+ * which aggregate() sorts by first kill — a decent proxy for boss order.
+ */
+export function registerAutoRaids(bosses: { encounterID: number; name: string; zone?: string | null }[]): void {
+  const byZone = new Map<string, { encounters: number[]; bossNames: string[] }>();
+  for (const b of bosses) {
+    if (!b.zone || raidForEncounter(b.encounterID)) continue;
+    const g = byZone.get(b.zone) ?? { encounters: [], bossNames: [] };
+    if (!g.encounters.includes(b.encounterID)) {
+      g.encounters.push(b.encounterID);
+      g.bossNames.push(b.name);
+    }
+    byZone.set(b.zone, g);
+  }
+  for (const [zone, g] of byZone) {
+    const id = zone.toLowerCase().replace(/^the\s+/, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    RAIDS.push({ id, name: zone, encounters: g.encounters });
+    RAID_TITLE_PATTERNS.push({
+      id,
+      patterns: [zone, ...g.bossNames].map(n => new RegExp(escapeRegex(n), "i")),
+    });
+  }
+}
+
 /** Title keyword fallback for raid-series classification when an event has no
  *  WCL encounter data attached. Order matters: longer/more specific phrases first. */
 const RAID_TITLE_PATTERNS: { id: string; patterns: RegExp[] }[] = [
   { id: "venomous-abyss", patterns: [/venomous abyss/i, /ula[' ]?tek/i, /curse of ula/i] },
-  { id: "sporefall", patterns: [/sporefall/i, /rotmire/i] },
   { id: "dreamrift", patterns: [/dreamrift/i, /chimaerus/i, /undreamt/i] },
   { id: "mqd",       patterns: [/march on quel/i, /\bmoqd\b/i, /quel[' ]?danas/i, /belo[' ]?ren/i, /midnight falls/i, /child of al[' ]?ar/i] },
   { id: "voidspire", patterns: [/voidspire/i, /imperator averzian/i, /vorasius/i, /salhadaar/i, /vaelgor/i, /lightblinded/i, /crown of the cosmos/i] },
