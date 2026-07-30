@@ -13,6 +13,9 @@ export interface RawEvent {
   /** Admin overrides from event_overrides table, stamped server-side. */
   _override_difficulty?: string;
   _override_series_suffix?: string;
+  /** Difficulty derived from the linked WCL reports (majority), stamped
+   *  server-side. Fallback when the title has no difficulty keyword. */
+  _wcl_difficulty?: string;
 }
 
 export interface RawSignup {

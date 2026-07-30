@@ -273,10 +273,18 @@ export function normalizeEvents(raw: RawEvent[]): Event[] {
   const events: Event[] = filtered.map(d => {
     const title = d.displayTitle || d.title || "";
     const category = detectCategory(title);
-    // Admin override wins over auto-detection (e.g. "Piian's Medium Pressure"
-    // is Heroic but the title doesn't say so).
+    // Difficulty priority: admin override > title keyword > what the linked
+    // WCL logs actually pulled. The WCL fallback catches series whose titles
+    // never say the difficulty ("Piian's Mid-Pressure Runs", "CROWN ONLY").
     const autoDifficulty = category === "Raid" ? detectDifficulty(title) : "Other";
-    const difficulty = (d._override_difficulty as Event["difficulty"] | undefined) ?? autoDifficulty;
+    const wclDifficulty =
+      category === "Raid" && autoDifficulty === "Other"
+        ? (d._wcl_difficulty as Event["difficulty"] | undefined)
+        : undefined;
+    const difficulty =
+      (d._override_difficulty as Event["difficulty"] | undefined)
+      ?? wclDifficulty
+      ?? autoDifficulty;
     const raidName = category === "Raid" ? detectRaidName(title) : "";
     const leaderId = d.leaderid;
     const leader = leaderNames.get(leaderId) ?? "?";

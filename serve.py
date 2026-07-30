@@ -62,6 +62,8 @@ def api_events() -> JSONResponse:
         gap_fills = wcl_synthesis.load_gap_fill_events(conn)
         ilvl_map = wcl_synthesis.load_ilvl_map(conn)
         enc_map = wcl_synthesis.load_event_encounters(conn)
+        wcl_diff_map = wcl_synthesis.load_event_wcl_difficulty(conn)
+        dup_map = wcl_synthesis.duplicate_event_map(conn)
         event_overrides = db.load_event_overrides(conn)
     wcl_synthesis.inject_ilvl(events, ilvl_map)
 
@@ -69,9 +71,17 @@ def api_events() -> JSONResponse:
     visible: list[dict] = []
     for ev in events:
         rid = str(ev.get("raidid", ""))
+        # Archive-channel re-posts of an event that still exists — serving both
+        # double-counts every signup. effective_report_links() remaps WCL links
+        # to the canonical copy, so dropping the duplicate loses nothing.
+        if rid in dup_map:
+            continue
         enc = enc_map.get(rid)
         if enc:
             ev["_encounter_ids"] = enc
+        wcl_diff = wcl_diff_map.get(rid)
+        if wcl_diff:
+            ev["_wcl_difficulty"] = wcl_diff
         ov = event_overrides.get(rid)
         if ov:
             if ov.get("excluded"):

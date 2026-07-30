@@ -332,6 +332,35 @@ def load_event_encounters(conn: psycopg.Connection) -> dict[str, list[int]]:
     return {k: sorted(v) for k, v in out.items()}
 
 
+def load_event_wcl_difficulty(conn: psycopg.Connection) -> dict[str, str]:
+    """raid_id -> difficulty derived from the linked WCL reports (majority wins).
+
+    Lets the frontend bucket events whose titles carry no difficulty keyword
+    (e.g. "Piian's Mid-Pressure Runs") by what was actually pulled, instead of
+    dumping them into "Other". Admin event_overrides still take precedence on
+    the frontend.
+    """
+    excluded = all_excluded_codes(conn)
+    links = effective_report_links(conn)
+    counts: dict[str, dict[str, int]] = {}
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT code, difficulty FROM wcl_reports WHERE difficulty IS NOT NULL"
+        )
+        for r in cur.fetchall():
+            if r["code"] in excluded:
+                continue
+            raid_id = links.get(r["code"])
+            if not raid_id:
+                continue
+            bucket = counts.setdefault(raid_id, {})
+            bucket[r["difficulty"]] = bucket.get(r["difficulty"], 0) + 1
+    return {
+        rid: max(bucket.items(), key=lambda kv: kv[1])[0]
+        for rid, bucket in counts.items()
+    }
+
+
 def _encounter_ids_from_fights(fights_payload: dict | None) -> list[int]:
     if not isinstance(fights_payload, dict):
         return []
@@ -358,6 +387,51 @@ def _load_db_excluded_codes(conn: psycopg.Connection) -> set[str]:
 def all_excluded_codes(conn: psycopg.Connection) -> set[str]:
     """Combined exclusion set: hard-coded + DB overrides."""
     return EXCLUDED_CODES | _load_db_excluded_codes(conn)
+
+
+def duplicate_event_map(conn: psycopg.Connection) -> dict[str, str]:
+    """raid_id -> canonical raid_id for duplicate raid-helper events.
+
+    The Discord re-posts finished events into a raid-archive channel as brand
+    new raid-helper events (new id, same leader/time/title/signups), and the
+    calendar feed returns both — so the archiver stores both and every signup
+    counted twice. Collapse each (leaderid, unixtime, title) group to one
+    canonical copy: prefer a non-archive-channel copy, oldest id as tiebreak.
+    Archive copies whose original was deleted (pre-2026 seasons) form groups of
+    one and survive untouched.
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT raid_id, unixtime,
+                   COALESCE(data->>'displayTitle', title, '') AS title,
+                   COALESCE(data->>'leaderid', '')            AS leaderid,
+                   COALESCE(data->>'channelName', '')         AS channel
+              FROM events
+            """
+        )
+        rows = cur.fetchall()
+
+    groups: dict[tuple, list[dict]] = {}
+    for r in rows:
+        groups.setdefault((r["leaderid"], r["unixtime"], r["title"]), []).append(r)
+
+    # Snowflake ids are chronological; compare numerically without assuming
+    # they parse as int (gap-fill "wcl:" ids never reach this table, but be safe).
+    def _id_key(r: dict) -> tuple:
+        rid = r["raid_id"]
+        return (len(rid), rid)
+
+    remap: dict[str, str] = {}
+    for evs in groups.values():
+        if len(evs) < 2:
+            continue
+        non_archive = [e for e in evs if "archive" not in e["channel"].lower()]
+        keep = min(non_archive or evs, key=_id_key)["raid_id"]
+        for e in evs:
+            if e["raid_id"] != keep:
+                remap[e["raid_id"]] = keep
+    return remap
 
 
 def _load_forced_raid_links(conn: psycopg.Connection) -> dict[str, str]:
@@ -395,6 +469,11 @@ def effective_report_links(conn: psycopg.Connection) -> dict[str, str]:
                     links[code] = r["raid_id"]
     except Exception:
         pass
+    # Canonicalize links that point at a duplicate (archive-channel re-post) so
+    # every consumer joins against the event copy the API actually serves.
+    remap = duplicate_event_map(conn)
+    if remap:
+        links = {code: remap.get(rid, rid) for code, rid in links.items()}
     return links
 
 
