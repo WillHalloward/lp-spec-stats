@@ -38,6 +38,12 @@ DIFFICULTY_NAME = {
 # MIN_ATTEMPTS (imported above) gates which encounters count as LP raid
 # bosses; the same threshold drives zone auto-detection in wcl_synthesis.
 
+# Wipes shorter than this are resets / mispulls (someone body-pulled, instant
+# wipe-it-up call), not real attempts — drop them from pull counts, attempt
+# timelines and time-spent sums. Kills are never dropped: a sub-20s kill is
+# still a kill.
+MIN_PULL_MS = 20_000
+
 # Only include LP-shape reports (raid zone, raid-sized roster).
 # Roster > 50 is almost always a multi-night farm pool log (aggregated across days)
 # and not a single raid — exclude those from boss progression counts.
@@ -214,6 +220,12 @@ def aggregate(conn: psycopg.Connection) -> dict[str, Any]:
             # of our raiders happened to do. Skip.
             if diff == "LFR":
                 continue
+            # Fight times are relative to report start. Absolute = report_start + fight_start.
+            f_start = (f.get("startTime") or 0) + (report_start_ms or 0)
+            f_end = (f.get("endTime") or 0) + (report_start_ms or 0)
+            duration = max(0, f_end - f_start)
+            if not f.get("kill") and duration < MIN_PULL_MS:
+                continue  # reset / mispull, not a real attempt
             name = f.get("name") or f"Encounter {eid}"
             key = (eid, diff)
             stat = bosses.setdefault(key, {
@@ -236,10 +248,6 @@ def aggregate(conn: psycopg.Connection) -> dict[str, Any]:
                 "best_pull_code": None,
                 "best_pull_fight_id": None,
             })
-            # Fight times are relative to report start. Absolute = report_start + fight_start.
-            f_start = (f.get("startTime") or 0) + (report_start_ms or 0)
-            f_end = (f.get("endTime") or 0) + (report_start_ms or 0)
-            duration = max(0, f_end - f_start)
             stat["total_duration_ms"] += duration
             if f.get("kill"):
                 stat["kills"] += 1
@@ -345,6 +353,8 @@ def attempts_for_boss(
                 continue
             f_start = (f.get("startTime") or 0) + (report_start_ms or 0)
             f_end = (f.get("endTime") or 0) + (report_start_ms or 0)
+            if not f.get("kill") and (f_end - f_start) < MIN_PULL_MS:
+                continue  # reset / mispull — keep in sync with aggregate()
             raw_pct = f.get("fightPercentage")
             # Already 0..100 — see comment in aggregate() above.
             pct = float(raw_pct) if isinstance(raw_pct, (int, float)) else None
@@ -404,6 +414,9 @@ def per_event_first_kills(conn: psycopg.Connection) -> list[dict]:
                 continue
             diff = DIFFICULTY_NAME.get(f.get("difficulty"), "Other")
             if diff == "LFR":
+                continue
+            dur = (f.get("endTime") or 0) - (f.get("startTime") or 0)
+            if not f.get("kill") and dur < MIN_PULL_MS:
                 continue
             encounter_attempts[eid] = encounter_attempts.get(eid, 0) + 1
     keep_encounters = {eid for eid, n in encounter_attempts.items() if n >= MIN_ATTEMPTS}
