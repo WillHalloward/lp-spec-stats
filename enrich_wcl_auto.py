@@ -55,10 +55,12 @@ DIFFICULTY_MAP = {
 # Mains we consider authoritative for "this is leader X's raid" — taken from
 # wcl_synthesis.LEADER_CHARACTERS (gap-fill leader detection) so the matcher
 # and the gap-fill pipeline agree on which characters identify which leaders.
-# The dict KEYS are the WoW character names (Ragz, Gryphandrus, Rezuk, Piian)
-# that actually appear in WCL rosters. The values are the (display_name,
-# discord_id) the frontend renders — those don't match roster entries.
-_LEADER_MAIN_NAMES: tuple[str, ...] = tuple(LEADER_CHAR_LOOKUP.keys())
+# Maps WoW character name (as it appears in WCL rosters) → Discord leader id
+# (as it appears in events.data->>'leaderid'), so the matcher can award the
+# leader bonus only to the event that leader actually posted.
+_LEADER_MAINS: dict[str, str] = {
+    char: lid for char, (_display, lid) in LEADER_CHAR_LOOKUP.items()
+}
 
 
 def _find_matching_event(
@@ -74,7 +76,7 @@ def _find_matching_event(
         roster=roster,
         wcl_difficulty=wcl_difficulty,
         match_window_sec=MATCH_WINDOW_SEC,
-        leader_characters=_LEADER_MAIN_NAMES,
+        leader_characters=_LEADER_MAINS,
     )
     return raid_id
 

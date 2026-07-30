@@ -21,9 +21,9 @@ import db
 import event_matching
 from wcl_synthesis import LEADER_CHARACTERS as LEADER_CHAR_LOOKUP
 
-# Use the dict KEYS — those are the WoW character names in WCL rosters.
-# The values are (display_name, discord_id) for the frontend, not roster matches.
-LEADER_MAINS = tuple(LEADER_CHAR_LOOKUP.keys())
+# Maps WoW character name (as it appears in WCL rosters) → Discord leader id
+# (events.data->>'leaderid'), same shape enrich_wcl_auto passes the matcher.
+LEADER_MAINS = {char: lid for char, (_display, lid) in LEADER_CHAR_LOOKUP.items()}
 MATCH_WINDOW_SEC = 3 * 3600
 
 

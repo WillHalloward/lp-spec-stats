@@ -19,7 +19,7 @@ unmatched reports safely).
 """
 
 import re
-from typing import Iterable
+from typing import Iterable, Mapping
 
 import psycopg
 
@@ -80,7 +80,7 @@ def _jaccard(a: set[str], b: set[str]) -> float:
 # everything that's "just close in time".
 W_OVERLAP = 10.0          # multiplied by jaccard (0..1)
 W_DIFFICULTY = 5.0        # bonus when log difficulty matches event difficulty
-W_LEADER_CHAR = 3.0       # leader's main character is in the roster
+W_LEADER_CHAR = 3.0       # the CANDIDATE event's leader has their main in the roster
 W_TIME = 1.0              # 1.0 at delta=0, decays with delta
 W_ROSTER_SIZE_BAD = -5.0  # penalty when sizes are wildly different
 
@@ -99,10 +99,16 @@ def find_matching_event(
     roster: list[dict] | None,
     wcl_difficulty: str | None,
     match_window_sec: int = 3 * 3600,
-    leader_characters: Iterable[str] = (),
+    leader_characters: Mapping[str, str] | None = None,
     debug: bool = False,
 ) -> tuple[str | None, dict]:
     """Pick the best raid-helper event for one WCL report.
+
+    `leader_characters` maps a leader's WoW main character name to their Discord
+    leader id (events store it as data->>'leaderid'). The leader bonus is only
+    awarded to a candidate whose OWN leader has a main in the roster — a blanket
+    "some leader is present" bonus lifts unrelated parallel events over the
+    unmatched threshold (that's how a Piian log once got pinned to Ragz's event).
 
     Returns (raid_id_or_None, debug_info). debug_info always contains the score
     breakdown for the chosen candidate (and all candidates when debug=True).
@@ -125,12 +131,18 @@ def find_matching_event(
         return None, {"reason": "no_candidates_in_window"}
 
     roster_names = _roster_name_set(roster)
-    leader_chars_lower = {(n or "").lower() for n in leader_characters if n}
+    # Leader ids whose main character actually appears in this log's roster.
+    roster_leader_ids = {
+        str(lid)
+        for char, lid in (leader_characters or {}).items()
+        if char and lid and char.lower() in roster_names
+    }
 
     scored: list[tuple[float, dict, dict]] = []  # (score, candidate, breakdown)
 
     for cand in candidates:
-        signups = (cand.get("data") or {}).get("signups") or []
+        cand_data = cand.get("data") or {}
+        signups = cand_data.get("signups") or []
         signup_names = _signup_name_set(signups)
         overlap = _jaccard(roster_names, signup_names)
 
@@ -141,8 +153,9 @@ def find_matching_event(
             else 0.0
         )
 
-        leader_char_in_roster = bool(roster_names & leader_chars_lower)
-        leader_bonus = W_LEADER_CHAR if leader_char_in_roster else 0.0
+        cand_leader_id = str(cand_data.get("leaderid") or "")
+        leader_char_match = bool(cand_leader_id) and cand_leader_id in roster_leader_ids
+        leader_bonus = W_LEADER_CHAR if leader_char_match else 0.0
 
         size_diff = abs(len(roster_names) - len(signup_names))
         size_penalty = W_ROSTER_SIZE_BAD if size_diff > 12 else 0.0
@@ -157,7 +170,7 @@ def find_matching_event(
             "diff_match": ev_diff == wcl_difficulty if (ev_diff and wcl_difficulty) else None,
             "ev_diff": ev_diff,
             "wcl_diff": wcl_difficulty,
-            "leader_char_in_roster": leader_char_in_roster,
+            "leader_char_match": leader_char_match,
             "size_diff": size_diff,
             "delta_min": (start_unix_sec - cand["unixtime"]) // 60,
             "score": round(score, 2),
