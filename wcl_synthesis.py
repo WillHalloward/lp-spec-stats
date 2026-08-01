@@ -1,13 +1,15 @@
 """Synthesize raid-helper-shaped events from WCL reports to gap-fill missing data.
 
 Strategy:
-  1. Load gap-fill candidates: zone = "VS / DR / MQD", roster size 8-40, no pug in title,
-     no matching raid-helper event.
-  2. Pattern-match the title to a known LP raid leader (Ragz/Piian/Rezn0r/...) so the
-     synthesized event lands in the right series.
-  3. Bucket by hour-of-start; keep the fullest roster per bucket (dedup multiple uploads
-     of the same raid).
-  4. Emit JSON shaped like a raid-helper event so the frontend doesn't need a special case.
+  1. Load gap-fill candidates: LP raid zone, roster size 8-40, no pug/m+ in title,
+     no matching raid-helper event (auto or admin-forced).
+  2. Drop candidates that time-overlap an already-linked report with a mostly-shared
+     roster — those are extra logger uploads of a raid that is already on the site.
+  3. Pattern-match the title/roster to a known LP raid leader (Ragz/Piian/Rezn0r/...)
+     so the synthesized event lands in the right series; drop unidentifiable ones.
+  4. Cluster by (leader, time proximity); keep the fullest roster per cluster (dedup
+     multiple uploads of the same raid).
+  5. Emit JSON shaped like a raid-helper event so the frontend doesn't need a special case.
 """
 
 import re
@@ -531,6 +533,55 @@ def inject_ilvl(events: list[dict], ilvl_map: dict[str, dict[str, dict]]) -> Non
                 s["_ilvl_max"] = data["max"]
 
 
+# Fraction of the smaller roster that must appear in a time-overlapping linked
+# report for a gap-fill candidate to count as a duplicate upload of that raid.
+LINKED_DUP_MIN_SHARED = 0.5
+
+
+def _roster_names(roster: list[dict] | None) -> set[str]:
+    out = set()
+    for actor in roster or []:
+        name = (actor.get("name") or "").split("-", 1)[0].strip().casefold()
+        if name:
+            out.add(name)
+    return out
+
+
+def _drop_linked_duplicates(
+    conn: psycopg.Connection, rows: list[dict], linked_codes: list[str]
+) -> list[dict]:
+    """Filter out candidates whose time span overlaps an already-linked report
+    that shares ≥ LINKED_DUP_MIN_SHARED of the smaller roster."""
+    if not rows or not linked_codes:
+        return rows
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT start_time_ms, end_time_ms, roster FROM wcl_reports WHERE code = ANY(%s)",
+            (linked_codes,),
+        )
+        linked = [
+            (r["start_time_ms"], r["end_time_ms"], _roster_names(r["roster"]))
+            for r in cur.fetchall()
+            if r["start_time_ms"] and r["end_time_ms"]
+        ]
+
+    def is_dup(row: dict) -> bool:
+        names = _roster_names(row["roster"])
+        if not names:
+            return False
+        for l_start, l_end, l_names in linked:
+            if not l_names:
+                continue
+            if row["end_time_ms"] <= l_start or row["start_time_ms"] >= l_end:
+                continue
+            shared = len(names & l_names)
+            if shared >= LINKED_DUP_MIN_SHARED * min(len(names), len(l_names)):
+                return True
+        return False
+
+    return [r for r in rows if not is_dup(r)]
+
+
 def load_gap_fill_events(conn: psycopg.Connection) -> list[dict]:
     """Return synthesized event dicts for gap-fillable WCL reports."""
     # Exclude both hard-coded and admin-flagged codes, plus anything an admin
@@ -556,6 +607,14 @@ def load_gap_fill_events(conn: psycopg.Connection) -> list[dict]:
             (lp_zone_names(conn), SEASON_START_TS, excluded, forced_codes),
         )
         rows = cur.fetchall()
+
+    # Drop candidates that are just another logger's upload of a raid that is
+    # already on the site: if a report overlaps an already-linked report in time
+    # AND shares most of its roster, the raid-helper event exists and serving a
+    # synthesized copy would double-count every signup. Time overlap alone isn't
+    # enough — two leaders genuinely raid in parallel on the same evening — so
+    # the roster check is what distinguishes a duplicate from a concurrent raid.
+    rows = _drop_linked_duplicates(conn, rows, forced_codes)
 
     # Detect leader for each report up-front so we can cluster by (leader, time).
     # Two different leaders running back-to-back on the same evening are NOT the same raid.

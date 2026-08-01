@@ -52,8 +52,9 @@ FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"
 def api_events() -> JSONResponse:
     """All archived events, plus WCL gap-fill events for raids that were deleted from raid-helper.
 
-    Raid-helper events take precedence; WCL events are only added when no raid-helper
-    record exists in the same hour-bucket.
+    Raid-helper events take precedence; a WCL report that time-overlaps an
+    already-linked report with a mostly-shared roster is treated as a duplicate
+    upload of that raid and never synthesized (see wcl_synthesis).
     """
     if not os.environ.get("DATABASE_URL"):
         return JSONResponse({"events": [], "count": 0, "error": "DATABASE_URL not set"})
