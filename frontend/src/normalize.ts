@@ -210,7 +210,8 @@ const RAID_KEYWORDS = [
 function detectCategory(title: string): Event["category"] {
   const t = title.toLowerCase();
   if (t.includes("m+") || t.includes("mythic+") || t.includes("mythic plus")) return "M+";
-  if (t.includes("glory") || t.includes("achiev")) return "Achievement";
+  // achie?v also catches the "Achivement" typo that appears in real titles.
+  if (t.includes("glory") || /achie?v/.test(t)) return "Achievement";
   if (t.includes("mount run") || t.includes("mount raid")) return "Mount";
   return "Raid";
 }
