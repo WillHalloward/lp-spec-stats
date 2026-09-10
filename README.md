@@ -37,11 +37,14 @@ cross-referenced with Warcraft Logs reports, rendered as a single-page TypeScrip
   - `GET /api/event-kills` — per-event first kills (used for series-scoped timelines).
   - `GET /api/character-progression?names=A,B,C` — first kills for a character + alts.
   - `GET /admin` — admin page (HTML); `POST /api/admin/...` — override CRUD.
+  - `GET /reports` — index of one-off reports; `GET /reports/{slug}` serves one;
+    `GET /api/reports` — the same index as JSON.
   - `GET /health` — health + DB event count.
   - `GET /legacy` — old Plotly-rendered Python page, kept for comparison.
   - `GET /` — built TS frontend (mounted from `frontend/dist/`).
 - `admin.py` + `admin.html` — token-gated admin UI for `event_overrides` and
   `wcl_report_overrides` rows.
+- `reports.py` + `reports/` — one-off stat reports (see below).
 - `db.py` — Postgres schema + query helpers (`psycopg`, `dict_row`).
 - `migrate.py` — one-off bootstrap: loads any `cache/events/*.json` into Postgres.
 - `analyze.py` — legacy Plotly-rendered page (served at `/legacy`).
@@ -135,3 +138,33 @@ stage 2 is a Python 3.13 slim image with the built `frontend/dist/` stapled in.
 
 After deploy: the archiver fills the DB incrementally, the web service serves
 fresh stats. Visit `/admin` (token-gated) to correct any miscategorized events.
+
+## One-off reports
+
+`/reports` collects standalone stat pages that don't belong in the dashboard —
+a prog night, a single mechanic, a class breakdown, whatever was worth counting
+once. They are static, self-contained HTML: no API, no build step, nothing
+recomputed at request time, so a report stays exactly as it was written.
+
+To add one:
+
+1. Drop a self-contained `.html` file in `reports/` named `<slug>.html`
+   (all its CSS and JS inline; external scripts and fonts are fine).
+2. Add a row to `reports/index.json`, newest first:
+
+   ```json
+   {
+     "slug": "ulatek-hc-prog-2026-09-10",
+     "title": "Ula'tek HC — the prog night in numbers",
+     "date": "2026-09-10",
+     "kind": "prog night",
+     "summary": "One line for the card on /reports.",
+     "source": "https://www.warcraftlogs.com/reports/..."
+   }
+   ```
+
+3. Commit. A row whose file is missing is skipped, so a half-finished entry
+   never 404s from the index.
+
+The pages are served verbatim at `/reports/<slug>`, so give each one a `<title>`
+and a link back to `/reports`.

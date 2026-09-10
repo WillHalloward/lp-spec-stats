@@ -37,6 +37,9 @@ renders ~20 chart cards across five sections.
 - `boss_progression.py` — boss kill/wipe aggregation and per-event first kills.
   `MIN_ATTEMPTS = 50` filters out M+ / non-LP encounters that leak into raid logs.
 - `character_progression.py` — first kills attributed to a character (or alt list).
+- `reports.py` — one-off report pages: reads `reports/index.json`, renders the
+  `/reports` index, serves `reports/<slug>.html` verbatim. Adding a report is a
+  file plus an index row — no code change, nothing generated at request time.
 - `serve.py` — FastAPI routes. The `StaticFiles` mount at `/` is last so
   named routes (`/api/*`, `/admin`, `/legacy`, `/health`) win.
 - `admin.py` + `admin.html` — token-gated overrides UI/API.

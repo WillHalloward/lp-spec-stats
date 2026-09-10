@@ -11,8 +11,26 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap"
     />
+    <style>
+      /* Site-wide nav. Lives here rather than in the app so it paints before
+         the dashboard has fetched anything. */
+      .topnav {
+        display: flex; gap: 4px; justify-content: center;
+        padding: 14px 24px 0; font-family: "Inter", system-ui, sans-serif; font-size: 13px;
+      }
+      .topnav a {
+        color: #8b95ad; text-decoration: none; padding: 6px 14px; border-radius: 999px;
+        letter-spacing: 0.04em; transition: color 150ms ease, background 150ms ease;
+      }
+      .topnav a:hover { color: #e6ebf5; background: #181f33; }
+      .topnav a.active { color: #e0a526; }
+    </style>
   </head>
   <body>
+    <nav class="topnav">
+      <a class="active" href="/">Dashboard</a>
+      <a href="/reports">Reports</a>
+    </nav>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

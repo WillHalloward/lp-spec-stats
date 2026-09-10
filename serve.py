@@ -4,6 +4,7 @@ Routes:
   GET /api/events       JSON list of every archived event (raw raid-helper payload).
   GET /health           Plain-text health + DB event count.
   GET /legacy           Old Python-rendered Plotly page (kept for comparison).
+  GET /reports          Index of one-off stat reports; /reports/{slug} serves one.
   GET /                 New TypeScript frontend (built into frontend/dist/).
 """
 
@@ -20,6 +21,7 @@ import analyze
 import boss_progression
 import character_progression
 import db
+import reports as reports_mod
 import wcl_synthesis
 
 
@@ -168,6 +170,28 @@ def api_bosses() -> JSONResponse:
         agg = boss_progression.aggregate(conn)
     agg["generated_at"] = datetime.now(timezone.utc).isoformat()
     return JSONResponse(agg)
+
+
+@app.get("/api/reports")
+def api_reports() -> JSONResponse:
+    """The one-off report index, for anything that wants to link them."""
+    return JSONResponse({"reports": reports_mod.load_index()})
+
+
+@app.get("/reports", response_class=HTMLResponse)
+def reports_index() -> HTMLResponse:
+    return HTMLResponse(reports_mod.index_page())
+
+
+@app.get("/reports/{slug}", response_class=HTMLResponse)
+def report(slug: str) -> HTMLResponse:
+    """Serve a report page verbatim. Each one is a frozen, self-contained file."""
+    path = reports_mod.report_file(slug)
+    if path is None:
+        return HTMLResponse(
+            '<p style="font-family:system-ui;padding:40px">No such report. '
+            '<a href="/reports">All reports</a></p>', status_code=404)
+    return HTMLResponse(path.read_text(encoding="utf-8"))
 
 
 @app.get("/health", response_class=PlainTextResponse)
