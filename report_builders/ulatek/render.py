@@ -171,19 +171,20 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "east_night_share": f"{sides.get('east',{}).get('night_share',0):.1f}",
         "split_clean_word": word(split.get("clean", 0)),
         "split_dead_word": word(len(split_rows) - split.get("clean", 0)),
+        # the phase is reported, not policed: one side ran short, and the page says
+        # which side and by how much rather than naming who walked the wrong way
         "mistake_sentence": (
-            f"pull {mistake['pull']}, {mistake['player']} went {mistake['went']} &mdash; all "
-            f"{mistake['samples']} position samples of that phase on the wrong side, leaving it "
-            f"{word(len(sides.get(mistake['went'],{}).get('members',[]))+1)} against "
-            f"{word(len(sides.get('east' if mistake['went']=='west' else 'west',{}).get('members',[]))-1)}, "
-            "and nobody swapped to balance it."
-            if mistake else "nobody stood on the wrong side all night."),
+            f"on pull {mistake['pull']} one player spent the phase on the {mistake['went']} side, "
+            f"leaving it {word(len(sides.get(mistake['went'],{}).get('members',[]))+1)} against "
+            f"{word(len(sides.get('east' if mistake['went']=='west' else 'west',{}).get('members',[]))-1)} "
+            "for its length."
+            if mistake else "both sides held their ten on every pull."),
         "crossings_sentence": (
-            f"{word(len(crossings))} other crossing{'s' if len(crossings)!=1 else ''} in the data ("
-            + names(f"{c['player']} on {c['pull']}" for c in crossings)
-            + ") are a handful of samples each in the opening seconds with the coordinate shrinking "
-              "toward zero: those are players running to their own side as the phase starts."
-            if crossings else "Nobody else strayed across the middle."),
+            f"{word(len(crossings))} other crossing{'s' if len(crossings)!=1 else ''} in the data "
+            "{}".format("is" if len(crossings) == 1 else "are")
+            + " a handful of samples each in the opening seconds with the coordinate shrinking "
+              "toward zero, which is what running to your own side looks like as the phase starts."
+            if crossings else "Every other sample sits on its own side."),
         "maxdur": P["dtps"]["maxdur"],
         "n_nontank": len(P["dtps"]["players"]), "tank_names": names(P["dtps"]["tanks"]),
         "raid_reduced": round(100 * dt_tot["reduced"] / dt_inc),

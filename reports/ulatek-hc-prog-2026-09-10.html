@@ -238,7 +238,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <p>Everything a player put out across the 559 seconds of exposure &mdash; the solid part of the bar onto the heart at double damage, the rest into Ula'tek herself &mdash; next to their share of the raid's damage across the whole night. The delta is the honest read on burst: positive means they bring more to the window than their ordinary output would suggest.</p></div>
   <figure>
     <svg id="c-heart" viewBox="0 0 900 520" role="img" aria-label="Damage to the Venomous Heart by player"></svg>
-    <figcaption>Bars are total burn damage, heart first then Ula&#39;tek; the number beside each is damage per second of exposure. Iamstabby keeps 86% of theirs on the heart, Yuumyum and Rutalina only 69%.</figcaption>
+    <figcaption>Bars are total burn damage, heart first then Ula&#39;tek; the number beside each is damage per second of exposure. Heart share across the damage dealers runs from 86% down to 69%.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-heart"><thead><tr>
     <th>Player</th><th>Spec</th><th>Burn damage</th><th>Heart</th><th>Ula&#39;tek</th><th>On heart</th><th>Burn DPS</th><th>Share</th><th>Night share</th><th>&Delta;</th></tr></thead><tbody></tbody></table></div>
@@ -246,7 +246,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>Caustic Waves</h2>
-  <p>414 waves went out; 133 of them clipped somebody, and 17 of those hits killed. Tank contacts are the cost of holding Ula'tek in melee &mdash; the 89 non-tank hits are the ones worth arguing about, and they cluster on the same handful of names.</p></div>
+  <p>414 waves went out; 133 of them clipped somebody, and 17 of those hits killed. Tank contacts are the cost of holding Ula'tek in melee; the other 89 are the avoidable ones.</p></div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>hits taken</span><span><i style="background:var(--crit)"></i>hits that killed</span><span class="chip">hatched = tank</span></div>
     <svg id="c-waves" viewBox="0 0 900 520" role="img" aria-label="Caustic Waves hits taken by player"></svg>
@@ -288,7 +288,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <div class="tblwrap"><table id="t-split"><thead><tr>
     <th>Pull</th><th>Phase</th><th>West DPS</th><th>East DPS</th><th>West HPS</th><th>East HPS</th><th>West back (median)</th><th>East back (median)</th><th>Boss back</th><th>Deaths W/E</th></tr></thead><tbody></tbody></table></div>
   <div class="note">
-    <p><b>The one mistake:</b> pull 12, Yuumyum went west &mdash; all 63 position samples of that phase on the wrong side, leaving it eleven against nine, and nobody swapped to balance it. Nobody else strayed across the middle.</p>
+    <p><b>Where the split broke:</b> on pull 12 one player spent the phase on the west side, leaving it eleven against nine for its length. Every other sample sits on its own side.</p>
     <p><b>Sides are read from position, not assignment:</b> every cast event carries the caster&#39;s coordinates, so each player&#39;s median x while the two clusters are apart says which side they stood on. West and east are the log&#39;s axis, not the screen &mdash; west is whichever side Backtospawn tanks.</p>
   </div>
 </section>
@@ -322,11 +322,11 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     <figcaption>Share of the 121 heavy spans in which the player used at least one major personal cooldown. Labels give the raw count of majors used in heavy spans, out of everything they pressed all night.</figcaption>
   </figure>
   <div class="note">
-    <p><b>Two readings to take with salt.</b> Throatclogga leans on short-cooldown mitigation rather than saves &mdash; 571 casts of Purifying Brew, which does not count as a major cooldown here. Backtospawn is the opposite case: 194 majors is a Blood rotation. The names to look at are the ones with a full kit and a low bar: Ragonzsham, Iylenvur and Ziekil.</p>
+    <p><b>Two bars that don&#39;t mean what they look like.</b> The Brewmaster bar sits low because that spec mitigates with a short cooldown rather than a saved one &mdash; 571 casts of Purifying Brew, which is not a major by this count. The Blood bar is the opposite: 194 majors is a rotation, not 194 saves. Between those two the bar means what it says.</p>
   </div>
 
   <div class="head" style="border:0;padding-top:8px"><h3>Healthstones &amp; health potions</h3>
-  <p>190 healthstones and 133 health potions went down across 21 pulls &mdash; and they went down late rather than early: 203 of the 323 at under 40% health, 66 of those under 20%, with only 16 above 80%. Average 37%, median 35%. Four never touched a healthstone at all (Bl&#224;dee, Friedchicken, Ragonzsham and Sulul). The potion count is every health potion on the shared cooldown: 95 Concentrated Silvermoon Health Potion, 30 Silvermoon Health Potion and 8 Potent Healing Potion; the stones are 127 Healthstone and 63 Demonic Healthstone.</p></div>
+  <p>190 healthstones and 133 health potions went down across 21 pulls &mdash; and they went down late rather than early: 203 of the 323 at under 40% health, 66 of those under 20%, 16 above 80%. Average 37%, median 35%. Four of the roster used no healthstone at all; the chart marks them. The potion count is every health potion on the shared cooldown: 95 Concentrated Silvermoon Health Potion, 30 Silvermoon Health Potion and 8 Potent Healing Potion; the stones are 127 Healthstone and 63 Demonic Healthstone.</p></div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>healthstones</span><span><i style="background:var(--s2)"></i>health potions</span><span><i style="background:var(--muted)"></i>average health when used</span><span><i style="background:var(--crit)"></i>under 25% &mdash; cutting it fine</span></div>
     <svg id="c-consum" viewBox="0 0 900 520" role="img" aria-label="Healthstone and health potion use per player"></svg>
@@ -658,7 +658,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
         ${s==='west'?'West':'East'} <span class="muted">&mdash; ${d.members.length} players</span></div>
       <ul>${d.members.map(p=>`<li><span class="role">${ROLE[X.roles[p]]}</span> ${p}
         <span class="muted">${X.spec[p]} ${X.cls[p]}</span>
-        ${X.iso_by_player[p]?`<span class="muted">&middot; ${X.iso_by_player[p]} death${X.iso_by_player[p]>1?'s':''} out there</span>`:''}</li>`).join('')}</ul>
+</li>`).join('')}</ul>
     </div>`;}).join('');
 
   const w=X.sides.west, e=X.sides.east;
