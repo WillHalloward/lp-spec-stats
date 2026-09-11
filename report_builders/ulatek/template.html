@@ -235,7 +235,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>Left and right</h2>
-  <p>Ten seconds after the first heart closes, the raid splits: two fixed tens, one to each side of the platform, thousands of units apart in the log's coordinates and unmistakable in the position data. The phase opens at {{split_start_lo}}&ndash;{{split_start_hi}}s on every pull and runs {{split_dur_lo}} to {{split_dur_hi}} seconds, and the boss cannot be touched until about {{boss_back_avg}}s into it &mdash; which is the only deadline that matters for getting back. Each half carries one tank and two healers, and the same {{raiders_word}} names went to the same two sides on all {{split_pulls_word}} pulls that got there.</p></div>
+  <p>Ten seconds after the first heart closes, the raid splits: two fixed tens, one to each side of the platform, thousands of units apart in the log's coordinates and unmistakable in the position data. The phase opens at {{split_start_lo}}&ndash;{{split_start_hi}}s on every pull and runs {{split_dur_lo}} to {{split_dur_hi}} seconds, and the boss cannot be touched until about {{boss_back_avg}}s into it &mdash; which is the only deadline that matters for getting back. Each half carries one tank and two healers, and the same {{raiders_word}} names went to the same two sides on all {{split_pulls_word}} pulls that got there. Deaths out there are listed per player: that is the list to read when deciding who needs an external or a cooldown call.</p></div>
   <div class="teams" id="split-teams"></div>
   <div class="tiles" id="split-tiles"></div>
   <figure>
@@ -635,7 +635,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
         ${s==='west'?'West':'East'} <span class="muted">&mdash; ${d.members.length} players</span></div>
       <ul>${d.members.map(p=>`<li><span class="role">${ROLE[X.roles[p]]}</span> ${p}
         <span class="muted">${X.spec[p]} ${X.cls[p]}</span>
-</li>`).join('')}</ul>
+        ${X.iso_by_player[p]?`<span class="muted" title="deaths in the split phase, outside the closing wipe">&middot; died ${X.iso_by_player[p]}\u00d7 out there</span>`:''}</li>`).join('')}</ul>
     </div>`;}).join('');
 
   const w=X.sides.west, e=X.sides.east;
