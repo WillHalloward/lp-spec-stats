@@ -695,6 +695,9 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     const vals=P.flatMap(p=>[p.west.first,p.east.first,p.west.last,p.east.last,p.boss_again].filter(v=>v!=null));
     const lo=Math.floor((Math.min(...vals)-3)/5)*5, hi=Math.max(...vals)+3;
     const x=v=>L+(v-lo)/(hi-lo)*(W-L-R);
+    /* band every other pull so a pair of bars reads as one row */
+    P.forEach((p,i)=>{if(i%2) mk(s,'rect',{x:0,y:T+i*rh,width:W,height:rh,
+      fill:'var(--surface-2)',opacity:.7});});
     for(let v=lo;v<=hi;v+=5){mk(s,'line',{x1:x(v),x2:x(v),y1:T,y2:H-B,stroke:'var(--grid)','stroke-width':1});
       txt(s,x(v),H-B+16,v+'s',{anchor:'middle',size:10});}
     P.forEach((p,i)=>{
@@ -707,7 +710,8 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
           fill:COL[side],rx:2});
         hook(r,`<b>Pull ${p.pull} &middot; ${side}</b><br>first back +${d.first}s, median +${d.back}s, last +${d.last}s`+
           (d.slack!=null?`<br>${d.slack>=0?`${d.slack}s to spare`:`${Math.abs(d.slack)}s late`}`:''));
-        mk(s,'line',{x1:x(d.back),x2:x(d.back),y1:top-2,y2:top+bh+2,stroke:'var(--surface)','stroke-width':2});});
+        mk(s,'line',{x1:x(d.back),x2:x(d.back),y1:top-2,y2:top+bh+2,
+          stroke:i%2?'var(--surface-2)':'var(--surface)','stroke-width':2});});
       if(p.boss_again!=null){
         const r=mk(s,'line',{x1:x(p.boss_again),x2:x(p.boss_again),y1:yy-rh/2+2,y2:yy+rh/2-2,
           stroke:'var(--crit)','stroke-width':2});
