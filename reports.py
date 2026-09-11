@@ -83,8 +83,12 @@ header h1{{font-family:"Cinzel","Inter",serif;font-weight:600;font-size:38px;let
 header .underline{{display:block;width:80px;height:2px;margin:0 auto 20px;
   background:linear-gradient(90deg,transparent,var(--gold),transparent)}}
 header .sub{{color:var(--text-muted);font-size:14px;letter-spacing:.04em}}
-a.back{{color:var(--text-muted);text-decoration:none;font-size:13px}}
-a.back:hover{{color:var(--gold)}}
+.topnav{{display:flex;gap:4px;justify-content:center;padding:14px 24px 0;font-size:13px}}
+.topnav a{{color:var(--text-muted);text-decoration:none;padding:6px 14px;border-radius:999px;
+  letter-spacing:.04em;transition:color .15s ease,background .15s ease}}
+.topnav a:hover{{color:var(--text);background:var(--surface-2)}}
+.topnav a.active{{color:var(--gold)}}
+.topnav a:focus-visible{{outline:2px solid var(--gold);outline-offset:2px}}
 .list{{display:flex;flex-direction:column;gap:14px}}
 a.report{{display:block;text-decoration:none;color:inherit;background:var(--surface);
   border:1px solid var(--border-soft);border-radius:14px;padding:22px 24px;transition:border-color .2s,transform .2s}}
@@ -99,12 +103,15 @@ footer{{margin-top:48px;text-align:center;color:var(--text-muted);font-size:12px
 </style>
 </head>
 <body>
+<nav class="topnav">
+  <a href="/">Dashboard</a>
+  <a class="active" href="/reports" aria-current="page">Reports</a>
+</nav>
 <div class="wrap">
   <header>
     <h1>Reports</h1>
     <span class="underline"></span>
     <div class="sub">One-off digs through the logs &mdash; prog nights, mechanics, whatever was worth counting</div>
-    <div style="margin-top:14px"><a class="back" href="/">&larr; back to the dashboard</a></div>
   </header>
   <div class="list">{cards}</div>
   <footer>Low Pressure</footer>
