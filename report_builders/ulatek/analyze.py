@@ -515,7 +515,7 @@ class Analysis:
                 back = [t for t, x in pts if t > max(far) and abs(x) < CENTRE]
                 if back:
                     ret.setdefault(team.get(p), []).append(min(back))
-            side_ret = {s: {"median": statistics.median(v), "last": max(v)}
+            side_ret = {s: {"first": min(v), "median": statistics.median(v), "last": max(v)}
                         for s, v in ret.items() if s and len(v) >= 4}
             for p, xs in v["x"].items():
                 mine = team.get(p)
@@ -648,6 +648,7 @@ class Analysis:
                 ret = r["ret"].get(s)
                 row[s] = {"dps": r["agg"][s]["dmg"] / r["dur"], "hps": r["agg"][s]["heal"] / r["dur"],
                           "deaths": r["agg"][s]["deaths"],
+                          "first": round(ret["first"] - r["window"][0], 1) if ret else None,
                           "back": round(ret["median"] - r["window"][0], 1) if ret else None,
                           "last": round(ret["last"] - r["window"][0], 1) if ret else None}
                 if row[s]["last"] is not None and row["boss_again"] is not None:

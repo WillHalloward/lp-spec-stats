@@ -243,9 +243,9 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     <figcaption>Damage per second inside the phase. East carries {{east_night_share}}% of the night&#39;s damage and {{east_phase_share}}% of the phase&#39;s.</figcaption>
   </figure>
   <figure>
-    <div class="legend"><span><i style="background:var(--s1)"></i>west, last one back</span><span><i style="background:var(--s2)"></i>east, last one back</span><span><i style="background:var(--crit)"></i>boss takes damage again</span></div>
-    <svg id="c-split-back" viewBox="0 0 900 300" role="img" aria-label="When each side's last player returned, against the moment the boss became targetable"></svg>
-    <figcaption>When each side's last player got back, measured from the start of the phase, against the red mark where the boss starts taking damage again. Everything left of the mark is free: being back early buys nothing. Only the {{split_clean_word}} pulls where both sides walked back at all; on the other {{split_dead_word}} the raid died out there.</figcaption>
+    <div class="legend"><span><i style="background:var(--s1)"></i>west, first to last back</span><span><i style="background:var(--s2)"></i>east, first to last back</span><span><i style="background:var(--crit)"></i>boss takes damage again</span></div>
+    <svg id="c-split-back" viewBox="0 0 900 320" role="img" aria-label="When each side's last player returned, against the moment the boss became targetable"></svg>
+    <figcaption>Each bar runs from the first player of that side back in the middle to the last, notched at the median, against the red mark where the boss starts taking damage again. Only the last one matters for the deadline. Everything left of the mark is free: being back early buys nothing. Only the {{split_clean_word}} pulls where both sides walked back at all; on the other {{split_dead_word}} the raid died out there.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-split"><thead><tr>
     <th>Pull</th><th>Phase</th><th>West DPS</th><th>East DPS</th><th>West HPS</th><th>East HPS</th><th>West back</th><th>East back</th><th>Boss back</th><th>Deaths W/E</th></tr></thead><tbody></tbody></table></div>
@@ -649,26 +649,27 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
 
   /* return to the middle, against the moment the boss can be hit again */
   (function(){
-    const s=document.getElementById('c-split-back'),W=900,H=300,L=72,R=132,T=18,B=34;
+    const s=document.getElementById('c-split-back'),W=900,H=320,L=72,R=132,T=18,B=34;
     const P=X.pulls.filter(p=>p.west.last!=null&&p.east.last!=null);
-    const rh=(H-T-B)/P.length;
+    const rh=(H-T-B)/P.length, bh=7, gap=3;
     /* every return lands in a narrow band; an axis from zero would be mostly empty,
        so it starts below the earliest one and says so. */
-    const vals=P.flatMap(p=>[p.west.last,p.east.last,p.boss_again].filter(v=>v!=null));
-    const lo=Math.floor((Math.min(...vals)-4)/5)*5, hi=Math.max(...vals)+3;
+    const vals=P.flatMap(p=>[p.west.first,p.east.first,p.west.last,p.east.last,p.boss_again].filter(v=>v!=null));
+    const lo=Math.floor((Math.min(...vals)-3)/5)*5, hi=Math.max(...vals)+3;
     const x=v=>L+(v-lo)/(hi-lo)*(W-L-R);
     for(let v=lo;v<=hi;v+=5){mk(s,'line',{x1:x(v),x2:x(v),y1:T,y2:H-B,stroke:'var(--grid)','stroke-width':1});
       txt(s,x(v),H-B+16,v+'s',{anchor:'middle',size:10});}
     P.forEach((p,i)=>{
       const yy=T+i*rh+rh/2;
       txt(s,L-10,yy+4,'pull '+p.pull,{anchor:'end',fill:'var(--ink)',size:11});
-      mk(s,'line',{x1:x(Math.min(p.west.last,p.east.last)),x2:x(Math.max(p.west.last,p.east.last)),
-        y1:yy,y2:yy,stroke:'var(--rule)','stroke-width':2});
-      ['west','east'].forEach(side=>{
-        const c=mk(s,'circle',{cx:x(p[side].last),cy:yy,r:5,fill:COL[side],stroke:'var(--surface)','stroke-width':2});
-        hook(c,`<b>Pull ${p.pull} &middot; ${side}</b><br>last one back at +${p[side].last}s`+
-          `<br>median back at +${p[side].back}s`+
-          (p[side].slack!=null?`<br>${p[side].slack>=0?`${p[side].slack}s to spare`:`${Math.abs(p[side].slack)}s late`}`:''));});
+      ['west','east'].forEach((side,k)=>{
+        const d=p[side], top=yy-(bh+gap)/2-bh/2+k*(bh+gap);
+        /* the spread from the first player back to the last, median notched in */
+        const r=mk(s,'rect',{x:x(d.first),y:top,width:Math.max(3,x(d.last)-x(d.first)),height:bh,
+          fill:COL[side],rx:2});
+        hook(r,`<b>Pull ${p.pull} &middot; ${side}</b><br>first back +${d.first}s, median +${d.back}s, last +${d.last}s`+
+          (d.slack!=null?`<br>${d.slack>=0?`${d.slack}s to spare`:`${Math.abs(d.slack)}s late`}`:''));
+        mk(s,'line',{x1:x(d.back),x2:x(d.back),y1:top-2,y2:top+bh+2,stroke:'var(--surface)','stroke-width':2});});
       if(p.boss_again!=null){
         const r=mk(s,'line',{x1:x(p.boss_again),x2:x(p.boss_again),y1:yy-rh/2+2,y2:yy+rh/2-2,
           stroke:'var(--crit)','stroke-width':2});
