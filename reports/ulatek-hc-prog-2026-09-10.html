@@ -191,17 +191,17 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>The burn windows</h2>
-  <p>Rage of the Shackled exposed the Venomous Heart 28 times across the night, always for the full 20 seconds &mdash; the raid never lost a window early. Everything the raid puts out in those 20 seconds counts, because the boss stays cleavable: the heart takes double damage, Ula&#39;tek herself takes normal damage, and both are part of the burn. Across the night that split is 77% heart, 23% cleave. First windows landed 207.2M on average, second windows 137.6M. That 35% gap is mostly bought, not earned: Heroism or Time Warp went out 5 to 18 seconds before the first exposure on every pull that reached one, and nothing is up for the second. A player&#39;s own drop is only worth reading against the raid&#39;s, which is what the table further down does.</p></div>
+  <p>Rage of the Shackled exposed the Venomous Heart 28 times across the night, always for the full 20 seconds &mdash; the raid never lost a window early. Everything the raid puts out in those 20 seconds counts, because the boss stays cleavable: the heart takes double damage, Ula&#39;tek herself takes normal damage, and both are part of the burn. Across the night that split is 77% heart, 23% boss. First windows landed 207.2M on average, second windows 137.6M. That 35% gap is mostly bought, not earned: Heroism or Time Warp went out 5 to 18 seconds before the first exposure on every pull that reached one, and nothing is up for the second. A player&#39;s own drop is only worth reading against the raid&#39;s, which is what the table further down does.</p></div>
   <figure>
-    <div class="legend"><span><i style="background:var(--s1)"></i>window 1 &mdash; heart</span><span><i style="background:var(--s1);opacity:.45"></i>window 1 &mdash; cleave</span><span><i style="background:var(--s2)"></i>window 2 &mdash; heart</span><span><i style="background:var(--s2);opacity:.45"></i>window 2 &mdash; cleave</span></span></div>
+    <div class="legend"><span><i style="background:var(--s1)"></i>window 1 &mdash; heart</span><span><i style="background:var(--s1);opacity:.45"></i>window 1 &mdash; Ula&#39;tek</span><span><i style="background:var(--s2)"></i>window 2 &mdash; heart</span><span><i style="background:var(--s2);opacity:.45"></i>window 2 &mdash; Ula&#39;tek</span></span></div>
     <svg id="c-windows" viewBox="0 0 900 300" role="img" aria-label="Damage to the Venomous Heart per exposure window per pull"></svg>
-    <figcaption>Damage in millions per 20-second exposure. The solid part of each bar landed on the heart, the pale part on Ula&#39;tek.</figcaption>
+    <figcaption>Damage in millions per 20-second exposure. The solid part of each bar landed on the heart, the pale part on Ula&#39;tek herself. Adds are not counted in either &mdash; they die to splash and are not the target that matters here.</figcaption>
   </figure>
 </section>
 
 <section>
   <div class="head"><h2>Inside the window</h2>
-  <p>A running total of burn damage &mdash; heart plus cleave onto Ula&#39;tek &mdash; second by second, window&nbsp;1 then window&nbsp;2 laid end to end. The target switch splits it apart when you want one or the other. Pick a pull and any number of players: the slope is output, and the gap between lines at any second is who is actually ahead. Switch the running total to reset at each window to compare a player&#39;s first burn against their second &mdash; remembering that window 1 carries the lust.</p></div>
+  <p>A running total of burn damage &mdash; the heart plus Ula&#39;tek herself &mdash; second by second, window&nbsp;1 then window&nbsp;2 laid end to end. The target switch splits it apart when you want one or the other. Pick a pull and any number of players: the slope is output, and the gap between lines at any second is who is actually ahead. Switch the running total to reset at each window to compare a player&#39;s first burn against their second &mdash; remembering that window 1 carries the lust.</p></div>
   <div class="controls">
     <label class="ctl"><span class="lab">Pull</span>
       <select id="pull-sel"></select></label>
@@ -225,13 +225,13 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 </section>
 <section>
   <div class="head"><h2>Who burns the window</h2>
-  <p>Everything a player put out across the 559 seconds of exposure &mdash; the solid part of the bar onto the heart at double damage, the rest cleaved into Ula'tek &mdash; next to their share of the raid's damage across the whole night. The delta is the honest read on burst: positive means they bring more to the window than their ordinary output would suggest.</p></div>
+  <p>Everything a player put out across the 559 seconds of exposure &mdash; the solid part of the bar onto the heart at double damage, the rest into Ula'tek herself &mdash; next to their share of the raid's damage across the whole night. The delta is the honest read on burst: positive means they bring more to the window than their ordinary output would suggest.</p></div>
   <figure>
     <svg id="c-heart" viewBox="0 0 900 520" role="img" aria-label="Damage to the Venomous Heart by player"></svg>
-    <figcaption>Bars are total burn damage, heart first then cleave; the number beside each is damage per second of exposure. Iamstabby keeps 86% of his on the heart, Yuumyum and Rutalina only 69%.</figcaption>
+    <figcaption>Bars are total burn damage, heart first then Ula&#39;tek; the number beside each is damage per second of exposure. Iamstabby keeps 86% of his on the heart, Yuumyum and Rutalina only 69%.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-heart"><thead><tr>
-    <th>Player</th><th>Spec</th><th>Burn damage</th><th>Heart</th><th>Cleave</th><th>On heart</th><th>Burn DPS</th><th>Share</th><th>Night share</th><th>&Delta;</th></tr></thead><tbody></tbody></table></div>
+    <th>Player</th><th>Spec</th><th>Burn damage</th><th>Heart</th><th>Ula&#39;tek</th><th>On heart</th><th>Burn DPS</th><th>Share</th><th>Night share</th><th>&Delta;</th></tr></thead><tbody></tbody></table></div>
 </section>
 
 <section>
@@ -353,7 +353,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
 })();
 
-/* chart 2 - burn windows, heart and cleave stacked */
+/* chart 2 - burn windows, heart and boss stacked */
 (function(){
   const s=document.getElementById('c-windows'),W=900,H=300,L=48,R=10,T=14,B=34;
   const f=D.fights.filter(d=>d.n_windows>0), n=f.length, iw=(W-L-R)/n, bw=Math.min(13,(iw-8)/2);
@@ -364,12 +364,12 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     d.window_dmg.forEach((v,k)=>{
       const x=L+i*iw+(iw-(bw*2+2))/2+k*(bw+2);
       const heart=d.window_heart[k], boss=d.window_boss[k], col=k?'var(--s2)':'var(--s1)';
-      /* heart sits on the baseline, cleave rides on top in the same hue, lighter */
+      /* heart sits on the baseline, Ula\u2019tek rides on top in the same hue, lighter */
       const hy=y(heart), hh=y(0)-hy;
       const by=y(v), bh=hy-by-2;
       const r1=mk(s,'rect',{x,y:hy,width:bw,height:hh,fill:col,rx:2});
       const tipTxt=`<b>Pull ${d.pull}, window ${k+1}</b><br>${fmtM(v)} in ${d.window_dur[k]}s`+
-        `<br>heart ${fmtM(heart)} (${Math.round(100*heart/v)}%)<br>cleave ${fmtM(boss)}`+
+        `<br>heart ${fmtM(heart)} (${Math.round(100*heart/v)}%)<br>Ula\u2019tek ${fmtM(boss)}`+
         `<br>${(v/d.window_dur[k]/1e6).toFixed(2)}M raid DPS`;
       hook(r1,tipTxt);
       if(bh>0){const r2=mk(s,'rect',{x,y:by,width:bw,height:bh,fill:col,opacity:.45,rx:2}); hook(r2,tipTxt);}});
@@ -377,7 +377,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
 })();
 
-/* chart 3 - burn leaderboard, heart and cleave stacked */
+/* chart 3 - burn leaderboard, heart and boss stacked */
 (function(){
   const s=document.getElementById('c-heart'),W=900,L=150,R=150,T=8;
   const p=[...D.players].sort((a,b)=>b.burn_dmg-a.burn_dmg), rh=24, H=T+p.length*rh+20;
@@ -387,7 +387,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     const yy=T+i*rh, bh=15, xh=x(d.heart_dmg), xb=x(d.burn_dmg);
     const tipTxt=`<b>${d.player}</b> &middot; ${d.spec} ${d.class}<br>`+
       `${d.burn_dmg.toLocaleString()} in the windows<br>`+
-      `heart ${fmtM(d.heart_dmg)} (${d.heart_pct}%) &middot; cleave ${fmtM(d.boss_dmg)}<br>`+
+      `heart ${fmtM(d.heart_dmg)} (${d.heart_pct}%) &middot; Ula\u2019tek ${fmtM(d.boss_dmg)}<br>`+
       `${d.burn_share}% of the raid's burn damage<br>`+
       `${d.overall_share}% of night damage (&Delta; ${d.delta>0?'+':''}${d.delta})`;
     const r1=mk(s,'rect',{x:L,y:yy,width:Math.max(2,xh-L),height:bh,fill:'var(--s1)',rx:2});
@@ -449,7 +449,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     b.addEventListener('click',()=>{reset=v;render();});
     modeBox.appendChild(b);});
   const srcBox=document.getElementById('src-ctl');
-  [['burn','heart + cleave'],['heart','heart only'],['boss','cleave only']].forEach(([v,l])=>{
+  [['burn','heart + Ula\u2019tek'],['heart','heart only'],['boss','Ula\u2019tek only']].forEach(([v,l])=>{
     const b=document.createElement('button');b.type='button';b.className='seg';b.textContent=l;
     b.dataset.v=v;
     b.addEventListener('click',()=>{src=v;render();});
@@ -539,7 +539,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
         const sp=splitAt(d.p,i);
         return `<span style="color:${d.c}">&#9632;</span> ${ROLE[d.d.role]} ${d.p} <b>${fmtM(d.cum[i])}</b>`+
           ` <span style="opacity:.6">+${fmtM(d.per[i])}`+
-          (src==='burn'?` (heart ${fmtM(sp.h)}, cleave ${fmtM(sp.b)})`:'')+`</span>`;}).join('<br>');
+          (src==='burn'?` (heart ${fmtM(sp.h)}, Ula\u2019tek ${fmtM(sp.b)})`:'')+`</span>`;}).join('<br>');
       const more=data.length-shown.length;
       cross.setAttribute('x1',x(i));cross.setAttribute('x2',x(i));cross.setAttribute('opacity',.5);
       tip.innerHTML=`<b>Window ${i<20?1:2}, ${i%20+1}s in</b><br>${rows||'no players selected'}`+
@@ -554,7 +554,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
         stroke="${d.c}" stroke-width="2.2" stroke-linecap="round"${d.dash?` stroke-dasharray="${d.dash}"`:''}></line></svg>
         ${d.p} <span class="role">${ROLE[d.d.role]}</span></span>`).join('')||'<span>pick a player below</span>';
     const f=fightsBy[pull];
-    const what=src==='heart'?'heart only':src==='boss'?'cleave onto Ula\u2019tek only':'heart plus cleave';
+    const what=src==='heart'?'the heart only':src==='boss'?'Ula\u2019tek only':'heart plus Ula\u2019tek';
     document.getElementById('win-cap').textContent=
       `Pull ${pull}: ${f.dur}s long, wiped at ${f.boss_pct.toFixed(2)}%, `+
       `${f.window_dmg.map(v=>(v/1e6).toFixed(1)+'M').join(' then ')} in the windows. Showing ${what}. `+
