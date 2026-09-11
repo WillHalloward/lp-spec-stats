@@ -160,6 +160,9 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "split_dur_lo": min(phase_durs) if phase_durs else 0,
         "split_dur_hi": max(phase_durs) if phase_durs else 0,
         "split_pulls_word": word(len(split_rows)),
+        "boss_back_avg": (round(statistics.median([r["boss_again"] for r in split_rows
+                                                   if r.get("boss_again") is not None]))
+                          if any(r.get("boss_again") is not None for r in split_rows) else 0),
         "split_size": len(sides.get("west", {}).get("members", [])),
         "split_size_word": word(len(sides.get("west", {}).get("members", []))),
         "west_tank": west_tank, "east_tank": east_tank,

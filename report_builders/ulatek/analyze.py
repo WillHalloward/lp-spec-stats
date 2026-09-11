@@ -493,6 +493,18 @@ class Analysis:
                 if last - d["timestamp"] > EARLY_DEATH:
                     agg[s]["iso"] += 1
                     iso_players[self.player_of(d["targetID"])] += 1
+            # the boss is untargetable through the phase; the first hit on it
+            # afterwards is the moment being back actually starts to matter
+            boss_again = None
+            for tid in self.boss_ids:
+                evs = self.f.events(f"bossafter_{fid}_{tid}", fid, "DamageDone",
+                                    start=start_ms, end=self.fight[fid]["endTime"], target_id=tid)
+                for e in evs:
+                    t = self.rel(fid, e["timestamp"])
+                    if t > win[1] - 5 and (boss_again is None or t < boss_again):
+                        boss_again = t
+                        break
+
             # when each side walked back to the middle
             ret = {}
             for p, pts in tracks[fid].items():
@@ -511,7 +523,8 @@ class Analysis:
                     wrong.append({"pull": fid, "player": p, "went": "west" if statistics.median(xs) < 0 else "east",
                                   "samples": len(xs)})
             rows.append({"pull": fid, "window": win, "dur": win[1] - win[0], "agg": agg,
-                         "ret": side_ret, "iso_players": dict(iso_players)})
+                         "ret": side_ret, "iso_players": dict(iso_players),
+                         "boss_again": boss_again})
         return {"team": team, "rows": rows, "wrong": wrong,
                 "phases": {k: v for k, v in phases.items()}}
 
@@ -626,20 +639,27 @@ class Analysis:
                 "phase_share": 100 * t["dmg"] / phase_tot if phase_tot else 0,
             }
         pulls, first, gaps = [], {"west": 0, "east": 0}, []
+        late = {"west": 0, "east": 0}
         for r in split["rows"]:
-            row = {"pull": r["pull"], "start": r["window"][0], "dur": r["dur"]}
+            row = {"pull": r["pull"], "start": r["window"][0], "dur": r["dur"],
+                   "boss_again": (round(r["boss_again"] - r["window"][0], 1)
+                                  if r.get("boss_again") is not None else None)}
             for s in ("west", "east"):
                 ret = r["ret"].get(s)
                 row[s] = {"dps": r["agg"][s]["dmg"] / r["dur"], "hps": r["agg"][s]["heal"] / r["dur"],
                           "deaths": r["agg"][s]["deaths"],
                           "back": round(ret["median"] - r["window"][0], 1) if ret else None,
                           "last": round(ret["last"] - r["window"][0], 1) if ret else None}
+                if row[s]["last"] is not None and row["boss_again"] is not None:
+                    row[s]["slack"] = round(row["boss_again"] - row[s]["last"], 1)
+                    if row[s]["slack"] < 0:
+                        late[s] += 1
             if row["west"]["back"] is not None and row["east"]["back"] is not None:
                 gaps.append(row["west"]["back"] - row["east"]["back"])
                 first["west" if row["west"]["back"] < row["east"]["back"] else "east"] += 1
             pulls.append(row)
         mistake = max(split["wrong"], key=lambda w: w["samples"]) if split["wrong"] else None
-        return {"sides": sides, "pulls": pulls, "secs": secs, "first": first,
+        return {"sides": sides, "pulls": pulls, "secs": secs, "first": first, "late": late,
                 "median_gap": round(statistics.median(gaps), 1) if gaps else None,
                 "clean": len(gaps),
                 "roles": {p: self.role.get(p, "dps") for p in team},

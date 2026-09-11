@@ -234,7 +234,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>Left and right</h2>
-  <p>Ten seconds after the first heart closes, the raid splits: two fixed tens, one to each side of the platform, thousands of units apart in the log's coordinates and unmistakable in the position data. The phase opens at {{split_start_lo}}&ndash;{{split_start_hi}}s on every pull and runs {{split_dur_lo}} to {{split_dur_hi}} seconds. Each half carries one tank and two healers, and the same {{raiders_word}} names went to the same two sides on all {{split_pulls_word}} pulls that got there.</p></div>
+  <p>Ten seconds after the first heart closes, the raid splits: two fixed tens, one to each side of the platform, thousands of units apart in the log's coordinates and unmistakable in the position data. The phase opens at {{split_start_lo}}&ndash;{{split_start_hi}}s on every pull and runs {{split_dur_lo}} to {{split_dur_hi}} seconds, and the boss cannot be touched until about {{boss_back_avg}}s into it &mdash; which is the only deadline that matters for getting back. Each half carries one tank and two healers, and the same {{raiders_word}} names went to the same two sides on all {{split_pulls_word}} pulls that got there.</p></div>
   <div class="teams" id="split-teams"></div>
   <div class="tiles" id="split-tiles"></div>
   <figure>
@@ -243,11 +243,12 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     <figcaption>Damage per second inside the phase. East carries {{east_night_share}}% of the night&#39;s damage and {{east_phase_share}}% of the phase&#39;s.</figcaption>
   </figure>
   <figure>
-    <svg id="c-split-back" viewBox="0 0 900 300" role="img" aria-label="Seconds into the phase when each side returned to the middle"></svg>
-    <figcaption>When each side came back to the middle, measured from the start of the phase as the median of its ten. Every return falls in a 25-second band, so the axis starts there rather than at zero. Only the {{split_clean_word}} pulls where both sides walked back at all; on the other {{split_dead_word}} the raid died out there.</figcaption>
+    <div class="legend"><span><i style="background:var(--s1)"></i>west, last one back</span><span><i style="background:var(--s2)"></i>east, last one back</span><span><i style="background:var(--crit)"></i>boss takes damage again</span></div>
+    <svg id="c-split-back" viewBox="0 0 900 300" role="img" aria-label="When each side's last player returned, against the moment the boss became targetable"></svg>
+    <figcaption>When each side's last player got back, measured from the start of the phase, against the red mark where the boss starts taking damage again. Everything left of the mark is free: being back early buys nothing. Only the {{split_clean_word}} pulls where both sides walked back at all; on the other {{split_dead_word}} the raid died out there.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-split"><thead><tr>
-    <th>Pull</th><th>Phase</th><th>West DPS</th><th>East DPS</th><th>West HPS</th><th>East HPS</th><th>West back</th><th>East back</th><th>Deaths W/E</th></tr></thead><tbody></tbody></table></div>
+    <th>Pull</th><th>Phase</th><th>West DPS</th><th>East DPS</th><th>West HPS</th><th>East HPS</th><th>West back</th><th>East back</th><th>Boss back</th><th>Deaths W/E</th></tr></thead><tbody></tbody></table></div>
   <div class="note">
     <p><b>The one mistake:</b> {{mistake_sentence}} {{crossings_sentence}}</p>
     <p><b>Sides are read from position, not assignment:</b> every cast event carries the caster&#39;s coordinates, so each player&#39;s median x while the two clusters are apart says which side they stood on. West and east are the log&#39;s axis, not the screen &mdash; west is whichever side {{west_tank}} tanks.</p>
@@ -624,6 +625,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     [`${Math.round(w.reduced+w.absorbed)}<small>%</small> / ${Math.round(e.reduced+e.absorbed)}<small>%</small>`,'mitigated before it landed'],
     [`${w.iso_deaths} / ${e.iso_deaths}`,'deaths out there, wipes aside'],
     [`${X.first.west} <small>vs</small> ${X.first.east}`,'pulls back to the middle first'],
+    [`${X.late.west} <small>vs</small> ${X.late.east}`,'pulls back after the boss was'],
   ].map(([n,l])=>`<div class="tile"><span class="n">${n}</span><span class="lab">${l}</span></div>`).join('');
 
   /* per-pull dps */
@@ -645,28 +647,38 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
   })();
 
-  /* return to the middle */
+  /* return to the middle, against the moment the boss can be hit again */
   (function(){
-    const s=document.getElementById('c-split-back'),W=900,H=300,L=72,R=118,T=18,B=34;
-    const P=X.pulls.filter(p=>p.west.back!=null&&p.east.back!=null);
+    const s=document.getElementById('c-split-back'),W=900,H=300,L=72,R=132,T=18,B=34;
+    const P=X.pulls.filter(p=>p.west.last!=null&&p.east.last!=null);
     const rh=(H-T-B)/P.length;
-    /* every return lands in a 25-second band; an axis from zero would be 80% empty,
+    /* every return lands in a narrow band; an axis from zero would be mostly empty,
        so it starts below the earliest one and says so. */
-    const lo=Math.floor((Math.min(...P.flatMap(p=>[p.west.back,p.east.back]))-4)/5)*5;
-    const hi=Math.max(...P.flatMap(p=>[p.west.back,p.east.back]))+3;
+    const vals=P.flatMap(p=>[p.west.last,p.east.last,p.boss_again].filter(v=>v!=null));
+    const lo=Math.floor((Math.min(...vals)-4)/5)*5, hi=Math.max(...vals)+3;
     const x=v=>L+(v-lo)/(hi-lo)*(W-L-R);
     for(let v=lo;v<=hi;v+=5){mk(s,'line',{x1:x(v),x2:x(v),y1:T,y2:H-B,stroke:'var(--grid)','stroke-width':1});
       txt(s,x(v),H-B+16,v+'s',{anchor:'middle',size:10});}
     P.forEach((p,i)=>{
       const yy=T+i*rh+rh/2;
       txt(s,L-10,yy+4,'pull '+p.pull,{anchor:'end',fill:'var(--ink)',size:11});
-      mk(s,'line',{x1:x(Math.min(p.west.back,p.east.back)),x2:x(Math.max(p.west.back,p.east.back)),
+      mk(s,'line',{x1:x(Math.min(p.west.last,p.east.last)),x2:x(Math.max(p.west.last,p.east.last)),
         y1:yy,y2:yy,stroke:'var(--rule)','stroke-width':2});
       ['west','east'].forEach(side=>{
-        const c=mk(s,'circle',{cx:x(p[side].back),cy:yy,r:5,fill:COL[side],stroke:'var(--surface)','stroke-width':2});
-        hook(c,`<b>Pull ${p.pull} &middot; ${side}</b><br>median back at +${p[side].back}s<br>last one back at +${p[side].last}s`);});
-      const gap=(p.west.back-p.east.back);
-      txt(s,W-R+10,yy+4,`${gap<0?'west':'east'} by ${Math.abs(gap).toFixed(1)}s`,{size:10.5});});
+        const c=mk(s,'circle',{cx:x(p[side].last),cy:yy,r:5,fill:COL[side],stroke:'var(--surface)','stroke-width':2});
+        hook(c,`<b>Pull ${p.pull} &middot; ${side}</b><br>last one back at +${p[side].last}s`+
+          `<br>median back at +${p[side].back}s`+
+          (p[side].slack!=null?`<br>${p[side].slack>=0?`${p[side].slack}s to spare`:`${Math.abs(p[side].slack)}s late`}`:''));});
+      if(p.boss_again!=null){
+        const r=mk(s,'line',{x1:x(p.boss_again),x2:x(p.boss_again),y1:yy-rh/2+2,y2:yy+rh/2-2,
+          stroke:'var(--crit)','stroke-width':2});
+        hook(r,`<b>Pull ${p.pull}</b><br>the boss takes damage again at +${p.boss_again}s`);}
+      const lateSides=['west','east'].filter(sd=>p[sd].slack!=null&&p[sd].slack<0);
+      const label = p.boss_again==null ? 'boss never came back'
+        : lateSides.length===0 ? 'both in time'
+        : lateSides.length===2 ? `both late ${Math.abs(p.west.slack)}/${Math.abs(p.east.slack)}s`
+        : `${lateSides[0]} ${Math.abs(p[lateSides[0]].slack)}s late`;
+      txt(s,W-R+10,yy+4,label,{size:10.5,fill:lateSides.length?'var(--crit)':'var(--muted)'});});
     txt(s,L,T-6,'seconds into the phase (axis starts at '+lo+'s)',{size:10});
   })();
 
@@ -676,8 +688,9 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     tr.innerHTML=`<td>${p.pull}</td><td>${p.start}s +${p.dur}s</td>
       <td>${fmtM(p.west.dps)}</td><td>${fmtM(p.east.dps)}</td>
       <td>${fmtM(p.west.hps)}</td><td>${fmtM(p.east.hps)}</td>
-      <td>${p.west.back==null?'\u2014':'+'+p.west.back+'s'}</td>
-      <td>${p.east.back==null?'\u2014':'+'+p.east.back+'s'}</td>
+      <td class="${p.west.slack<0?'neg':''}">${p.west.last==null?'\u2014':'+'+p.west.last+'s'}</td>
+      <td class="${p.east.slack<0?'neg':''}">${p.east.last==null?'\u2014':'+'+p.east.last+'s'}</td>
+      <td>${p.boss_again==null?'\u2014':'+'+p.boss_again+'s'}</td>
       <td>${p.west.deaths}/${p.east.deaths}</td>`;
     tb.appendChild(tr);});
 })();
