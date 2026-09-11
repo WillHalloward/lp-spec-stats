@@ -486,7 +486,9 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   pulls.forEach(p=>{const o=document.createElement('option');o.value=p;
     o.textContent=`Pull ${p} \u2014 ${fightsBy[p].boss_pct.toFixed(1)}% left, ${WB[p].length} window${WB[p].length>1?'s':''}`;
     sel.appendChild(o);});
-  let pull=18, picked=rank.slice(0,4).map(d=>d.player), reset=false, src='burn';
+  /* opens with every damage dealer drawn: the shape of the pack is the point,
+     and a name can be clicked out of it */
+  let pull=18, picked=rank.filter(d=>d.role==='dps').map(d=>d.player), reset=false, src='burn';
   sel.value=pull;
   sel.addEventListener('change',()=>{pull=Number(sel.value);render();});
 
