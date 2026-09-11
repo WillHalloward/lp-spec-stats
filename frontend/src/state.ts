@@ -1,5 +1,5 @@
 import type { RawSignup, Role } from "./types";
-import { classifySignup, attendingSignups } from "./normalize";
+import { classifySignup, attendingSignups, SEASONS } from "./normalize";
 import type { Event } from "./types";
 
 /** Global, cross-chart filter state. */
@@ -15,13 +15,18 @@ export interface FilterState {
 
 type Listener = (state: FilterState) => void;
 
+/** The season the dashboard opens on: whichever SEASONS entry is flagged
+ *  `current`. Read from the table rather than repeated here, so a new season
+ *  needs one edit in normalize.ts instead of two in two files. */
+const CURRENT_SEASON_IDS = SEASONS.filter(s => s.current).map(s => s.id);
+
 class Store {
-  // Default to the current season so the page opens with the same view as before.
+  // Default to the current season so the page opens on what the guild is raiding now.
   state: FilterState = {
     classes: new Set(),
     roles: new Set(),
     difficulties: new Set(),
-    seasons: new Set(["midnight-s1"]),
+    seasons: new Set(CURRENT_SEASON_IDS),
     patches: new Set(),
     raids: new Set(),
     raidSeries: new Set(),

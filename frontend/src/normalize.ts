@@ -10,11 +10,11 @@ export interface Season {
 }
 
 export const SEASONS: Season[] = [
-  // Midnight S2 opens with the Venomous Abyss raid, one week after patch 12.1
-  // (expected 2026-08-11). Adjust `start` if Blizzard slips, then move the
-  // `current` flag here and update SEASON_START_TS in wcl_synthesis.py.
-  { id: "midnight-s2",  label: "Midnight S2",            start: "2026-08-18" },
-  { id: "midnight-s1",  label: "Midnight S1",            start: "2026-03-16", end: "2026-08-18", current: true },
+  // `current` marks the season the dashboard opens on (see state.ts) — move it
+  // when a new season starts, and update SEASON_START_TS in wcl_synthesis.py
+  // so gap-fill stops trawling the previous season's logs.
+  { id: "midnight-s2",  label: "Midnight S2",            start: "2026-08-18", current: true },
+  { id: "midnight-s1",  label: "Midnight S1",            start: "2026-03-16", end: "2026-08-18" },
   { id: "manaforge",    label: "Manaforge Omega",        start: "2025-09-23", end: "2026-03-16" },
   { id: "undermine",    label: "Liberation of Undermine", start: "2025-03-04", end: "2025-09-23" },
   { id: "nerub-ar",     label: "Nerub-ar Palace",        start: "2024-09-10", end: "2025-03-04" },
