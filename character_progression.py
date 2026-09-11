@@ -5,27 +5,17 @@ appeared in (via playerDetails roster). Only WCL-logged kills count — raid-hel
 signups without a matched WCL report don't tell us who actually killed what.
 """
 
-from typing import Any
-
 import psycopg
 
 import boss_progression
 from boss_progression import DIFFICULTY_NAME
-from wcl_synthesis import EXCLUDED_CODES, lp_zone_names
-
-
-def _unwrap(pd: Any) -> Any:
-    while isinstance(pd, dict) and not any(k in pd for k in ("tanks", "healers", "dps")):
-        if len(pd) != 1:
-            return pd
-        pd = next(iter(pd.values()))
-    return pd
+from wcl_synthesis import all_excluded_codes, lp_zone_names
 
 
 def first_kills(conn: psycopg.Connection, character_names: list[str]) -> list[dict]:
     """For each LP boss × difficulty, the earliest timestamp at which one of the
     given character names was in a report that scored a kill."""
-    names_lower = {(n or "").lower() for n in character_names if n}
+    names_lower = sorted({(n or "").lower() for n in character_names if n})
     if not names_lower:
         return []
 
@@ -36,36 +26,30 @@ def first_kills(conn: psycopg.Connection, character_names: list[str]) -> list[di
     if not valid_eids:
         return []
 
+    # Which reports the character appeared in is answered from `ilvl_summary`,
+    # whose keys are the report's player names. Testing those keys reads a
+    # ~400 kB column instead of dragging 44 MB of `player_details` into Python
+    # to do the same filtering by hand.
     with conn.cursor() as cur:
         cur.execute(
             """
-            SELECT code, fights, player_details, start_time_ms
-            FROM wcl_reports
-            WHERE player_details IS NOT NULL
-              AND fights IS NOT NULL
-              AND zone_name = ANY(%s)
-              AND code != ALL(%s)
+            SELECT r.code, r.fights, r.start_time_ms
+              FROM wcl_reports r
+             WHERE r.fights IS NOT NULL
+               AND r.ilvl_summary IS NOT NULL
+               AND r.zone_name = ANY(%s)
+               AND r.code != ALL(%s)
+               AND EXISTS (
+                     SELECT 1 FROM jsonb_object_keys(r.ilvl_summary) AS k
+                      WHERE lower(k) = ANY(%s)
+                   )
             """,
-            (lp_zone_names(conn), list(EXCLUDED_CODES)),
+            (lp_zone_names(conn), list(all_excluded_codes(conn)), names_lower),
         )
         rows = cur.fetchall()
 
     bosses: dict[tuple[int, str], dict] = {}
     for r in rows:
-        pd = _unwrap(r["player_details"])
-        if not isinstance(pd, dict):
-            continue
-        present = False
-        for group in ("tanks", "healers", "dps"):
-            for p in pd.get(group) or []:
-                if ((p.get("name") or "").lower()) in names_lower:
-                    present = True
-                    break
-            if present:
-                break
-        if not present:
-            continue
-
         fights_blob = r["fights"] or {}
         report_start_ms = fights_blob.get("report_start_ms") or r["start_time_ms"]
         for f in fights_blob.get("fights") or []:
