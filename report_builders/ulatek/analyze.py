@@ -651,8 +651,11 @@ class Analysis:
                           "first": round(ret["first"] - r["window"][0], 1) if ret else None,
                           "back": round(ret["median"] - r["window"][0], 1) if ret else None,
                           "last": round(ret["last"] - r["window"][0], 1) if ret else None}
-                if row[s]["last"] is not None and row["boss_again"] is not None:
-                    row[s]["slack"] = round(row["boss_again"] - row[s]["last"], 1)
+                if row[s]["back"] is not None and row["boss_again"] is not None:
+                    # judged on the median: a healer trailing back after a res is
+                    # not the side being late, the side is back when most of it is
+                    row[s]["slack"] = round(row["boss_again"] - row[s]["back"], 1)
+                    row[s]["slack_last"] = round(row["boss_again"] - row[s]["last"], 1)
                     if row[s]["slack"] < 0:
                         late[s] += 1
             if row["west"]["back"] is not None and row["east"]["back"] is not None:

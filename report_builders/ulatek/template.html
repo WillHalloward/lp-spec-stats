@@ -255,15 +255,15 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
       <line x1="530" y1="44" x2="530" y2="58" stroke="var(--rule)" stroke-width="1"></line>
       <line x1="596" y1="48" x2="596" y2="58" stroke="var(--rule)" stroke-width="1"></line>
       <text x="300" y="70" text-anchor="middle" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace" font-size="10.5">first one back</text>
-      <text x="392" y="82" text-anchor="middle" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace" font-size="10.5">median</text>
+      <text x="392" y="82" text-anchor="middle" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace" font-size="10.5">median &mdash; this is the one judged</text>
       <text x="530" y="70" text-anchor="middle" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace" font-size="10.5">last one back</text>
       <text x="604" y="70" fill="var(--crit)" font-family="IBM Plex Mono, monospace" font-size="10.5">boss can be damaged again</text>
     </svg>
     <svg id="c-split-back" viewBox="0 0 900 320" role="img" aria-label="When each side's last player returned, against the moment the boss became targetable"></svg>
-    <figcaption>Each bar runs from the first player of that side back in the middle to the last, notched at the median. Everything left of the red mark is free &mdash; only the last one back has to beat it, and being back early buys nothing. Only the {{split_clean_word}} pulls where both sides walked back at all; on the other {{split_dead_word}} the raid died out there.</figcaption>
+    <figcaption>Each bar runs from the first player of that side back in the middle to the last, notched at the median. Everything left of the red mark is free, and being back early buys nothing. A side counts as late when its <em>median</em> is past the mark: one healer trailing behind to res somebody is not the side being late. Only the {{split_clean_word}} pulls where both sides walked back at all; on the other {{split_dead_word}} the raid died out there.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-split"><thead><tr>
-    <th>Pull</th><th>Phase</th><th>West DPS</th><th>East DPS</th><th>West HPS</th><th>East HPS</th><th>West back</th><th>East back</th><th>Boss back</th><th>Deaths W/E</th></tr></thead><tbody></tbody></table></div>
+    <th>Pull</th><th>Phase</th><th>West DPS</th><th>East DPS</th><th>West HPS</th><th>East HPS</th><th>West back (median)</th><th>East back (median)</th><th>Boss back</th><th>Deaths W/E</th></tr></thead><tbody></tbody></table></div>
   <div class="note">
     <p><b>The one mistake:</b> {{mistake_sentence}} {{crossings_sentence}}</p>
     <p><b>Sides are read from position, not assignment:</b> every cast event carries the caster&#39;s coordinates, so each player&#39;s median x while the two clusters are apart says which side they stood on. West and east are the log&#39;s axis, not the screen &mdash; west is whichever side {{west_tank}} tanks.</p>
@@ -640,7 +640,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     [`${Math.round(w.reduced+w.absorbed)}<small>%</small> / ${Math.round(e.reduced+e.absorbed)}<small>%</small>`,'mitigated before it landed'],
     [`${w.iso_deaths} / ${e.iso_deaths}`,'deaths out there, wipes aside'],
     [`${X.first.west} <small>vs</small> ${X.first.east}`,'pulls back to the middle first'],
-    [`${X.late.west} <small>vs</small> ${X.late.east}`,'pulls back after the boss was'],
+    [`${X.late.west} <small>vs</small> ${X.late.east}`,'pulls where the side was late'],
   ].map(([n,l])=>`<div class="tile"><span class="n">${n}</span><span class="lab">${l}</span></div>`).join('');
 
   /* per-pull dps */
@@ -686,7 +686,8 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
         const r=mk(s,'rect',{x:x(d.first),y:top,width:Math.max(3,x(d.last)-x(d.first)),height:bh,
           fill:COL[side],rx:2});
         hook(r,`<b>Pull ${p.pull} &middot; ${side}</b><br>first back +${d.first}s, median +${d.back}s, last +${d.last}s`+
-          (d.slack!=null?`<br>${d.slack>=0?`${d.slack}s to spare`:`${Math.abs(d.slack)}s late`}`:''));
+          (d.slack!=null?`<br>median ${d.slack>=0?`${d.slack}s to spare`:`${Math.abs(d.slack)}s late`}`:'')+
+          (d.slack_last!=null&&d.slack_last<0?`<br>last one back ${Math.abs(d.slack_last)}s after the boss`:''));
         mk(s,'line',{x1:x(d.back),x2:x(d.back),y1:top-2,y2:top+bh+2,
           stroke:i%2?'var(--surface-2)':'var(--surface)','stroke-width':2});});
       if(p.boss_again!=null){
@@ -708,8 +709,10 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     tr.innerHTML=`<td>${p.pull}</td><td>${p.start}s +${p.dur}s</td>
       <td>${fmtM(p.west.dps)}</td><td>${fmtM(p.east.dps)}</td>
       <td>${fmtM(p.west.hps)}</td><td>${fmtM(p.east.hps)}</td>
-      <td class="${p.west.slack<0?'neg':''}">${p.west.last==null?'\u2014':'+'+p.west.last+'s'}</td>
-      <td class="${p.east.slack<0?'neg':''}">${p.east.last==null?'\u2014':'+'+p.east.last+'s'}</td>
+      <td class="${p.west.slack<0?'neg':''}">${p.west.back==null?'\u2014':'+'+p.west.back+'s'}
+        <span style="color:var(--muted)">${p.west.last==null?'':'last +'+p.west.last+'s'}</span></td>
+      <td class="${p.east.slack<0?'neg':''}">${p.east.back==null?'\u2014':'+'+p.east.back+'s'}
+        <span style="color:var(--muted)">${p.east.last==null?'':'last +'+p.east.last+'s'}</span></td>
       <td>${p.boss_again==null?'\u2014':'+'+p.boss_again+'s'}</td>
       <td>${p.west.deaths}/${p.east.deaths}</td>`;
     tb.appendChild(tr);});
