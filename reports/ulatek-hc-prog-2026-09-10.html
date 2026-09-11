@@ -230,7 +230,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     <figcaption id="win-cap">Cumulative burn damage. The divider marks the end of window 1 and the start of window 2.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-window"><thead><tr>
-    <th>Player</th><th>Window 1</th><th>Window 2</th><th>W2 vs W1</th><th>vs raid</th><th>On heart</th><th>Pull total</th></tr></thead><tbody></tbody></table></div>
+    <th>Player</th><th>Window 1</th><th>Window 2</th><th title="the player's own window 2 as a share of their window 1">W2 vs W1</th><th title="that share minus the raid's, in percentage points: positive means they held up better than the raid did">vs raid</th><th>On heart</th><th>Pull total</th></tr></thead><tbody></tbody></table></div>
   <figcaption id="raid-ratio"></figcaption>
 </section>
 <section>
@@ -631,8 +631,12 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
         <td>${total?Math.round(100*heart/total)+'%':'\u2014'}</td>
         <td>${fmtM(total)}</td>`;
       tb.appendChild(tr);});
-    document.getElementById('raid-ratio').textContent = two
-      ? `Raid as a whole this pull: ${fmtM(raidW1)} then ${fmtM(raidW2)}, ${Math.round(raidRatio)}%. \u201cvs raid\u201d is each player\u2019s own drop against that.`
+    document.getElementById('raid-ratio').innerHTML = two
+      ? `Raid as a whole this pull: ${fmtM(raidW1)} then ${fmtM(raidW2)}, so the raid\u2019s second window came to `
+        + `<b>${Math.round(raidRatio)}%</b> of its first. \u201cW2 vs W1\u201d is the same sum for one player; `
+        + `\u201cvs raid\u201d is the gap between the two in percentage points \u2014 `
+        + `+10&nbsp;pp means that player\u2019s second window held up ten points better than the raid\u2019s did, `
+        + `0 means they fell off exactly as much as everyone else.`
       : 'One window only, so there is nothing to compare against.';
   }
   render();
