@@ -18,6 +18,8 @@ from typing import Any
 
 import psycopg
 
+import db
+
 
 # Map title patterns -> (canonical leader display name, leader_id used in raid-helper data).
 LEADER_PATTERNS: list[tuple[re.Pattern, str, str]] = [
@@ -304,14 +306,20 @@ def _synthesize_event(report: dict) -> dict:
     }
 
 
-def load_event_encounters(conn: psycopg.Connection) -> dict[str, list[int]]:
+def load_event_encounters(
+    conn: psycopg.Connection,
+    links: dict[str, str] | None = None,
+    excluded: set[str] | None = None,
+) -> dict[str, list[int]]:
     """For each raid-helper event matched to a WCL report (auto-match or admin
     override), return the encounter IDs pulled in that raid. Used by the frontend
     to derive raid-series labels per event.
     """
     out: dict[str, set[int]] = {}
-    excluded = _load_db_excluded_codes(conn) | EXCLUDED_CODES
-    links = effective_report_links(conn)
+    if excluded is None:
+        excluded = _load_db_excluded_codes(conn) | EXCLUDED_CODES
+    if links is None:
+        links = effective_report_links(conn)
     with conn.cursor() as cur:
         cur.execute("SELECT code, fights FROM wcl_reports WHERE fights IS NOT NULL")
         rows = cur.fetchall()
@@ -334,7 +342,11 @@ def load_event_encounters(conn: psycopg.Connection) -> dict[str, list[int]]:
     return {k: sorted(v) for k, v in out.items()}
 
 
-def load_event_wcl_difficulty(conn: psycopg.Connection) -> dict[str, str]:
+def load_event_wcl_difficulty(
+    conn: psycopg.Connection,
+    links: dict[str, str] | None = None,
+    excluded: set[str] | None = None,
+) -> dict[str, str]:
     """raid_id -> difficulty derived from the linked WCL reports (majority wins).
 
     Lets the frontend bucket events whose titles carry no difficulty keyword
@@ -342,8 +354,10 @@ def load_event_wcl_difficulty(conn: psycopg.Connection) -> dict[str, str]:
     dumping them into "Other". Admin event_overrides still take precedence on
     the frontend.
     """
-    excluded = all_excluded_codes(conn)
-    links = effective_report_links(conn)
+    if excluded is None:
+        excluded = all_excluded_codes(conn)
+    if links is None:
+        links = effective_report_links(conn)
     counts: dict[str, dict[str, int]] = {}
     with conn.cursor() as cur:
         cur.execute(
@@ -479,42 +493,73 @@ def effective_report_links(conn: psycopg.Connection) -> dict[str, str]:
     return links
 
 
-def load_ilvl_map(conn: psycopg.Connection) -> dict[str, dict[str, dict]]:
-    """For every WCL report that's matched to a raid-helper event (auto-match or
-    admin override), harvest the per-character min/max ilvl. Returns:
-    raid_id -> stripped_name -> {min, max}.
+def load_ilvl_map(
+    conn: psycopg.Connection,
+    links: dict[str, str] | None = None,
+    excluded: set[str] | None = None,
+) -> dict[str, dict[str, dict]]:
+    """raid_id -> character name -> {min, max} item level, for every WCL report
+    matched to a raid-helper event (auto-match or admin override).
+
+    Reads the `ilvl_summary` digest rather than `player_details`: the full blobs
+    carry each combatant's gear and talents and run to ~70 MB across the table,
+    which was seconds of the dashboard's load for three numbers per player. Rows
+    written before the digest existed fall back to reading the blob, so this
+    stays correct if the backfill has not run yet.
+
+    Where a character appears in several reports for one raid, the highest max
+    ilvl wins (ties broken by code), so the result no longer depends on the
+    order the rows came back in.
     """
-    out: dict[str, dict[str, dict]] = {}
-    excluded = _load_db_excluded_codes(conn) | EXCLUDED_CODES
-    links = effective_report_links(conn)
+    if excluded is None:
+        excluded = _load_db_excluded_codes(conn) | EXCLUDED_CODES
+    if links is None:
+        links = effective_report_links(conn)
+    codes = [c for c in links if c not in excluded]
+    if not codes:
+        return {}
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT code, player_details FROM wcl_reports WHERE player_details IS NOT NULL"
+            """
+            SELECT code, ilvl_summary
+              FROM wcl_reports
+             WHERE code = ANY(%s) AND ilvl_summary IS NOT NULL
+            """,
+            (codes,),
         )
         rows = cur.fetchall()
-    rows = [
-        {"raid_id": links[r["code"]], "player_details": r["player_details"]}
-        for r in rows
-        if r["code"] not in excluded and r["code"] in links
-    ]
+        have = {r["code"] for r in rows}
+        missing = [c for c in codes if c not in have]
+        if missing:
+            cur.execute(
+                f"""
+                SELECT r.code, ({db.ILVL_SUMMARY_SQL}) AS ilvl_summary
+                  FROM wcl_reports r
+                  CROSS JOIN LATERAL (
+                       SELECT COALESCE(r.player_details->'data'->'playerDetails',
+                                       r.player_details->'playerDetails',
+                                       r.player_details) AS pd
+                  ) AS u
+                 WHERE r.code = ANY(%s) AND r.player_details IS NOT NULL
+                """,
+                (missing,),
+            )
+            rows += cur.fetchall()
+
+    best: dict[str, dict[str, tuple]] = {}   # raid_id -> name -> (max, code, min)
     for r in rows:
-        pd = r["player_details"]
-        # Unwrap WCL's {data: {playerDetails: {...}}} or {playerDetails: {...}}.
-        while isinstance(pd, dict) and not any(k in pd for k in ("tanks", "healers", "dps")):
-            if len(pd) != 1:
-                break
-            pd = next(iter(pd.values()))
-        if not isinstance(pd, dict):
-            continue
-        bucket = out.setdefault(r["raid_id"], {})
-        for group in ("tanks", "healers", "dps"):
-            for p in pd.get(group) or []:
-                nm = p.get("name")
-                mn = p.get("minItemLevel")
-                mx = p.get("maxItemLevel")
-                if nm and mx:
-                    bucket[nm] = {"min": mn, "max": mx}
-    return out
+        bucket = best.setdefault(links[r["code"]], {})
+        for name, lv in (r["ilvl_summary"] or {}).items():
+            mx = lv.get("max")
+            if not name or not mx:
+                continue
+            cand = (mx, r["code"], lv.get("min"))
+            if name not in bucket or cand > bucket[name]:
+                bucket[name] = cand
+    return {
+        rid: {nm: {"min": mn, "max": mx} for nm, (mx, _code, mn) in chars.items()}
+        for rid, chars in best.items()
+    }
 
 
 def inject_ilvl(events: list[dict], ilvl_map: dict[str, dict[str, dict]]) -> None:

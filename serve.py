@@ -14,6 +14,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 import admin
@@ -26,6 +27,8 @@ import wcl_synthesis
 
 
 app = FastAPI()
+# The events payload is ~1.5 MB of JSON and compresses to about a tenth of that.
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.include_router(admin.router, prefix="/api/admin")
 
 
@@ -63,9 +66,13 @@ def api_events() -> JSONResponse:
     with db.connect() as conn:
         events = db.load_all_events(conn)
         gap_fills = wcl_synthesis.load_gap_fill_events(conn)
-        ilvl_map = wcl_synthesis.load_ilvl_map(conn)
-        enc_map = wcl_synthesis.load_event_encounters(conn)
-        wcl_diff_map = wcl_synthesis.load_event_wcl_difficulty(conn)
+        # Resolved once and handed down: each loader would otherwise rebuild the
+        # link table, and that walks the whole events table for the duplicate map.
+        excluded = wcl_synthesis.all_excluded_codes(conn)
+        links = wcl_synthesis.effective_report_links(conn)
+        ilvl_map = wcl_synthesis.load_ilvl_map(conn, links, excluded)
+        enc_map = wcl_synthesis.load_event_encounters(conn, links, excluded)
+        wcl_diff_map = wcl_synthesis.load_event_wcl_difficulty(conn, links, excluded)
         dup_map = wcl_synthesis.duplicate_event_map(conn)
         event_overrides = db.load_event_overrides(conn)
     wcl_synthesis.inject_ilvl(events, ilvl_map)

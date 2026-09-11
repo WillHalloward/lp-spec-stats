@@ -112,6 +112,20 @@ def _unwrap_player_details(pd):
     return pd
 
 
+def _ilvl_summary(player_details) -> dict | None:
+    """{name: {min, max}} digest of a playerDetails payload, stored next to it so
+    the dashboard never has to read the full blob back."""
+    if not isinstance(player_details, dict):
+        return None
+    out: dict[str, dict] = {}
+    for group in ("tanks", "healers", "dps"):
+        for p in player_details.get(group) or []:
+            name, mx = p.get("name"), p.get("maxItemLevel")
+            if name and mx:
+                out[name] = {"min": p.get("minItemLevel"), "max": mx}
+    return out
+
+
 def _enrich_one(
     conn: psycopg.Connection,
     client: wcl.WclClient,
@@ -161,12 +175,14 @@ def _enrich_one(
             """
             INSERT INTO wcl_reports (
                 code, start_time_ms, end_time_ms, title, zone_name, owner_name,
-                guild_id, raid_id, is_lp, roster, difficulty, fights, player_details
+                guild_id, raid_id, is_lp, roster, difficulty, fights, player_details,
+                ilvl_summary
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, TRUE, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, TRUE, %s, %s, %s, %s, %s)
             ON CONFLICT (code) DO UPDATE SET
                 fights = COALESCE(EXCLUDED.fights, wcl_reports.fights),
                 player_details = COALESCE(EXCLUDED.player_details, wcl_reports.player_details),
+                ilvl_summary = COALESCE(EXCLUDED.ilvl_summary, wcl_reports.ilvl_summary),
                 difficulty = COALESCE(EXCLUDED.difficulty, wcl_reports.difficulty),
                 raid_id = COALESCE(EXCLUDED.raid_id, wcl_reports.raid_id)
             """,
@@ -175,6 +191,7 @@ def _enrich_one(
                 guild_id, raid_id, json.dumps(roster), difficulty,
                 json.dumps(fights_payload) if fights_payload else None,
                 json.dumps(player_details) if player_details else None,
+                json.dumps(_ilvl_summary(player_details)) if player_details else None,
             ),
         )
     conn.commit()

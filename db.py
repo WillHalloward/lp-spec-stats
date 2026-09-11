@@ -47,6 +47,10 @@ CREATE INDEX IF NOT EXISTS wcl_reports_raid_idx ON wcl_reports(raid_id);
 ALTER TABLE wcl_reports ADD COLUMN IF NOT EXISTS difficulty TEXT;
 ALTER TABLE wcl_reports ADD COLUMN IF NOT EXISTS player_details JSONB;
 ALTER TABLE wcl_reports ADD COLUMN IF NOT EXISTS fights JSONB;
+-- Slim {name: {min, max}} ilvl digest of player_details. The full blobs carry
+-- every combatant's gear and talents (~70 MB across the table); the dashboard
+-- only ever wants these three fields, so they are kept ready to read.
+ALTER TABLE wcl_reports ADD COLUMN IF NOT EXISTS ilvl_summary JSONB;
 
 -- Manual override tables. These let an admin tweak categorization decisions the
 -- auto-detection got wrong (e.g. events whose titles don't say the difficulty)
@@ -87,6 +91,46 @@ def ensure_schema(conn: psycopg.Connection) -> None:
     with conn.cursor() as cur:
         cur.execute(SCHEMA)
     conn.commit()
+    backfill_ilvl_summary(conn)
+
+
+ILVL_SUMMARY_SQL = """
+    SELECT jsonb_object_agg(e->>'name', jsonb_build_object(
+               'min', e->'minItemLevel', 'max', e->'maxItemLevel'))
+      FROM jsonb_array_elements(
+               COALESCE(pd->'tanks',   '[]'::jsonb)
+            || COALESCE(pd->'healers', '[]'::jsonb)
+            || COALESCE(pd->'dps',     '[]'::jsonb)) AS e
+     WHERE e->>'name' IS NOT NULL AND e->'maxItemLevel' IS NOT NULL
+"""
+
+
+def backfill_ilvl_summary(conn: psycopg.Connection) -> int:
+    """Fill ilvl_summary for reports that have player_details but no digest yet.
+
+    Runs on startup and on every archiver pass; a no-op once caught up, since
+    the writer fills the column as reports come in.
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            UPDATE wcl_reports r
+               SET ilvl_summary = COALESCE((
+                       WITH unwrapped AS (
+                           SELECT COALESCE(r.player_details->'data'->'playerDetails',
+                                           r.player_details->'playerDetails',
+                                           r.player_details) AS pd
+                       )
+                       SELECT s.agg FROM unwrapped, LATERAL ({ILVL_SUMMARY_SQL}) AS s(agg)
+                   ), '{{}}'::jsonb)
+             WHERE r.player_details IS NOT NULL AND r.ilvl_summary IS NULL
+            """
+        )
+        n = cur.rowcount
+    conn.commit()
+    if n:
+        print(f"ilvl_summary backfilled for {n} reports", flush=True)
+    return n
 
 
 def upsert_event(conn: psycopg.Connection, event_data: dict, *, is_refresh: bool = False) -> None:
