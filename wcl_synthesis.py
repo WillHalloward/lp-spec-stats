@@ -320,25 +320,29 @@ def load_event_encounters(
         excluded = _load_db_excluded_codes(conn) | EXCLUDED_CODES
     if links is None:
         links = effective_report_links(conn)
+    # Postgres reduces each report's fights[] to its distinct encounter ids, so
+    # the whole fights blob never crosses the wire (~480 ms -> ~70 ms).
     with conn.cursor() as cur:
-        cur.execute("SELECT code, fights FROM wcl_reports WHERE fights IS NOT NULL")
+        cur.execute(
+            """
+            SELECT code,
+                   ARRAY(SELECT DISTINCT (f->>'encounterID')::int
+                           FROM jsonb_array_elements(fights->'fights') f
+                          WHERE (f->>'encounterID')::int > 0
+                          ORDER BY 1) AS encounter_ids
+              FROM wcl_reports
+             WHERE fights IS NOT NULL
+            """
+        )
         rows = cur.fetchall()
     for r in rows:
         code = r["code"]
         if code in excluded:
             continue
         raid_id = links.get(code)
-        if not raid_id:
+        if not raid_id or not r["encounter_ids"]:
             continue
-        fights_payload = r["fights"] or {}
-        fights = fights_payload.get("fights") if isinstance(fights_payload, dict) else None
-        if not fights:
-            continue
-        bucket = out.setdefault(raid_id, set())
-        for f in fights:
-            enc = f.get("encounterID") or 0
-            if enc > 0:
-                bucket.add(enc)
+        out.setdefault(raid_id, set()).update(r["encounter_ids"])
     return {k: sorted(v) for k, v in out.items()}
 
 
@@ -599,15 +603,31 @@ def _drop_linked_duplicates(
     that shares ≥ LINKED_DUP_MIN_SHARED of the smaller roster."""
     if not rows or not linked_codes:
         return rows
+    # Only linked reports that overlap the candidates' span can match, and only
+    # their roster names matter — so let Postgres do both cuts instead of
+    # shipping every linked report's full roster JSONB (~370 ms -> ~150 ms).
+    window_start = min(r["start_time_ms"] for r in rows)
+    window_end = max(r["end_time_ms"] or r["start_time_ms"] for r in rows)
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT start_time_ms, end_time_ms, roster FROM wcl_reports WHERE code = ANY(%s)",
-            (linked_codes,),
+            """
+            SELECT start_time_ms, end_time_ms,
+                   ARRAY(SELECT DISTINCT lower(btrim(split_part(a->>'name', '-', 1)))
+                           FROM jsonb_array_elements(roster) a
+                          WHERE a->>'name' IS NOT NULL) AS names
+              FROM wcl_reports
+             WHERE code = ANY(%s)
+               AND start_time_ms IS NOT NULL AND end_time_ms IS NOT NULL
+               AND end_time_ms >= %s AND start_time_ms <= %s
+            """,
+            (linked_codes, window_start, window_end),
         )
+        # casefold() on top of SQL's lower() so both sides of the name
+        # comparison normalize identically — _roster_names() casefolds the
+        # candidate rosters, and the two differ on characters like ß.
         linked = [
-            (r["start_time_ms"], r["end_time_ms"], _roster_names(r["roster"]))
+            (r["start_time_ms"], r["end_time_ms"], {n.casefold() for n in r["names"] if n})
             for r in cur.fetchall()
-            if r["start_time_ms"] and r["end_time_ms"]
         ]
 
     def is_dup(row: dict) -> bool:
@@ -627,16 +647,31 @@ def _drop_linked_duplicates(
     return [r for r in rows if not is_dup(r)]
 
 
-def load_gap_fill_events(conn: psycopg.Connection) -> list[dict]:
-    """Return synthesized event dicts for gap-fillable WCL reports."""
+def load_gap_fill_events(
+    conn: psycopg.Connection,
+    links: dict[str, str] | None = None,
+    excluded: set[str] | None = None,
+) -> list[dict]:
+    """Return synthesized event dicts for gap-fillable WCL reports.
+
+    `links` and `excluded` are accepted so a caller that has already resolved
+    them (serve.api_events does) doesn't pay for a second pass.
+    """
     # Exclude both hard-coded and admin-flagged codes, plus anything an admin
     # has force-linked to a raid (those aren't gap-fills, they're matched).
-    excluded = list(EXCLUDED_CODES | _load_db_excluded_codes(conn))
-    forced_codes = list(effective_report_links(conn).keys())
+    if excluded is None:
+        excluded = EXCLUDED_CODES | _load_db_excluded_codes(conn)
+    if links is None:
+        links = effective_report_links(conn)
+    excluded_list = list(excluded)
+    forced_codes = list(links.keys())
+    # player_details is deliberately absent here: it is ~90 kB per report and
+    # most candidates are dropped as duplicates or lose their cluster below.
+    # The survivors fetch it in one follow-up query (~990 ms -> ~65 ms).
     with conn.cursor() as cur:
         cur.execute(
             """
-            SELECT code, start_time_ms, end_time_ms, title, zone_name, owner_name, roster, difficulty, player_details, fights
+            SELECT code, start_time_ms, end_time_ms, title, zone_name, owner_name, roster, difficulty, fights
             FROM wcl_reports
             WHERE raid_id IS NULL
               AND zone_name = ANY(%s)
@@ -649,7 +684,7 @@ def load_gap_fill_events(conn: psycopg.Connection) -> list[dict]:
               AND code != ALL(%s)
             ORDER BY start_time_ms
             """,
-            (lp_zone_names(conn), SEASON_START_TS, excluded, forced_codes),
+            (lp_zone_names(conn), SEASON_START_TS, excluded_list, forced_codes),
         )
         rows = cur.fetchall()
 
@@ -691,4 +726,19 @@ def load_gap_fill_events(conn: psycopg.Connection) -> list[dict]:
             latest_by_leader[lid] = len(clusters) - 1
 
     chosen = [max(c, key=lambda e: len(e[0]["roster"])) for c in clusters]
-    return [_synthesize_event(r) for r, _, _ in chosen]
+
+    # Now that we know which reports survive, fetch the gear blobs for just
+    # those — _synthesize_event prefers playerDetails over the bare roster
+    # because it carries spec, role and item level.
+    chosen_rows = [r for r, _, _ in chosen]
+    if chosen_rows:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT code, player_details FROM wcl_reports WHERE code = ANY(%s)",
+                ([r["code"] for r in chosen_rows],),
+            )
+            details = {r["code"]: r["player_details"] for r in cur.fetchall()}
+        for r in chosen_rows:
+            r["player_details"] = details.get(r["code"])
+
+    return [_synthesize_event(r) for r in chosen_rows]
