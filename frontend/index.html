@@ -32,6 +32,38 @@
       <a href="/reports">Reports</a>
     </nav>
     <div id="app"></div>
+
+    <!-- Boot skeleton. Static markup so it paints with the stylesheet, before the
+         bundle has parsed and long before /api/events answers; the app never
+         touches it, and the CSS hides it the moment main() mounts `.wrap`.
+         Decorative only — aria-hidden keeps it out of the accessibility tree,
+         and the live status message stays in #app. -->
+    <div id="boot-skeleton" aria-hidden="true">
+      <div class="wrap">
+        <header>
+          <div class="skel skel-title"></div>
+          <span class="underline"></span>
+          <div class="skel skel-sub"></div>
+        </header>
+        <div class="summary">
+          <div class="stat"><div class="skel skel-label"></div><div class="skel skel-value"></div></div>
+          <div class="stat"><div class="skel skel-label"></div><div class="skel skel-value"></div></div>
+          <div class="stat"><div class="skel skel-label"></div><div class="skel skel-value"></div></div>
+          <div class="stat"><div class="skel skel-label"></div><div class="skel skel-value"></div></div>
+        </div>
+        <div class="chart-card">
+          <div class="skel skel-chart-title"></div>
+          <div class="skel skel-chart-sub"></div>
+          <div class="skel skel-plot"></div>
+        </div>
+        <div class="chart-card">
+          <div class="skel skel-chart-title"></div>
+          <div class="skel skel-chart-sub"></div>
+          <div class="skel skel-plot"></div>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

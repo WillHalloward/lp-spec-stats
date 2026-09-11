@@ -289,9 +289,44 @@ section .section-sub { color: var(--text-muted); font-size: 13px; }
   stroke: var(--border-soft);
 }
 
-/* Loading + error states */
+/* Loading + error states.
+   This is the live status line: "Loading raid data…" while the API is in
+   flight, or the error if it fails. It sits above the boot skeleton below,
+   so the page reads as a caption over a dashboard that hasn't filled in yet
+   rather than as one lonely line of grey text on black. */
 .loading {
-  text-align: center; padding: 64px 0; color: var(--text-muted);
+  text-align: center;
+  padding: 28px 24px 4px;
+  color: var(--text-muted);
+  font-size: 13px; letter-spacing: 0.04em;
+}
+
+/* Boot skeleton — markup lives in index.html so it paints as soon as this
+   stylesheet parses, rather than waiting for the bundle and then the API.
+   It reuses the real .wrap / .summary / .stat / .chart-card boxes, so the
+   ghost layout matches what lands on top of it. Hidden the instant main()
+   mounts the real dashboard. */
+#app:has(.wrap) ~ #boot-skeleton { display: none; }
+#boot-skeleton { pointer-events: none; }
+#boot-skeleton .wrap { padding-top: 8px; }
+#boot-skeleton header { margin-bottom: 32px; }
+
+.skel {
+  background: var(--surface-2);
+  border-radius: 6px;
+  animation: skel-pulse 1.4s ease-in-out infinite;
+}
+.skel-title      { height: 42px; width: 260px; margin: 0 auto 16px; border-radius: 10px; }
+.skel-sub        { height: 14px; width: 320px; margin: 0 auto; }
+.skel-label      { height: 10px; width: 96px;  margin-bottom: 10px; }
+.skel-value      { height: 22px; width: 64px; }
+.skel-chart-title{ height: 15px; width: 40%;  margin-bottom: 8px; }
+.skel-chart-sub  { height: 12px; width: 62%;  margin-bottom: 20px; }
+.skel-plot       { height: 180px; width: 100%; border-radius: 8px; }
+
+@keyframes skel-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.85; }
 }
 
 /* Modal */
