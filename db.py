@@ -171,6 +171,30 @@ def load_all_events(conn: psycopg.Connection) -> list[dict]:
         return [r["data"] for r in cur.fetchall()]
 
 
+def load_slim_events(conn: psycopg.Connection, event_fields, signup_fields) -> list[dict]:
+    """Like load_all_events, but Postgres does the field selection.
+
+    The stored payloads total ~11 MB and the dashboard reads a dozen fields out
+    of them; projecting here means psycopg never decodes the rest. Field names
+    come from the caller so the API's contract stays in one place.
+    """
+    ev_pairs = ", ".join(f"'{f}', data->'{f}'" for f in event_fields)
+    su_pairs = ", ".join(f"'{f}', s->'{f}'" for f in signup_fields)
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            SELECT jsonb_strip_nulls(jsonb_build_object({ev_pairs}))
+                   || jsonb_build_object('signups', COALESCE((
+                          SELECT jsonb_agg(jsonb_strip_nulls(jsonb_build_object({su_pairs})))
+                            FROM jsonb_array_elements(data->'signups') AS s
+                      ), '[]'::jsonb)) AS data
+              FROM events
+             ORDER BY unixtime
+            """
+        )
+        return [r["data"] for r in cur.fetchall()]
+
+
 def count_events(conn: psycopg.Connection) -> int:
     with conn.cursor() as cur:
         cur.execute("SELECT COUNT(*) AS n FROM events")

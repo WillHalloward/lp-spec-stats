@@ -71,6 +71,8 @@ def _slim_signup(s: dict) -> dict:
 
 
 def _slim_event(ev: dict) -> dict:
+    """Project a synthesized gap-fill event. Stored events are projected in SQL
+    instead (db.load_slim_events) so the full payloads never reach Python."""
     out = {k: ev[k] for k in EVENT_FIELDS if k in ev}
     out.update({k: v for k, v in ev.items() if k.startswith("_")})
     out["signups"] = [_slim_signup(s) for s in ev.get("signups") or []]
@@ -88,7 +90,7 @@ def api_events() -> JSONResponse:
     if not os.environ.get("DATABASE_URL"):
         return JSONResponse({"events": [], "count": 0, "error": "DATABASE_URL not set"})
     with db.connect() as conn:
-        events = db.load_all_events(conn)
+        events = db.load_slim_events(conn, EVENT_FIELDS, SIGNUP_FIELDS)
         gap_fills = wcl_synthesis.load_gap_fill_events(conn)
         # Resolved once and handed down: each loader would otherwise rebuild the
         # link table, and that walks the whole events table for the duplicate map.
@@ -140,7 +142,9 @@ def api_events() -> JSONResponse:
     events = visible
     gap_fills = visible_gap_fills
 
-    merged = [_slim_event(e) for e in events + gap_fills]
+    # Stored events came out of the database already projected; gap-fills are
+    # synthesized in Python and still need trimming.
+    merged = events + [_slim_event(e) for e in gap_fills]
     merged.sort(key=lambda e: e.get("unixtime", 0))
 
     return JSONResponse({
