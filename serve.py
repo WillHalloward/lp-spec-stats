@@ -1,7 +1,8 @@
 """FastAPI web server.
 
 Routes:
-  GET /api/events       JSON list of every archived event (raw raid-helper payload).
+  GET /api/events       JSON list of every archived event, trimmed to the fields
+                        the dashboard reads.
   GET /health           Plain-text health + DB event count.
   GET /legacy           Old Python-rendered Plotly page (kept for comparison).
   GET /reports          Index of one-off stat reports; /reports/{slug} serves one.
@@ -51,6 +52,29 @@ def admin_page() -> HTMLResponse:
     return admin.admin_page()
 
 FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"
+
+
+# The dashboard reads a handful of fields out of raid-helper's event payload and
+# ignores the rest — comps, emotes, announcements, descriptions, permissions. The
+# full payload is ~10.9 MB of JSON; these fields are about a sixth of that, and
+# the browser parses what it keeps. `frontend/src/types.ts` (RawEvent, RawSignup)
+# is the other half of this contract: add a field there, add it here.
+EVENT_FIELDS = ("raidid", "unixtime", "leaderid", "leadername", "title", "displayTitle")
+SIGNUP_FIELDS = ("userid", "name", "class", "spec", "role", "status", "signuptime")
+
+
+def _slim_signup(s: dict) -> dict:
+    out = {k: s[k] for k in SIGNUP_FIELDS if k in s}
+    # Anything the server stamped on (_ilvl_min / _ilvl_max) rides along.
+    out.update({k: v for k, v in s.items() if k.startswith("_")})
+    return out
+
+
+def _slim_event(ev: dict) -> dict:
+    out = {k: ev[k] for k in EVENT_FIELDS if k in ev}
+    out.update({k: v for k, v in ev.items() if k.startswith("_")})
+    out["signups"] = [_slim_signup(s) for s in ev.get("signups") or []]
+    return out
 
 
 @app.get("/api/events")
@@ -116,7 +140,7 @@ def api_events() -> JSONResponse:
     events = visible
     gap_fills = visible_gap_fills
 
-    merged = events + gap_fills
+    merged = [_slim_event(e) for e in events + gap_fills]
     merged.sort(key=lambda e: e.get("unixtime", 0))
 
     return JSONResponse({

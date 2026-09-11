@@ -32,7 +32,10 @@ cross-referenced with Warcraft Logs reports, rendered as a single-page TypeScrip
 - `character_progression.py` — first kills attributed to a specific character
   (or a list of alts) by scanning WCL `playerDetails`.
 - `serve.py` — FastAPI app. Routes:
-  - `GET /api/events` — merged raid-helper + WCL gap-fill events, with overrides applied.
+  - `GET /api/events` — merged raid-helper + WCL gap-fill events, with overrides
+    applied, trimmed to the fields the dashboard reads (see `EVENT_FIELDS` /
+    `SIGNUP_FIELDS` in `serve.py`, mirrored by `RawEvent` / `RawSignup` in
+    `frontend/src/types.ts`).
   - `GET /api/bosses` — boss progression aggregate.
   - `GET /api/event-kills` — per-event first kills (used for series-scoped timelines).
   - `GET /api/character-progression?names=A,B,C` — first kills for a character + alts.
