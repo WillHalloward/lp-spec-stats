@@ -5,8 +5,9 @@ DATABASE_URL is provided by Railway when Postgres is attached to the service.
 
 import json
 import os
+from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Iterable
+from typing import Iterable, Iterator
 
 import psycopg
 from psycopg.rows import dict_row
@@ -84,7 +85,87 @@ def database_url() -> str:
 
 
 def connect() -> psycopg.Connection:
+    """Open a one-off connection. Used by the cron scripts, which run once and exit.
+
+    Long-lived processes (the web service) should use `session()` instead so they
+    reuse pooled connections rather than paying the handshake on every request.
+    """
     return psycopg.connect(database_url(), row_factory=dict_row)
+
+
+# Connection pool, opened by the web service at startup (see `init_pool`). The
+# cron scripts leave it as None and fall back to a fresh connection per call.
+_pool = None
+
+
+def init_pool(min_size: int = 1, max_size: int = 4) -> None:
+    """Open the shared connection pool. Idempotent; safe to call if DATABASE_URL
+    is unset (it simply does nothing and `session()` keeps its fallback)."""
+    global _pool
+    if _pool is not None or not os.environ.get("DATABASE_URL"):
+        return
+    from psycopg_pool import ConnectionPool
+
+    _pool = ConnectionPool(
+        database_url(),
+        min_size=min_size,
+        max_size=max_size,
+        kwargs={"row_factory": dict_row},
+        # Railway's proxy drops idle connections; check before handing one out so
+        # a stale socket surfaces as a reconnect rather than a failed request.
+        check=ConnectionPool.check_connection,
+        timeout=10,
+        open=True,
+    )
+
+
+def close_pool() -> None:
+    global _pool
+    if _pool is not None:
+        _pool.close()
+        _pool = None
+
+
+@contextmanager
+def session() -> Iterator[psycopg.Connection]:
+    """A connection for the duration of one request.
+
+    Pooled when `init_pool()` has run, otherwise a plain connection. Both forms
+    commit on clean exit and roll back on exception, so callers can't tell which
+    one they got.
+    """
+    if _pool is None:
+        with connect() as conn:
+            yield conn
+        return
+    with _pool.connection() as conn:
+        yield conn
+
+
+def data_version(conn: psycopg.Connection) -> tuple:
+    """A cheap fingerprint of everything the read APIs derive from.
+
+    The archiver rewrites `last_refreshed_at` on every pass, so this changes
+    exactly once per cron run; admin edits move an override table's `updated_at`.
+    Row counts are in there too because deleting an override lowers no maximum.
+    Used as the cache key in serve.py — one round trip instead of several
+    seconds of aggregation.
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT (SELECT max(last_refreshed_at) FROM events)               AS ev,
+                   (SELECT count(*)               FROM events)               AS ev_n,
+                   (SELECT max(fetched_at)        FROM wcl_reports)          AS wcl,
+                   (SELECT count(*)               FROM wcl_reports)          AS wcl_n,
+                   (SELECT max(updated_at)        FROM event_overrides)      AS eo,
+                   (SELECT count(*)               FROM event_overrides)      AS eo_n,
+                   (SELECT max(updated_at)        FROM wcl_report_overrides) AS wo,
+                   (SELECT count(*)               FROM wcl_report_overrides) AS wo_n
+            """
+        )
+        r = cur.fetchone()
+    return tuple(r[k] for k in ("ev", "ev_n", "wcl", "wcl_n", "eo", "eo_n", "wo", "wo_n"))
 
 
 def ensure_schema(conn: psycopg.Connection) -> None:

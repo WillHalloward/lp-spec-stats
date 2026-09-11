@@ -53,7 +53,7 @@ class WclOverrideBody(BaseModel):
 @router.get("/events")
 def list_events(authorization: str | None = Header(None)) -> JSONResponse:
     _require_token(authorization)
-    with db.connect() as conn:
+    with db.session() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -72,7 +72,7 @@ def list_events(authorization: str | None = Header(None)) -> JSONResponse:
 @router.post("/events/{raid_id}")
 def upsert_event(raid_id: str, body: EventOverrideBody, authorization: str | None = Header(None)) -> JSONResponse:
     _require_token(authorization)
-    with db.connect() as conn:
+    with db.session() as conn:
         db.upsert_event_override(
             conn, raid_id,
             difficulty=body.difficulty or None,
@@ -87,7 +87,7 @@ def upsert_event(raid_id: str, body: EventOverrideBody, authorization: str | Non
 @router.delete("/events/{raid_id}")
 def delete_event(raid_id: str, authorization: str | None = Header(None)) -> JSONResponse:
     _require_token(authorization)
-    with db.connect() as conn:
+    with db.session() as conn:
         db.delete_event_override(conn, raid_id)
     return JSONResponse({"ok": True})
 
@@ -95,7 +95,7 @@ def delete_event(raid_id: str, authorization: str | None = Header(None)) -> JSON
 @router.get("/wcl-reports")
 def list_wcl_reports(authorization: str | None = Header(None)) -> JSONResponse:
     _require_token(authorization)
-    with db.connect() as conn:
+    with db.session() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -116,7 +116,7 @@ def list_wcl_reports(authorization: str | None = Header(None)) -> JSONResponse:
 @router.post("/wcl-reports/{code}")
 def upsert_wcl(code: str, body: WclOverrideBody, authorization: str | None = Header(None)) -> JSONResponse:
     _require_token(authorization)
-    with db.connect() as conn:
+    with db.session() as conn:
         db.upsert_wcl_override(
             conn, code,
             excluded=body.excluded,
@@ -129,7 +129,7 @@ def upsert_wcl(code: str, body: WclOverrideBody, authorization: str | None = Hea
 @router.delete("/wcl-reports/{code}")
 def delete_wcl(code: str, authorization: str | None = Header(None)) -> JSONResponse:
     _require_token(authorization)
-    with db.connect() as conn:
+    with db.session() as conn:
         db.delete_wcl_override(conn, code)
     return JSONResponse({"ok": True})
 

@@ -9,12 +9,17 @@ Routes:
   GET /                 New TypeScript frontend (built into frontend/dist/).
 """
 
+import hashlib
+import json
 import os
+from collections import OrderedDict
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any, Callable
 
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
+import psycopg
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse, Response
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -37,14 +42,71 @@ app.include_router(admin.router, prefix="/api/admin")
 def _ensure_schema_on_startup() -> None:
     """Run schema migrations when the web service boots so the override tables
     exist before any admin endpoint is hit (they would otherwise only be created
-    by the next archiver cron run)."""
+    by the next archiver cron run). Also opens the connection pool, so requests
+    don't each pay a Postgres handshake."""
     if not os.environ.get("DATABASE_URL"):
         return
     try:
-        with db.connect() as conn:
+        db.init_pool()
+    except Exception as exc:
+        print(f"Connection pool failed to open, falling back to per-request connections: {exc}", flush=True)
+    try:
+        with db.session() as conn:
             db.ensure_schema(conn)
     except Exception as exc:
         print(f"Schema migration on startup failed: {exc}", flush=True)
+
+
+@app.on_event("shutdown")
+def _close_pool_on_shutdown() -> None:
+    db.close_pool()
+
+
+# ---------------------------------------------------------------------------
+# Response cache.
+#
+# The archiver writes once every 15 minutes, and the read endpoints spend
+# seconds aggregating JSONB that hasn't changed since the last cron run. So
+# each response is built once per data version and then served from memory:
+# `db.data_version()` is a single round trip that changes exactly when the
+# underlying tables do, which makes the cache self-invalidating rather than
+# time-based — an admin override shows up on the next request, not 60s later.
+#
+# Entries are keyed by endpoint + parameters and capped, so the parameterised
+# endpoints (character progression, boss attempts) can't grow without bound.
+# No lock: a race just builds the same payload twice and stores the same bytes.
+# ---------------------------------------------------------------------------
+_CACHE_MAX_ENTRIES = 128
+_cache: "OrderedDict[str, tuple[tuple, bytes, str]]" = OrderedDict()
+
+
+def _cached_json(
+    request: Request,
+    cache_key: str,
+    build: Callable[[psycopg.Connection], dict[str, Any]],
+) -> Response:
+    """Serve `build(conn)` as JSON, reusing the previous result while the data
+    behind it is unchanged. Sends an ETag so a repeat visit gets a 304."""
+    with db.session() as conn:
+        version = db.data_version(conn)
+        entry = _cache.get(cache_key)
+        if entry is None or entry[0] != version:
+            body = json.dumps(build(conn)).encode()
+            entry = (version, body, '"' + hashlib.md5(body).hexdigest() + '"')
+            _cache[cache_key] = entry
+            _cache.move_to_end(cache_key)
+            while len(_cache) > _CACHE_MAX_ENTRIES:
+                _cache.popitem(last=False)
+        else:
+            _cache.move_to_end(cache_key)
+
+    _version, body, etag = entry
+    # max-age is short: the ETag is what saves the bytes, and a stale tab should
+    # pick up a fresh archiver run without a hard reload.
+    headers = {"ETag": etag, "Cache-Control": "public, max-age=60"}
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers=headers)
+    return Response(content=body, media_type="application/json", headers=headers)
 
 
 @app.get("/admin", response_class=HTMLResponse)
@@ -80,7 +142,7 @@ def _slim_event(ev: dict) -> dict:
 
 
 @app.get("/api/events")
-def api_events() -> JSONResponse:
+def api_events(request: Request) -> Response:
     """All archived events, plus WCL gap-fill events for raids that were deleted from raid-helper.
 
     Raid-helper events take precedence; a WCL report that time-overlaps an
@@ -89,18 +151,21 @@ def api_events() -> JSONResponse:
     """
     if not os.environ.get("DATABASE_URL"):
         return JSONResponse({"events": [], "count": 0, "error": "DATABASE_URL not set"})
-    with db.connect() as conn:
-        events = db.load_slim_events(conn, EVENT_FIELDS, SIGNUP_FIELDS)
-        gap_fills = wcl_synthesis.load_gap_fill_events(conn)
-        # Resolved once and handed down: each loader would otherwise rebuild the
-        # link table, and that walks the whole events table for the duplicate map.
-        excluded = wcl_synthesis.all_excluded_codes(conn)
-        links = wcl_synthesis.effective_report_links(conn)
-        ilvl_map = wcl_synthesis.load_ilvl_map(conn, links, excluded)
-        enc_map = wcl_synthesis.load_event_encounters(conn, links, excluded)
-        wcl_diff_map = wcl_synthesis.load_event_wcl_difficulty(conn, links, excluded)
-        dup_map = wcl_synthesis.duplicate_event_map(conn)
-        event_overrides = db.load_event_overrides(conn)
+    return _cached_json(request, "events", _build_events)
+
+
+def _build_events(conn: psycopg.Connection) -> dict:
+    events = db.load_slim_events(conn, EVENT_FIELDS, SIGNUP_FIELDS)
+    # Resolved once and handed down: each loader would otherwise rebuild the
+    # link table, and that walks the whole events table for the duplicate map.
+    excluded = wcl_synthesis.all_excluded_codes(conn)
+    links = wcl_synthesis.effective_report_links(conn)
+    gap_fills = wcl_synthesis.load_gap_fill_events(conn, links, excluded)
+    ilvl_map = wcl_synthesis.load_ilvl_map(conn, links, excluded)
+    enc_map = wcl_synthesis.load_event_encounters(conn, links, excluded)
+    wcl_diff_map = wcl_synthesis.load_event_wcl_difficulty(conn, links, excluded)
+    dup_map = wcl_synthesis.duplicate_event_map(conn)
+    event_overrides = db.load_event_overrides(conn)
     wcl_synthesis.inject_ilvl(events, ilvl_map)
 
     # Apply event overrides: drop excluded, stamp override fields the frontend honors.
@@ -147,17 +212,17 @@ def api_events() -> JSONResponse:
     merged = events + [_slim_event(e) for e in gap_fills]
     merged.sort(key=lambda e: e.get("unixtime", 0))
 
-    return JSONResponse({
+    return {
         "events": merged,
         "count": len(merged),
         "raid_helper_count": len(events),
         "wcl_gap_fill_count": len(gap_fills),
         "generated_at": datetime.now(timezone.utc).isoformat(),
-    })
+    }
 
 
 @app.get("/api/character-progression")
-def api_character_progression(names: str = "") -> JSONResponse:
+def api_character_progression(request: Request, names: str = "") -> Response:
     """First boss kills for a character (or comma-separated list of alts).
 
     Example: /api/character-progression?names=Akronnys
@@ -168,43 +233,50 @@ def api_character_progression(names: str = "") -> JSONResponse:
     name_list = [n.strip() for n in names.split(",") if n.strip()]
     if not name_list:
         return JSONResponse({"kills": []})
-    with db.connect() as conn:
-        kills = character_progression.first_kills(conn, name_list)
-    return JSONResponse({"kills": kills})
+    key = "character-progression:" + ",".join(sorted(n.lower() for n in name_list))
+    return _cached_json(
+        request, key,
+        lambda conn: {"kills": character_progression.first_kills(conn, name_list)},
+    )
 
 
 @app.get("/api/event-kills")
-def api_event_kills() -> JSONResponse:
+def api_event_kills(request: Request) -> Response:
     """Per-event first-kill rows: one entry per (raid_id, encounter, difficulty).
     Frontend groups these by series to render per-series first-kill timelines.
     """
     if not os.environ.get("DATABASE_URL"):
         return JSONResponse({"kills": []})
-    with db.connect() as conn:
-        kills = boss_progression.per_event_first_kills(conn)
-    return JSONResponse({"kills": kills})
+    return _cached_json(
+        request, "event-kills",
+        lambda conn: {"kills": boss_progression.per_event_first_kills(conn)},
+    )
 
 
 @app.get("/api/boss-attempts")
-def api_boss_attempts(encounterID: int, difficulty: str) -> JSONResponse:
+def api_boss_attempts(request: Request, encounterID: int, difficulty: str) -> Response:
     """Chronological attempt log for one (encounterID, difficulty). Used by the
     boss-cell modal to show kills or the progression of wipes."""
     if not os.environ.get("DATABASE_URL"):
         return JSONResponse({"attempts": [], "error": "DATABASE_URL not set"})
-    with db.connect() as conn:
-        attempts = boss_progression.attempts_for_boss(conn, encounterID, difficulty)
-    return JSONResponse({"attempts": attempts})
+    return _cached_json(
+        request, f"boss-attempts:{encounterID}:{difficulty}",
+        lambda conn: {"attempts": boss_progression.attempts_for_boss(conn, encounterID, difficulty)},
+    )
 
 
 @app.get("/api/bosses")
-def api_bosses() -> JSONResponse:
+def api_bosses(request: Request) -> Response:
     """Per-boss / per-difficulty progression stats from WCL fights data."""
     if not os.environ.get("DATABASE_URL"):
         return JSONResponse({"bosses": [], "error": "DATABASE_URL not set"})
-    with db.connect() as conn:
+
+    def build(conn: psycopg.Connection) -> dict:
         agg = boss_progression.aggregate(conn)
-    agg["generated_at"] = datetime.now(timezone.utc).isoformat()
-    return JSONResponse(agg)
+        agg["generated_at"] = datetime.now(timezone.utc).isoformat()
+        return agg
+
+    return _cached_json(request, "bosses", build)
 
 
 @app.get("/api/reports")
@@ -232,7 +304,7 @@ def report(slug: str) -> HTMLResponse:
 @app.get("/health", response_class=PlainTextResponse)
 def health() -> PlainTextResponse:
     if os.environ.get("DATABASE_URL"):
-        with db.connect() as conn:
+        with db.session() as conn:
             n = db.count_events(conn)
         return PlainTextResponse(f"ok\nevents: {n}\n")
     return PlainTextResponse("ok (no db configured)\n")
@@ -246,9 +318,27 @@ def legacy() -> HTMLResponse:
     return HTMLResponse(html)
 
 
+class _HashedStaticFiles(StaticFiles):
+    """StaticFiles that lets browsers keep the build output.
+
+    Vite writes a content hash into every filename under /assets, so those files
+    can never change meaning — cache them for a year. index.html carries the
+    references to them and must stay revalidated, or a deploy would never reach
+    anyone.
+    """
+
+    def file_response(self, full_path, *args, **kwargs) -> Response:
+        response = super().file_response(full_path, *args, **kwargs)
+        if "/assets/" in str(full_path).replace("\\", "/"):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        else:
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 # Static frontend (must be mounted LAST so /api/* and named routes win).
 if FRONTEND_DIST.exists():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIST), html=True), name="frontend")
+    app.mount("/", _HashedStaticFiles(directory=str(FRONTEND_DIST), html=True), name="frontend")
 else:
     @app.get("/", response_class=HTMLResponse)
     def _placeholder() -> HTMLResponse:

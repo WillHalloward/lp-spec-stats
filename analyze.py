@@ -141,7 +141,7 @@ def _load_raw_events() -> list[dict]:
     """Return all event payloads, preferring Postgres if DATABASE_URL is set."""
     if os.environ.get("DATABASE_URL"):
         import db
-        with db.connect() as conn:
+        with db.session() as conn:
             return db.load_all_events(conn)
     return [json.load(open(f)) for f in sorted(glob.glob(str(CACHE_DIR / "*.json")))]
 
