@@ -40,6 +40,10 @@ renders ~20 chart cards across five sections.
 - `reports.py` — one-off report pages: reads `reports/index.json`, renders the
   `/reports` index, serves `reports/<slug>.html` verbatim. Adding a report is a
   file plus an index row — no code change, nothing generated at request time.
+- `report_builders/<name>/` — regenerates a specific report page from a WCL
+  report code: `fetch.py` (cached API pulls), `analyze.py` (the numbers),
+  `render.py` (payloads + prose tokens into `template.html`), `build.py` (CLI).
+  Run it again for the next prog night on the same boss rather than editing HTML.
 - `serve.py` — FastAPI routes. The `StaticFiles` mount at `/` is last so
   named routes (`/api/*`, `/admin`, `/legacy`, `/health`) win.
 - `admin.py` + `admin.html` — token-gated overrides UI/API.

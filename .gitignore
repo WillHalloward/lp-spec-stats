@@ -20,3 +20,6 @@ infographic.html
 frontend/node_modules/
 frontend/dist/
 .playwright-mcp/
+
+# Cached Warcraft Logs responses for the report builders
+report_builders/*/cache/

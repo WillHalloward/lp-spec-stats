@@ -149,7 +149,9 @@ a prog night, a single mechanic, a class breakdown, whatever was worth counting
 once. They are static, self-contained HTML: no API, no build step, nothing
 recomputed at request time, so a report stays exactly as it was written.
 
-To add one:
+Some reports have a builder that regenerates them from a Warcraft Logs report
+code — see `report_builders/ulatek/README.md` for the Ula'tek prog-night page,
+which is the pattern to copy for the next one. Otherwise, to add one by hand:
 
 1. Drop a self-contained `.html` file in `reports/` named `<slug>.html`
    (all its CSS and JS inline; external scripts and fonts are fine).
