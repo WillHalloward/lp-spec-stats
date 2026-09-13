@@ -1,0 +1,887 @@
+<title>Coiled Altar Prog Ledger</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root{
+  --ground:#eaeee6; --surface:#f7faf3; --surface-2:#eef2e8;
+  --ink:#131c17; --ink-2:#3c4c42; --muted:#63735f; --rule:#cdd6c6;
+  --accent:#5f7a0d;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --crit:#c93b3a;
+  --cls-DeathKnight:#a81833;
+  --cls-DemonHunter:#8a26aa;
+  --cls-Druid:#b45900;
+  --cls-Evoker:#237567;
+  --cls-Hunter:#5f8a24;
+  --cls-Mage:#1a7f9e;
+  --cls-Monk:#00875a;
+  --cls-Paladin:#c05286;
+  --cls-Rogue:#867700;
+  --cls-Shaman:#0059b0;
+  --cls-Warlock:#5d60c8;
+  --cls-Priest:#4a4a4a;
+  --cls-Warrior:#856436;
+  --grid:#d7dfd0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0e1411; --surface:#151d18; --surface-2:#1b241d;
+  --ink:#e9efe5; --ink-2:#c3cfbe; --muted:#93a397; --rule:#2b3830;
+  --accent:#a9c93c;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
+  --cls-DeathKnight:#c41e3a;
+  --cls-DemonHunter:#a330c9;
+  --cls-Druid:#ff7c0a;
+  --cls-Evoker:#33937f;
+  --cls-Hunter:#aad372;
+  --cls-Mage:#3fc7eb;
+  --cls-Monk:#00ff98;
+  --cls-Paladin:#f48cba;
+  --cls-Rogue:#fff468;
+  --cls-Shaman:#0070dd;
+  --cls-Warlock:#8788ee;
+  --cls-Priest:#ffffff;
+  --cls-Warrior:#c69b6d;
+  --grid:#26312a;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ground:#0e1411; --surface:#151d18; --surface-2:#1b241d;
+  --ink:#e9efe5; --ink-2:#c3cfbe; --muted:#93a397; --rule:#2b3830;
+  --accent:#a9c93c;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
+  --cls-DeathKnight:#c41e3a;
+  --cls-DemonHunter:#a330c9;
+  --cls-Druid:#ff7c0a;
+  --cls-Evoker:#33937f;
+  --cls-Hunter:#aad372;
+  --cls-Mage:#3fc7eb;
+  --cls-Monk:#00ff98;
+  --cls-Paladin:#f48cba;
+  --cls-Rogue:#fff468;
+  --cls-Shaman:#0070dd;
+  --cls-Warlock:#8788ee;
+  --cls-Priest:#ffffff;
+  --cls-Warrior:#c69b6d;
+  --grid:#26312a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:1060px;margin:0 auto;padding-inline:20px;padding-block:40px 72px;
+  display:flex;flex-direction:column;gap:44px}
+h1,h2,h3,.lab{font-family:"Barlow Condensed","Arial Narrow",sans-serif;margin:0}
+h1{font-size:clamp(38px,7vw,60px);font-weight:700;line-height:.98;letter-spacing:.01em;text-wrap:balance}
+h2{font-size:26px;font-weight:600;letter-spacing:.02em}
+h3{font-size:17px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.lab{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:600;color:var(--muted)}
+p{margin:0;max-width:66ch;color:var(--ink-2)}
+a{color:var(--accent)}
+header .rule{height:3px;background:var(--accent);width:74px;margin:14px 0 18px}
+header .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.tile{background:var(--surface);padding:16px 16px 14px;display:flex;flex-direction:column;gap:4px}
+.tile .n{font-family:"IBM Plex Mono",monospace;font-size:27px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:14px;color:var(--muted);font-weight:400}
+.tile .lab{font-size:11px}
+section{display:flex;flex-direction:column;gap:14px}
+section > .head{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--rule);padding-top:14px}
+figure{margin:0;background:var(--surface);border:1px solid var(--rule);padding:16px 14px 10px}
+figcaption{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);padding-top:6px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2);padding-bottom:8px}
+.legend i{width:11px;height:11px;display:inline-block;margin-right:6px;vertical-align:-1px;border-radius:2px}
+.tblwrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.09em;font-size:12px;
+  text-align:right;color:var(--muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+.chip{font-family:"Barlow Condensed",sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--rule);padding:1px 6px;color:var(--muted)}
+.pos{color:var(--s3)} .neg{color:var(--crit)}
+.note{background:var(--surface-2);border-left:3px solid var(--accent);padding:14px 16px;font-size:14.5px}
+.note p{max-width:78ch}
+.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--ink);color:var(--ground);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;line-height:1.45;padding:7px 9px;z-index:9;max-width:230px}
+.tip b{font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.controls{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-start;background:var(--surface);border:1px solid var(--rule);padding:12px 14px}
+.ctl{display:flex;flex-direction:column;gap:6px}
+.ctl.grow{flex:1 1 420px;min-width:0}
+.ctl em{font-style:normal;color:var(--ink-2);letter-spacing:.06em}
+select{font-family:"IBM Plex Mono",monospace;font-size:13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--rule);padding:6px 8px;min-width:200px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip-btn{font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--surface-2);color:var(--muted);border:1px solid var(--rule);padding:3px 8px;cursor:pointer;line-height:1.5}
+.chip-btn:hover{color:var(--ink)}
+.chip-btn[aria-pressed="true"]{color:var(--ink);border-color:currentColor}
+.chip-btn .sw{display:inline-block;width:8px;height:8px;margin-right:6px;background:currentColor;border-radius:2px}
+.chip-btn[aria-pressed="false"] .sw{background:var(--rule)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.seg-ctl{display:flex;border:1px solid var(--rule);width:max-content}
+.seg{font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--surface-2);color:var(--muted);
+  border:0;border-right:1px solid var(--rule);padding:6px 10px;cursor:pointer}
+.seg:last-child{border-right:0}
+.seg:hover{color:var(--ink)}
+.seg[aria-pressed="true"]{background:var(--ink);color:var(--ground)}
+.role{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;
+  border:1px solid currentColor;padding:0 3px;margin-right:5px;opacity:.75;vertical-align:1px}
+.legend .lg{display:inline-flex;align-items:center;gap:6px}
+.legend .lg svg{overflow:visible}
+.linkish{font-family:"IBM Plex Mono",monospace;font-size:11px;background:none;border:0;border-bottom:1px solid var(--rule);
+  color:var(--muted);cursor:pointer;padding:0 0 1px;margin-left:8px;letter-spacing:0;text-transform:none}
+.linkish:hover{color:var(--ink);border-color:currentColor}
+
+.sliders{display:flex;flex-direction:column;gap:6px;min-width:min(100%,420px)}
+.sliders label{display:flex;align-items:center;gap:10px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.sliders label span{width:32px;text-align:right}
+.sliders input[type=range]{flex:1;accent-color:var(--accent);height:20px}
+
+.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.team{background:var(--surface);padding:16px 18px}
+.team-head{font-family:"Barlow Condensed",sans-serif;font-size:17px;font-weight:600;letter-spacing:.04em;
+  display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.team .dot{width:10px;height:10px;border-radius:2px;display:inline-block}
+.team ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.team li{font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5}
+.muted{color:var(--muted)}
+.bar-key{margin:2px 0 10px;max-width:100%}
+footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
+
+/* report-specific */
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.panel{background:var(--surface);padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.bars{display:flex;flex-direction:column;gap:7px}
+/* Value column sizes to the widest value in the list rather than a fixed width,
+   so a two-part figure like "103 / 47" cannot wrap onto a second line. */
+.brow{display:grid;grid-template-columns:118px 1fr max-content;align-items:center;gap:10px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px}
+.brow .track{background:var(--surface-2);height:13px;position:relative}
+.brow .fill{position:absolute;inset:0 auto 0 0;border-radius:2px}
+.brow .v{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.caveat{border-left:3px solid var(--muted);background:var(--surface-2);padding:12px 15px;font-size:14px}
+.caveat p{max-width:78ch}
+</style>
+<div class="wrap">
+<header>
+  <div class="lab">Warcraft Logs {{code}} &middot; {{difficulty}}</div>
+  <h1>{{boss}}, {{pulls}} pulls,<br>and a very long drop.</h1>
+  <div class="rule"></div>
+  <p>Two bosses, three stages and an intermission, on the {{night}} of {{date_long}}. This is
+     what the orbs cost, what the shield demanded, and where the floor ran out.</p>
+  <div class="meta" style="margin-top:14px">
+    <span>The Venomous Abyss &middot; {{difficulty}}</span>
+    <span>{{pulls}} pulls, {{reached_p3}} reached stage three</span>
+    <span>Killed on pull {{kill_pull}} in {{kill_length}}</span>
+    <span><a href="https://www.warcraftlogs.com/reports/{{code}}">open the log</a></span>
+  </div>
+</header>
+
+<div class="tiles" id="tiles"></div>
+
+<section>
+  <div class="head"><h2>The night, pull by pull</h2>
+  <p>Bar height is how much boss was left when the pull ended, so shorter is better. Colour is
+     the furthest stage reached. The stage timings barely move — stage one runs {{p1_seconds}}s,
+     stage two {{p2_seconds}}s and the intermission a fixed {{int_seconds}}s in every pull that
+     got there — so the only variable is stage three, and how much of it you survive.</p></div>
+  <figure><svg id="c-pulls" viewBox="0 0 900 300" role="img"
+    aria-label="Boss percentage remaining at the end of each pull"></svg>
+  <figcaption>Best wipe of the night was {{best_wipe}} on pull {{best_wipe_pull}}; the three closest were {{near_misses}}.</figcaption></figure>
+</section>
+
+<section>
+  <div class="head"><h2>The orbs, and what they cost</h2>
+  <p>Poison orbs are carried and dropped into the tank frontal, which detonates everything sitting
+     in it. The carry is a flat {{orb_carry}} seconds — pick it up, get it placed, it goes off.
+     Each orb caught by the cleave stamps one stack of the burst DoT on the whole raid, so the
+     stack count on a frontal <em>is</em> the orb count. {{orbs_picked}} orbs were picked up across the
+     night and {{orbs_detonated}} went off in a cleave, a median of {{orbs_per_cleave}} per frontal
+     and a high of {{orbs_max_cleave}}. Only {{orb_dry}} of {{orb_cleaves}} cleaves went off empty.</p></div>
+  <figure><svg id="c-orbs" viewBox="0 0 900 260" role="img"
+    aria-label="Orbs detonated in each frontal cleave, across the night"></svg>
+  <figcaption>One mark per cleave, left to right in pull order. The pulsing per-orb aura dealt
+    {{orb_pulse_damage}} across the night and the detonation DoT {{orb_burst_damage}} — the two
+    largest damage sources in the log, and both of them self-inflicted by design.</figcaption></figure>
+
+  <div class="split">
+    <div class="panel">
+      <h3>Who carried</h3>
+      <div class="bars" id="carriers"></div>
+      <p class="muted" style="font-size:12.5px">{{orb_carriers}} different people picked up at least one
+        orb, but {{orb_top3}} handled {{orb_top3_share}} of them. {{orb_top_carrier}} alone carried {{orb_top_count}}.</p>
+    </div>
+    <div class="panel">
+      <h3>Stage one against stage three</h3>
+      <div class="bars" id="carriers-phase"></div>
+      <p class="muted" style="font-size:12.5px">The job concentrates in stage one and spreads out in
+        stage three, where several people who never touched an orb early pick one up late.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head"><h2>The shield, and fifteen seconds</h2>
+  <p>Malacrass wraps himself in an absorb and starts a {{veil_seconds}}-second channel. Break the
+     shield and the channel dies with it; miss and it resolves on the raid. The shield is a flat
+     {{veil_shield}} every single time — not a percentage — so it is a fixed gate of about
+     {{veil_dps_needed}} raid damage per second, held for {{veil_seconds}} seconds.</p></div>
+  <figure><svg id="c-veil" viewBox="0 0 900 300" role="img"
+    aria-label="Time taken to break each shield, against the fifteen second deadline"></svg>
+  <figcaption>{{veil_broken}} of {{veil_total}} shields broke, at a median of {{veil_median_break}}s and a
+    best of {{veil_fastest}}s. The {{veil_resolved}} that did not killed {{veil_deaths}} people between them.</figcaption></figure>
+
+  <div class="head" style="border-top:0;padding-top:0"><h3>Who broke the shield</h3>
+  <p>Every hit that lands on the absorb counts towards breaking it, so this is damage onto
+     Malacrass inside the shield windows only — not damage for the night. {{veil_shield}} has to
+     come from somewhere, and with {{veil_top3_share}} of it coming from {{veil_top3}} the gate is
+     more or less three people wide.</p></div>
+  <div class="controls"><div class="ctl"><span class="lab">Show</span>
+    <select id="veil-pull" aria-label="Which pull to show shield damage for"></select></div>
+    <div class="ctl grow"><span class="lab">&nbsp;</span><em id="veil-ctx"></em></div></div>
+  <figure><svg id="c-veil-players" viewBox="0 0 900 420" role="img"
+    aria-label="Damage onto the shield during the shield windows, by player"></svg>
+  <figcaption>{{veil_total_damage}} onto the shield across {{veil_total}} windows. Across all pulls the
+    number on the right is the average per window — the useful figure, since not everyone was alive
+    for all of them; on a single pull it is that pull's total.</figcaption></figure>
+</section>
+
+<section>
+  <div class="head"><h2>The intermission is a resurrection race</h2>
+  <p>It looks like a survival phase and it is not — it is a race against a resurrection. Stage one
+     burns the serpent from full to nothing on a {{serpent_pool_one}} health pool. In the
+     intermission Malacrass shields himself to near-immunity, binds what is left, and hauls it back
+     up on a new and far larger {{serpent_pool_three}} pool: {{heal_rate}} a second for
+     {{heal_seconds}}s. Whatever he has climbed to when the window closes is the handicap you carry
+     into stage three. The kill held him to {{best_hp_end}}; the worst pull let him reach
+     {{worst_hp_end}}.</p>
+  <p style="margin-top:8px">Most of that gap is not damage — it is the ghosts. About
+     {{ghosts_each}} of them walk at the serpent across the window, and each one ends one of two
+     ways. Body-block it and it dies, at the cost of a raid-wide blast worth about
+     {{blast_each}}: {{ghosts_blocked}} went that way across the night. Let it reach him and it
+     heals {{reclaim_each}} instead — {{ghosts_through}} of those, {{reclaim_healed}} poured back
+     into the resurrection. One ghost through is worth {{reclaim_pct}} of the stage-three pool, so
+     the arithmetic is brutal: blocking costs a twentieth of what letting one past does. This is
+     also where the lust goes, and on {{lust_count}} of the pulls that reached it the haste landed
+     between {{lust_from}}s and {{lust_to}}s of the window opening.</p></div>
+  <figure><svg id="c-ghosts" viewBox="0 0 900 280" role="img"
+    aria-label="Ghosts blocked against ghosts let through, per pull"></svg>
+  <figcaption>Each pull's ghosts, blocked against let through. The two add up to about the same
+    number every time, which is what makes it a straight trade rather than a damage race.</figcaption></figure>
+  <figure><svg id="c-burn" viewBox="0 0 900 290" role="img"
+    aria-label="Damage into the serpent during the intermission, relative to the stage one rate"></svg>
+  <figcaption>Damage into the serpent during the intermission, as a multiple of that pull's own stage
+    one rate. Median {{burn_ratio}}x; the kill managed {{burn_best}}x, the best of the night.</figcaption></figure>
+  <div class="note"><p>The three strongest burn windows of the night are the kill and the two
+    closest wipes. Nothing else on the page separates the good pulls from the bad ones this cleanly.</p></div>
+
+  <div class="head" style="border-top:0;padding-top:0"><h3>When stage two handed over</h3>
+  <p>Stage two ends on a damage threshold, not a clock: every pull crosses after {{gate_damage}} into
+     Malacrass, identical to three figures across the night. So the handover time is entirely a
+     choice about how fast you feed it. {{band_early_n}} pulls spent cooldowns and crossed early at a
+     median {{band_early_at}} ({{band_early_dps}} into Malacrass through stage two); {{band_late_n}}
+     held damage back and crossed at {{band_late_at}} ({{band_late_dps}}). Crossing early buys more
+     stage three before the enrage, but those cooldowns are then not up for the burn window; holding
+     back banks them for the burn and costs stage three time. On this night the held pulls burned
+     harder — median {{band_late_ratio}}x against {{band_early_ratio}}x, and both the kill and the
+     best wipe sit in that group — but that is one night with the two strategies unevenly sampled,
+     not a verdict.</p>
+  <p>Either way the fight is being finished at the edge of the raid's own ceiling. The kill took
+     {{kill_length}}, and only {{past_eight}} of {{pulls}} pulls lasted longer than eight minutes at
+     all — the longest reaching {{longest_pull}} with no sign of a damage ramp, so this log cannot
+     say where the enrage actually sits.</p></div>
+  <figure><svg id="c-transition" viewBox="0 0 900 270" role="img"
+    aria-label="Handover time against how much of the serpent came back by the end of the burn window"></svg>
+  <figcaption>Across the bottom, when stage two handed over. Up the side, how much of the serpent had
+    come back when the burn window closed — the handicap carried into stage three, so lower is
+    better. The dashed line is the {{band_split_mmss}} split this page uses to call a handover early
+    or late: a label, not a mechanic, since the real gate is the {{gate_damage}} damage threshold.</figcaption></figure>
+
+  <div class="head" style="border-top:0;padding-top:0"><h3>Who burns the window</h3>
+  <p>Damage into the serpent during the intermissions only, totalled across the
+     {{int_total_seconds}}s of burn window the night contained. The bar is the damage; the multiplier
+     is that player's own intermission rate against their own stage one rate, which is the honest
+     way to ask who actually lifts when the amp and the haste are up. {{burn_top_player}} put in the
+     most at {{burn_top_damage}}, but {{burn_amp_player}} has the steepest lift at {{burn_amp_multiple}}x.</p></div>
+  <div class="controls"><div class="ctl"><span class="lab">Show</span>
+    <select id="burn-pull" aria-label="Which pull to show burn-window damage for"></select></div>
+    <div class="ctl grow"><span class="lab">&nbsp;</span><em id="burn-ctx"></em></div></div>
+  <figure><svg id="c-burn-players" viewBox="0 0 900 420" role="img"
+    aria-label="Damage into the serpent during the intermission, by player"></svg>
+  <figcaption>Healers sit near {{burn_healer_multiple}}x by definition — they are not the point of this
+    chart, and they are here so the shares add up.</figcaption></figure>
+</section>
+
+<section>
+  <div class="head"><h2>The edge</h2>
+  <p>Going off the platform logs like nothing else in the game: no killing ability, no killer, no
+     damage event. {{falls}} of them happened while the pull was still winnable, which is
+     {{falls_share}} of the {{deaths_counted}} deaths that cost anything — comfortably the largest
+     single cause on the night. A further {{reset_falls}} came once the pull was already going down,
+     which is a different thing entirely and is counted separately below.</p></div>
+  <figure><svg id="c-edge" viewBox="0 0 900 250" role="img"
+    aria-label="Falls per pull, split by cause"></svg>
+  <figcaption>Worst was pull {{worst_fall_pull}}, which lost {{worst_fall_count}} people over the side.</figcaption></figure>
+
+  <div class="split">
+    <div class="panel">
+      <h3>What put them there</h3>
+      <div class="bars" id="causes"></div>
+      <p class="muted" style="font-size:12.5px">Two mechanics own almost all of it. The knockback
+        fires the instant Malacrass reaches zero — the same moment stage two hands over — and kills
+        {{knockback_at}}s later, every time: {{fall_knockback}} of these. A ghost had caught
+        {{fall_caught}} more. Malacrass's own unavoidable Dreadmarch accounts for {{fall_march}},
+        and {{fall_unexplained}} are left unexplained — which for a night with this many falls is
+        about as tidy as the log gets.</p>
+    </div>
+    <div class="panel">
+      <h3>Answering a mind control</h3>
+      <div class="bars" id="cc"></div>
+      <p class="muted" style="font-size:12.5px">Both mind controls log as the same debuff, which
+        hides the difference that matters. {{march_from_cast}} applications follow one of Malacrass's
+        {{march_casts}} casts and land on several people at once: that one is unavoidable. The other
+        {{caught_by_ghost}} land on a single person with no cast anywhere near, always as their
+        fixation ends — a ghost catching somebody, and the one you can prevent. All
+        {{controlled}} raiders were controlled at some point. The answer was {{cc_targeted}} targeted
+        stops — {{grips}} of them grips — and {{cc_ground}} ground-targeted ones.</p>
+    </div>
+  </div>
+
+  <div class="note"><p><strong>The ghost picks again.</strong> {{fixate_in_wave}} fixations arrive in a
+    spawn wave, but {{fixate_offwave}} land off-wave, in ones and twos, a median of {{offwave_gap}}s
+    after the last wave and mostly in stage three ({{offwave_p3}} against {{offwave_p2}} in stage two).
+    Those are the ghost choosing a new target, and they follow somebody dying
+    {{offwave_after_death}} of the time against {{wave_after_death}} for a wave fixation — the only
+    evidence the log offers that a ghost re-picks when its victim dies. It is suggestive rather than
+    settled: most off-wave picks follow no death at all, so something else triggers them too.</p></div>
+
+  <div class="caveat"><p><strong>On the counting.</strong> Three different things log identically to
+    a fall: a genuine mistake, the wipe reset despawning the raid, and somebody jumping on purpose
+    to reset a lost pull. They are separated here by how much of the raid was already dead at that
+    moment, and by whether the pull survived it. A death in the last ten seconds of a wipe is part
+    of the collapse whatever was on the victim, and the dead-share test alone is a knife edge in the
+    middle of one — two people here died a millisecond apart either side of it. Ten seconds is
+    chosen because it clears the collapse without touching a single knockback or ghost-catch death;
+    fifteen starts removing real knockback deaths, which land ninety-odd seconds before a pull ends.
+    {{reset_falls}} falls fell that side of the line, {{reset_jumps}} of them with no mechanic on the
+    victim at all: those are the resets and the collapses, and they are not counted against
+    anybody. The knockback is timed from Malacrass reaching zero rather than from the phase
+    marker, though on this log the two are the same millisecond in all sixteen pulls. A mind control
+    is credited only if it was on the victim at the moment they died or dropped within two seconds
+    of it; the lag between a Dreadmarch ending and a fall is a spike at zero and then scatter, so a
+    wider window would count coincidences as causes. The ghosts are destroyed by the boss frontal rather than killed, so they never
+    register a death and cannot be counted directly.</p>
+  <p style="margin-top:10px"><strong>Every possession makes two more ghosts.</strong> Dreadmarch
+    is an absorb shield: break it and the possession ends, otherwise the victim walks off. Either
+    way, two Manifestations of Dread emerge from the possessed player when it drops — and the log
+    bears that out exactly, at {{spawn_ratio}} new fixations per possessed player, arriving a median
+    {{spawn_lag}}s later. A four-person cast becomes eight ghosts; one person caught becomes two,
+    who can catch two more. That is the shape of every collapse on this night: the pulls that lost
+    the intermission did not take one bad mind control, they took a chain of them.</p>
+  <p style="margin-top:10px"><strong>The possession is a shield you shoot off.</strong> It does not
+    expire and it cannot be stunned away: Dreadmarch absorbs {{march_absorb}}, and the possession
+    lasts until that is gone. The raid broke {{breaks_done}} of {{possessions}} of them —
+    {{breaks_pct}} — with the median possession absorbing {{break_median}}, which is the shield
+    consumed to the last point. The crowd control is not the answer to the mind control; it is what
+    keeps the victim off the edge for the seconds it takes to shoot the shield off, which is why
+    {{cc_targeted}} targeted stops and {{cc_ground}} ground-targeted ones sit alongside it. The raid
+    does that work on its own — the boss that applied the possession does not help break it — and
+    most of the damage is incidental, whatever was already cleaving. {{shield_top}} put the most
+    into them.</p>
+
+  <p style="margin-top:10px"><strong>Telling the two mind controls apart.</strong> They are the
+    same debuff, so the source has to be reconstructed: an application within a couple of seconds of
+    a Malacrass cast is the unavoidable one; a lone application on a single player as their fixation
+    ends is a ghost catching them. That split {{march_from_cast}} against {{caught_by_ghost}} and
+    left nothing unclassified — every lone application coincided with a fixation ending. Of the
+    {{caught_by_ghost}} people caught, {{caught_died}} were dead within thirty seconds and
+    {{caught_fell}} of those went over the edge, typically six to fourteen seconds later. The
+    avoidable mind control kills an order of magnitude more people here than the unavoidable one
+    does.</p></div>
+</section>
+
+<section>
+  <div class="head"><h2>Gloombomb, and the three souls</h2>
+  <p>Malacrass bombs exactly {{gloom_per_cast}} players a cast, {{gloom_casts}} times across the
+     night, and the blast takes a median {{blast_share}} of a health bar from everyone it catches —
+     which is more people than it targets. Everyone it damages is left Gravebound at three stacks,
+     and so is whoever is standing in the frontal, which is why the tanks are the most-bound players
+     on the roster without ever being selected. Each stack is a soul to collect and each collection
+     costs about {{pickup_share}} of health: {{pickup_hits}} of those ticks across the night.</p>
+  <p style="margin-top:8px">Leaving one uncollected is the expensive mistake. The punishment hit
+     lands at a median {{failure_share}} of a health bar — there were {{failure_hits}} of them all
+     night, and the damage split is clean enough to tell the two apart with nothing in between. Of
+     the {{soul_deaths}} deaths Gravebound owns, {{died_failing}} were somebody leaving a soul and
+     {{died_collecting}} were somebody collecting theirs while already too low.</p></div>
+  <figure><svg id="c-souls" viewBox="0 0 900 420" role="img"
+    aria-label="Gloombomb selections and Gravebound stacks per player"></svg>
+  <figcaption>Bar is how often each player was left Gravebound; the solid part is how much of that
+    came from being picked for the bomb. Numbers on the right are souls collected and deaths.</figcaption></figure>
+</section>
+
+<section>
+  <div class="head"><h2>Defensives and consumables</h2>
+  <p>The fight names its own pressure: each shield channel and each intermission, {{mit_windows}} of
+     them across the night. {{mit_majors}} major cooldowns were pressed and {{mit_in_window}} of
+     those landed inside one — the rest went out on the ordinary chip damage, which on this boss is
+     most of it. {{mit_stones}} healthstones and {{mit_potions}} potions went down, at a median
+     {{mit_hp}} health. The two tanks ({{mit_skipped}}) are left out: they press mitigation on
+     cooldown as rotation, which buries the question this section is actually asking.</p></div>
+  <figure><svg id="c-mit" viewBox="0 0 900 420" role="img"
+    aria-label="Defensive cooldowns and consumables used, by player"></svg>
+  <figcaption>Bar is major cooldowns, darker where they landed in a shield window or the
+    intermission. Numbers on the right are healthstones and potions.</figcaption></figure>
+
+  <div class="split">
+    <div class="panel">
+      <h3>Health when the stone went down</h3>
+      <div class="bars" id="mit-hp"></div>
+      <p class="muted" style="font-size:12.5px">Median health at the moment of use, lowest first.
+        A stone pressed in the twenties is a stone pressed a beat late — the fight kills from
+        roughly a third of a health bar on a bad Nightfall.</p>
+    </div>
+    <div class="panel">
+      <h3>Externals given</h3>
+      <div class="bars" id="mit-ext"></div>
+      <p class="muted" style="font-size:12.5px">{{mit_externals}} cooldowns handed to a named
+        teammate. Cast on yourself it is a personal save, not an external, and it is counted as one —
+        which is why the mistweaver's total is smaller here than the raw Life Cocoon count.</p>
+    </div>
+    <div class="panel">
+      <h3>Raid-wide cooldowns</h3>
+      <div class="bars" id="mit-raid"></div>
+      <p class="muted" style="font-size:12.5px">{{mit_raidwides}} of them, a separate thing from an
+        external: nobody in particular receives one. They log against the environment rather than a
+        player, which is how the two are told apart.</p>
+    </div>
+  </div>
+
+  <div class="caveat"><p><strong>On the spell list.</strong> Defensives are counted from a fixed
+    roster of spell names shared with the other report, so a spec whose button is not on that list
+    reads as zero rather than as missing data. Throughput and utility casts are deliberately not
+    counted — healing totems, Prayer of Mending and the like are not personal saves. Nor are buttons
+    that only mitigate for the other specialisation: Metamorphosis is a defensive for a vengeance
+    demon hunter and pure damage for a havoc one, and counting it added a phantom cooldown a minute
+    to the wrong player until it was excluded. If somebody's count looks wrong, check the list before
+    concluding anything about them.</p></div>
+</section>
+
+<footer>
+  Built from Warcraft Logs report {{code}} &middot; {{pulls}} pulls at {{difficulty}} {{boss}} &middot; {{date_long}}.
+  Numbers are derived from the log's own event stream; see the builder's README for what each one means.
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<script id="progress" type="application/json">__PAYLOAD_PROGRESS__</script>
+<script id="orbs" type="application/json">__PAYLOAD_ORBS__</script>
+<script id="veil" type="application/json">__PAYLOAD_VEIL__</script>
+<script id="veilp" type="application/json">__PAYLOAD_VEIL_PLAYERS__</script>
+<script id="veilw" type="application/json">__PAYLOAD_VEIL_WINDOWS__</script>
+<script id="burn" type="application/json">__PAYLOAD_BURN__</script>
+<script id="burnp" type="application/json">__PAYLOAD_BURN_PLAYERS__</script>
+<script id="edge" type="application/json">__PAYLOAD_EDGE__</script>
+<script id="control" type="application/json">__PAYLOAD_CONTROL__</script>
+<script id="mit" type="application/json">__PAYLOAD_MITIGATION__</script>
+<script id="souls" type="application/json">__PAYLOAD_SOULS__</script>
+
+<script>
+const P=JSON.parse(document.getElementById('progress').textContent);
+const O=JSON.parse(document.getElementById('orbs').textContent);
+const V=JSON.parse(document.getElementById('veil').textContent);
+const B=JSON.parse(document.getElementById('burn').textContent);
+const E=JSON.parse(document.getElementById('edge').textContent);
+const C=JSON.parse(document.getElementById('control').textContent);
+const VP=JSON.parse(document.getElementById('veilp').textContent);
+const BP=JSON.parse(document.getElementById('burnp').textContent);
+const VW=JSON.parse(document.getElementById('veilw').textContent);
+const M=JSON.parse(document.getElementById('mit').textContent);
+const SO=JSON.parse(document.getElementById('souls').textContent);
+
+const tip=document.getElementById('tip');
+function hook(el,html){
+  el.addEventListener('pointerenter',()=>{tip.innerHTML=html;tip.style.opacity=1;});
+  el.addEventListener('pointermove',e=>{
+    const w=tip.offsetWidth,h=tip.offsetHeight;
+    tip.style.left=Math.min(e.clientX+14,innerWidth-w-8)+'px';
+    tip.style.top=Math.max(8,e.clientY-h-12)+'px';});
+  el.addEventListener('pointerleave',()=>tip.style.opacity=0);
+}
+const NS='http://www.w3.org/2000/svg';
+function mk(p,t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;}
+function txt(p,x,y,s,o){o=o||{};const e=mk(p,'text',Object.assign({x:x,y:y,fill:o.fill||'var(--muted)',
+  'font-size':o.size||11,'font-family':'IBM Plex Mono, monospace','text-anchor':o.anchor||'start',
+  'font-weight':o.weight||400},o.extra||{}));e.textContent=s;return e;}
+const fmtM=v=>v>=1e9?(v/1e9).toFixed(2)+'bn':(v/1e6).toFixed(1)+'M';
+const PHCOL={P1:'var(--s1)',P2:'var(--s4)',INT:'var(--s5)',P3:'var(--s3)'};
+const PHNAME={P1:'stage one',P2:'stage two',INT:'intermission',P3:'stage three'};
+
+/* tiles */
+const tiles=[
+ ['{{pulls}}','pulls, one kill'],
+ ['{{best_wipe}}','best wipe before it'],
+ ['{{orbs_detonated}}','orbs detonated'],
+ ['{{veil_broken}}<small>/{{veil_total}}</small>','shields broken in time'],
+ ['{{veil_shield}}','absorb, every time'],
+ ['{{burn_best}}<small>x</small>','burn on the kill'],
+ ['{{falls}}','deaths off the edge'],
+ ['{{fall_knockback}}','of them to the knockback']];
+document.getElementById('tiles').innerHTML=tiles.map(t=>
+  '<div class="tile"><span class="n">'+t[0]+'</span><span class="lab">'+t[1]+'</span></div>').join('');
+
+/* chart 1 - pulls */
+(function(){
+  const s=document.getElementById('c-pulls'),W=900,H=300,L=42,R=10,T=14,Bm=36;
+  const n=P.length,iw=(W-L-R)/n,bw=Math.min(30,iw-6);
+  const y=v=>T+(100-v)/100*(H-T-Bm);
+  [0,25,50,75,100].forEach(v=>{
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v+'%',{anchor:'end'});});
+  P.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2,yy=y(d.best),h=Math.max(2,y(0)-yy);
+    const r=mk(s,'rect',{x:x,y:yy,width:bw,height:h,fill:d.kill?'var(--accent)':PHCOL[d.reached]||'var(--s1)',rx:3});
+    const segs=Object.keys(d.phases).map(k=>PHNAME[k]+' '+d.phases[k]+'s').join(', ');
+    hook(r,'<b>Pull '+d.pull+'</b><br>'+(d.kill?'kill':d.best+'% boss left')+'<br>'+
+      Math.round(d.duration)+'s total<br>'+segs);
+    txt(s,x+bw/2,yy-5,d.kill?'kill':d.best+'%',{anchor:'middle',size:9});
+    txt(s,x+bw/2,H-14,d.pull,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+})();
+
+/* chart 2 - orbs per cleave */
+(function(){
+  const s=document.getElementById('c-orbs'),W=900,H=260,L=42,R=10,T=14,Bm=36;
+  const c=O.cleaves,n=c.length,max=Math.max(4,...c.map(d=>d.orbs));
+  const iw=(W-L-R)/n,bw=Math.max(2,Math.min(9,iw-1));
+  const y=v=>T+(1-v/max)*(H-T-Bm);
+  for(let v=0;v<=max;v++){
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v,{anchor:'end'});}
+  let last=null;
+  c.forEach((d,i)=>{
+    const x=L+i*iw,yy=y(d.orbs),h=Math.max(1.5,y(0)-yy);
+    const r=mk(s,'rect',{x:x,y:yy,width:bw,height:h,rx:1.5,
+      fill:d.phase==='P3'?'var(--s3)':'var(--s1)',opacity:d.orbs?1:.3});
+    hook(r,'<b>Pull '+d.pull+'</b> at '+d.t+'s<br>'+PHNAME[d.phase]+'<br>'+
+      (d.orbs?d.orbs+' orb'+(d.orbs===1?'':'s')+' detonated':'nothing in the cleave'));
+    if(d.pull!==last){txt(s,x,H-14,d.pull,{anchor:'middle',size:9});last=d.pull;}});
+  txt(s,W-R,H-1,'cleaves, in pull order',{anchor:'end',size:10});
+  txt(s,L,H-1,'orbs caught per frontal',{size:10});
+})();
+
+/* carrier bars */
+function bars(el,rows,opt){
+  opt=opt||{};
+  const max=Math.max(...rows.map(r=>r.value))||1;
+  document.getElementById(el).innerHTML=rows.map(r=>
+    '<div class="brow"><span>'+r.label+'</span><span class="track">'+
+    '<span class="fill" style="width:'+(100*r.value/max)+'%;background:'+(r.color||'var(--s1)')+'"></span>'+
+    '</span><span class="v">'+(r.text!==undefined?r.text:r.value)+'</span></div>').join('');
+}
+bars('carriers',O.carriers.slice(0,10).map(c=>({label:c.name,value:c.total,text:c.total})));
+bars('carriers-phase',O.carriers.slice(0,10).map(c=>
+  ({label:c.name,value:c.p1+c.p3,text:c.p1+' / '+c.p3,
+    color:c.p1>=c.p3?'var(--s1)':'var(--s3)'})));
+
+/* chart 3 - the veil */
+(function(){
+  const s=document.getElementById('c-veil'),W=900,H=300,L=42,R=10,T=14,Bm=36;
+  const n=V.length,iw=(W-L-R)/n,bw=Math.min(22,iw-5);
+  const DEADLINE={{veil_seconds}},max=Math.max(DEADLINE+2,...V.map(d=>d.break_seconds));
+  const y=v=>T+(1-v/max)*(H-T-Bm);
+  [0,5,10,15].forEach(v=>{
+    if(v>max)return;
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v+'s',{anchor:'end'});});
+  mk(s,'line',{x1:L,x2:W-R,y1:y(DEADLINE),y2:y(DEADLINE),stroke:'var(--crit)','stroke-width':1.5,'stroke-dasharray':'4 3'});
+  txt(s,W-R,y(DEADLINE)-6,'channel completes',{anchor:'end',size:10,fill:'var(--crit)'});
+  V.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2,yy=y(d.break_seconds),h=Math.max(2,y(0)-yy);
+    const r=mk(s,'rect',{x:x,y:yy,width:bw,height:h,rx:2,
+      fill:d.resolved?'var(--crit)':'var(--s3)'});
+    hook(r,'<b>Pull '+d.pull+'</b> at '+d.t+'s ('+PHNAME[d.phase]+')<br>'+
+      (d.resolved?'resolved &mdash; shield held':'broken in '+d.break_seconds+'s')+
+      '<br>'+fmtM(d.absorbed)+' absorbed'+
+      (d.deaths?'<br>'+d.deaths+' killed by the channel':''));
+    txt(s,x+bw/2,H-14,d.pull,{anchor:'middle',size:9});});
+  txt(s,W-R,H-1,'shield channels, in pull order',{anchor:'end',size:10});
+})();
+
+/* chart 4 - the burn window */
+(function(){
+  const s=document.getElementById('c-burn'),W=900,H=290,L=42,R=10,T=14,Bm=36;
+  const rows=B.filter(d=>d.ratio>0),n=rows.length,iw=(W-L-R)/n,bw=Math.min(30,iw-6);
+  const max=Math.max(3.5,...rows.map(d=>d.ratio));
+  const y=v=>T+(1-v/max)*(H-T-Bm);
+  [0,1,2,3].forEach(v=>{
+    if(v>max)return;
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v+'x',{anchor:'end'});});
+  rows.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2,yy=y(d.ratio),h=Math.max(2,y(0)-yy);
+    const r=mk(s,'rect',{x:x,y:yy,width:bw,height:h,rx:3,
+      fill:d.kill?'var(--accent)':'var(--s1)'});
+    hook(r,'<b>Pull '+d.pull+'</b><br>'+d.ratio+'x the stage one rate<br>'+
+      fmtM(d.burn_dps)+'/s for '+d.seconds+'s<br>'+
+      (d.kill?'the kill':d.best+'% boss left')+
+      (d.lust_offset===null?'<br>no haste':'<br>haste at '+d.lust_offset+'s'));
+    txt(s,x+bw/2,yy-5,d.ratio,{anchor:'middle',size:9});
+    txt(s,x+bw/2,H-14,d.pull,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+})();
+
+/* ghosts: blocked against let through */
+(function(){
+  const s=document.getElementById('c-ghosts'),W=900,H=280,L=44,R=12,T=14,Bm=38;
+  const rows=B.filter(d=>d.ghosts>0);
+  const n=rows.length,iw=(W-L-R)/n,bw=Math.min(30,iw-6);
+  const max=Math.max(...rows.map(d=>d.ghosts));
+  const y=v=>T+(1-v/max)*(H-T-Bm);
+  for(let v=0;v<=max;v+=10){
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v,{anchor:'end'});}
+  rows.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2;
+    const yb=y(d.blocked), hb=y(0)-yb;
+    const yt=y(d.ghosts), ht=yb-yt;
+    const tipTxt='<b>Pull '+d.pull+'</b><br>'+d.blocked+' ghosts blocked<br>'+
+      d.reclaims+' reached the serpent<br>serpent back to '+
+      (d.serpent_hp_end!==null?d.serpent_hp_end.toFixed(1)+'%':'?')+
+      '<br>'+(d.kill?'the kill':d.best+'% boss left');
+    const r1=mk(s,'rect',{x:x,y:yb,width:bw,height:Math.max(1,hb),
+      fill:d.kill?'var(--accent)':'var(--s3)',rx:2}); hook(r1,tipTxt);
+    if(ht>0){const r2=mk(s,'rect',{x:x,y:yt,width:bw,height:ht,fill:'var(--crit)',rx:2});hook(r2,tipTxt);}
+    txt(s,x+bw/2,H-14,d.pull,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+  txt(s,L,H-1,'green blocked, red reached the serpent',{size:10});
+})();
+
+/* chart - handover time against outcome */
+(function(){
+  const s=document.getElementById('c-transition'),W=900,H=250,L=46,R=14,T=14,Bm=38;
+  const rows=B.filter(d=>d.serpent_hp_end!==null),SPLIT={{band_split}};
+  const xs=rows.map(d=>d.transition),lo=Math.min(...xs)-8,hi=Math.max(...xs)+8;
+  const x=v=>L+(v-lo)/(hi-lo)*(W-L-R);
+  const y=v=>T+v/100*(H-T-Bm);
+  [0,25,50,75,100].forEach(v=>{
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v+'%',{anchor:'end'});});
+  mk(s,'line',{x1:x(SPLIT),x2:x(SPLIT),y1:T,y2:y(100),stroke:'var(--muted)',
+    'stroke-width':1.2,'stroke-dasharray':'4 3'});
+  for(let t=Math.ceil(lo/15)*15;t<=hi;t+=15)
+    txt(s,x(t),H-14,Math.floor(t/60)+':'+String(Math.round(t%60)).padStart(2,'0'),
+      {anchor:'middle',size:10});
+  rows.forEach(d=>{
+    const hp=d.serpent_hp_end;
+    const c=mk(s,'circle',{cx:x(d.transition),cy:y(hp),r:d.kill?7:5,
+      fill:d.kill?'var(--accent)':(d.band==='late'?'var(--s3)':'var(--s2)'),
+      opacity:d.kill?1:.85});
+    hook(c,'<b>Pull '+d.pull+'</b><br>handover at '+d.transition_mmss+' ('+d.band+')<br>'+
+      'serpent back to '+hp.toFixed(1)+'% by the end of the burn<br>'+
+      'stage two ran '+d.p2_seconds+'s &middot; '+d.ratio+'x burn<br>'+
+      (d.kill?'the kill':d.best+'% boss left at the wipe'));
+    txt(s,x(d.transition),y(hp)-9,d.pull,{anchor:'middle',size:9});});
+  txt(s,W-R,H-1,'handover time',{anchor:'end',size:10});
+  txt(s,L,H-1,'serpent health when the burn window closed',{size:10});
+})();
+
+/* chart 5 - falls per pull */
+(function(){
+  const s=document.getElementById('c-edge'),W=900,H=250,L=42,R=10,T=14,Bm=36;
+  const order=['knockback','caught','march','unexplained'];
+  const COL={knockback:'var(--crit)',caught:'var(--s2)',march:'var(--s1)',unexplained:'var(--s4)'};
+  const byPull={};
+  E.rows.forEach(r=>{(byPull[r.pull]=byPull[r.pull]||{})[r.cause]=((byPull[r.pull]||{})[r.cause]||0)+1;});
+  const pulls=P.map(p=>p.pull);
+  const max=Math.max(1,...pulls.map(p=>order.reduce((a,c)=>a+((byPull[p]||{})[c]||0),0)));
+  const n=pulls.length,iw=(W-L-R)/n,bw=Math.min(30,iw-6);
+  const y=v=>T+(1-v/max)*(H-T-Bm);
+  for(let v=0;v<=max;v+=Math.ceil(max/5)){
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v,{anchor:'end'});}
+  pulls.forEach((p,i)=>{
+    const x=L+i*iw+(iw-bw)/2;let acc=0;
+    order.forEach(c=>{
+      const v=(byPull[p]||{})[c]||0;if(!v)return;
+      const yy=y(acc+v),h=y(acc)-yy;acc+=v;
+      const r=mk(s,'rect',{x:x,y:yy,width:bw,height:h,fill:COL[c],rx:1.5});
+      hook(r,'<b>Pull '+p+'</b><br>'+v+' to '+c);});
+    txt(s,x+bw/2,H-14,p,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+})();
+
+/* player leaderboards - one row per raider, class-coloured */
+function leaderboard(id,rows,right,tipFor){
+  const s=document.getElementById(id),W=900,L=132,R=118,T=8,rh=18;
+  s.textContent='';   /* redrawn on every pull change - clear or bars pile up */
+  const H=T+rows.length*rh+14;
+  s.setAttribute('viewBox','0 0 '+W+' '+H);
+  const max=Math.max(...rows.map(d=>d.damage))||1;
+  const x=v=>L+v/max*(W-L-R);
+  rows.forEach((d,i)=>{
+    const yy=T+i*rh,bh=12;
+    const col=d.class?'var(--cls-'+d.class+')':'var(--muted)';
+    const r=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.damage)-L),height:bh,fill:col,rx:2});
+    hook(r,tipFor(d));
+    /* Role goes in the same text node as the name — measuring glyph widths to
+       place a separate badge guesses wrong on long names. */
+    const tag=d.role==='Tank'?'· T  ':d.role==='Healer'?'· H  ':'';
+    txt(s,L-8,yy+10,tag+d.name,{anchor:'end',size:11,fill:'var(--ink-2)'});
+    txt(s,W-R+8,yy+10,right(d),{size:10.5,fill:'var(--muted)'});
+  });
+  txt(s,L,H-2,'bar length is damage; hover for the detail',{size:10});
+}
+/* pull pickers - "all pulls" plus every pull that reached the mechanic */
+function fillPicker(sel,pulls,label){
+  sel.innerHTML='<option value="">All pulls</option>'+
+    pulls.map(p=>'<option value="'+p+'">'+label(p)+'</option>').join('');
+}
+function share(rows){
+  const tot=rows.reduce((a,r)=>a+r.damage,0)||1;
+  rows.forEach(r=>{r.share=Math.round(1000*r.damage/tot)/10;});
+  return rows.sort((a,b)=>b.damage-a.damage);
+}
+
+/* --- shield leaderboard --- */
+const veilPulls=[...new Set(V.map(c=>c.pull))].sort((a,b)=>a-b);
+const veilSel=document.getElementById('veil-pull');
+fillPicker(veilSel,veilPulls,p=>'Pull '+p+' ('+(VW[p]||0)+' window'+((VW[p]||0)===1?'':'s')+')');
+function drawVeil(){
+  const pull=veilSel.value;
+  let rows,ctx;
+  if(!pull){
+    rows=VP;
+    ctx=VP.length+' raiders across '+V.length+' shield windows';
+  }else{
+    rows=share(VP.filter(d=>d.by_pull[pull]!==undefined)
+      .map(d=>Object.assign({},d,{damage:d.by_pull[pull],windows:VW[pull]||0})));
+    const ch=V.filter(c=>String(c.pull)===pull);
+    ctx='pull '+pull+' &middot; '+ch.length+' window'+(ch.length===1?'':'s')+
+        ' &middot; '+ch.filter(c=>!c.resolved).length+' broken';
+  }
+  document.getElementById('veil-ctx').innerHTML=ctx;
+  leaderboard('c-veil-players',rows,
+    d=>pull?fmtM(d.damage):fmtM(d.per_window)+'/win',
+    d=>'<b>'+d.name+'</b> &middot; '+d.spec+' '+d.class+'<br>'+
+       fmtM(d.damage)+' onto the shield ('+d.share+'%)<br>'+
+       (pull?'pull '+pull:'across '+d.windows+' window'+(d.windows===1?'':'s')+
+        '<br>'+fmtM(d.per_window)+' per window'));
+}
+veilSel.addEventListener('change',drawVeil); drawVeil();
+
+/* --- burn leaderboard --- */
+const burnRows={}; B.forEach(r=>{burnRows[r.pull]=r;});
+const burnPulls=B.map(r=>r.pull);
+const burnSel=document.getElementById('burn-pull');
+fillPicker(burnSel,burnPulls,p=>'Pull '+p+' — handover '+burnRows[p].transition_mmss);
+function drawBurn(){
+  const pull=burnSel.value;
+  let rows,ctx;
+  if(!pull){
+    rows=BP;
+    ctx=B.length+' intermissions, '+{{int_total_seconds}}+'s of burn window';
+  }else{
+    rows=share(BP.filter(d=>d.by_pull[pull]).map(d=>Object.assign({},d,{
+      damage:d.by_pull[pull].damage,dps:d.by_pull[pull].dps,
+      multiple:d.by_pull[pull].multiple})));
+    const r=burnRows[pull];
+    ctx='pull '+pull+' &middot; handover at '+r.transition_mmss+' ('+r.band+') &middot; '+
+        r.seconds+'s window &middot; '+r.ratio+'x raid burn'+
+        (r.lust_offset===null?' &middot; no haste':' &middot; haste '+r.lust_offset+'s in');
+  }
+  document.getElementById('burn-ctx').innerHTML=ctx;
+  leaderboard('c-burn-players',rows,
+    d=>(d.multiple?d.multiple+'x':'—'),
+    d=>'<b>'+d.name+'</b> &middot; '+d.spec+' '+d.class+'<br>'+
+       fmtM(d.damage)+' into the serpent ('+d.share+'%)<br>'+
+       fmtM(d.dps)+'/s in the window<br>'+
+       'against their own stage one rate: '+d.multiple+'x');
+}
+burnSel.addEventListener('change',drawBurn); drawBurn();
+
+/* souls - gravebound total, with the bomb-selected share solid */
+(function(){
+  const s=document.getElementById('c-souls'),W=900,L=132,R=150,T=8,rh=18;
+  const rows=SO.slice().sort((a,b)=>b.bound-a.bound);
+  const H=T+rows.length*rh+14;
+  s.setAttribute('viewBox','0 0 '+W+' '+H);
+  const max=Math.max(...rows.map(d=>d.bound))||1;
+  const x=v=>L+v/max*(W-L-R);
+  rows.forEach((d,i)=>{
+    const yy=T+i*rh,bh=12;
+    const col=d.class?'var(--cls-'+d.class+')':'var(--muted)';
+    const tipTxt='<b>'+d.name+'</b> &middot; '+d.spec+' '+d.class+'<br>'+
+      'Gravebound '+d.bound+' times, '+d.collected+' souls collected<br>'+
+      'picked for the bomb '+d.selected+' times'+
+      (d.selected?'':' (theirs comes from the frontal)')+
+      (d.deaths?'<br>'+d.deaths+' death'+(d.deaths===1?'':'s')+' to it':'');
+    const r1=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.bound)-L),height:bh,fill:col,opacity:.42,rx:2});
+    hook(r1,tipTxt);
+    if(d.selected){
+      const r2=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.selected)-L),height:bh,fill:col,rx:2});
+      hook(r2,tipTxt);
+    }
+    const tag=d.role==='Tank'?'\u00b7 T  ':d.role==='Healer'?'\u00b7 H  ':'';
+    txt(s,L-8,yy+10,tag+d.name,{anchor:'end',size:11,fill:'var(--ink-2)'});
+    txt(s,W-R+8,yy+10,d.collected+' souls'+(d.deaths?'  \u00b7 '+d.deaths+'\u2020':''),
+        {size:10.5,fill:'var(--muted)'});
+  });
+  txt(s,L,H-2,'solid = left Gravebound by the bomb; faded = by the frontal or the splash',{size:10});
+})();
+
+/* defensives - majors, with the in-window share shaded darker */
+(function(){
+  const s=document.getElementById('c-mit'),W=900,L=132,R=132,T=8,rh=18;
+  const rows=M.slice().sort((a,b)=>b.major-a.major);
+  const H=T+rows.length*rh+14;
+  s.setAttribute('viewBox','0 0 '+W+' '+H);
+  const max=Math.max(...rows.map(d=>d.major))||1;
+  const x=v=>L+v/max*(W-L-R);
+  rows.forEach((d,i)=>{
+    const yy=T+i*rh,bh=12;
+    const col=d.class?'var(--cls-'+d.class+')':'var(--muted)';
+    const tipTxt='<b>'+d.name+'</b> &middot; '+d.spec+' '+d.class+'<br>'+
+      d.major+' major cooldown'+(d.major===1?'':'s')+', '+d.major_pressure+' in a pressure window<br>'+
+      d.external+' externals given &middot; '+d.raidwide+' raid-wide<br>'+
+      d.stone+' healthstones, '+d.potion+' potions'+
+      (d.hp_at_use!==null?'<br>median '+d.hp_at_use+'% health at use':'')+
+      (d.top_spells.length?'<br>'+d.top_spells.map(t=>t[0]+' x'+t[1]).join(', '):'');
+    const r1=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.major)-L),height:bh,fill:col,opacity:.42,rx:2});
+    hook(r1,tipTxt);
+    if(d.major_pressure){
+      const r2=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.major_pressure)-L),height:bh,fill:col,rx:2});
+      hook(r2,tipTxt);
+    }
+    const tag=d.role==='Tank'?'· T  ':d.role==='Healer'?'· H  ':'';
+    txt(s,L-8,yy+10,tag+d.name,{anchor:'end',size:11,fill:'var(--ink-2)'});
+    txt(s,W-R+8,yy+10,d.stone+' HS / '+d.potion+' pot',{size:10.5,fill:'var(--muted)'});
+  });
+  txt(s,L,H-2,'solid = pressed inside a shield window or the intermission',{size:10});
+})();
+bars('mit-hp',M.filter(d=>d.hp_at_use!==null)
+  .sort((a,b)=>a.hp_at_use-b.hp_at_use).slice(0,10)
+  .map(d=>({label:d.name,value:100-d.hp_at_use,text:d.hp_at_use+'%',
+            color:d.hp_at_use<35?'var(--crit)':'var(--s4)'})));
+bars('mit-ext',M.filter(d=>d.external>0).sort((a,b)=>b.external-a.external).slice(0,8)
+  .map(d=>({label:d.name,value:d.external,text:d.external,color:'var(--s3)'})));
+bars('mit-raid',M.filter(d=>d.raidwide>0).sort((a,b)=>b.raidwide-a.raidwide).slice(0,8)
+  .map(d=>({label:d.name,value:d.raidwide,
+            text:(d.raid_spells[0]?d.raid_spells[0][0].split(':').pop().trim().split(' ')[0]+' ':'')+d.raidwide,
+            color:'var(--s1)'})));
+
+/* cause + cc bars */
+(function(){
+  const COL={knockback:'var(--crit)',caught:'var(--s2)',march:'var(--s1)',unexplained:'var(--s4)'};
+  const LAB={knockback:'knockback',caught:'caught by a ghost',march:'Dreadmarch (cast)',unexplained:'unexplained'};
+  const rows=Object.keys(E.buckets).sort((a,b)=>E.buckets[b]-E.buckets[a])
+    .map(k=>({label:LAB[k]||k,value:E.buckets[k],color:COL[k]}));
+  bars('causes',rows);
+  const cc=C.cc_targeted.map(r=>({label:r[0],value:r[1],color:'var(--s1)'}))
+    .concat(C.cc_ground.map(r=>({label:r[0],value:r[1],color:'var(--s3)'})))
+    .sort((a,b)=>b.value-a.value).slice(0,9);
+  bars('cc',cc);
+})();
+</script>
