@@ -1,7 +1,7 @@
 """Build the report page for one Warcraft Logs report.
 
     python -m report_builders.coiled_altar.build --report 37LT6jAbWXFKqv8x \
-        --date 2026-09-12 --night "Ragz Raiders progression night" --publish
+        --date 2026-09-12 --night "Piian progression night" --publish
 
 --publish writes it into reports/ and adds (or updates) its row in
 reports/index.json; without it the HTML goes to --out for a look first.

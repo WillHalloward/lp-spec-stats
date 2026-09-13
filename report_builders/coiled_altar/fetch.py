@@ -43,7 +43,7 @@ class Fetcher(_BaseFetcher):
         return self.cached("phases", build)
 
     def enemy_buffs(self, fight_id: int) -> list[dict]:
-        """Buffs on the bosses and their adds — the shield, the bind, the regen."""
+        """Buffs on the bosses and their adds: the shield, the bind, the regen."""
         return self.events(f"enemy_buffs-{fight_id}", fight_id, "Buffs", hostility="Enemies")
 
     def enemy_casts(self, fight_id: int) -> list[dict]:
@@ -67,7 +67,7 @@ class Fetcher(_BaseFetcher):
                            hostility="Friendlies", resources=True)
 
     def done(self, fight_id: int) -> list[dict]:
-        """Damage the raid dealt — the shield break and the burn window.
+        """Damage the raid dealt, for the shield break and the burn window.
 
         With resources: on these events `resourceActor` is 2, so `hitPoints` and
         `maxHitPoints` belong to the *target*, which is how boss health is read.
@@ -79,11 +79,11 @@ class Fetcher(_BaseFetcher):
         return self.events(f"deaths-{fight_id}", fight_id, "Deaths", hostility="Friendlies")
 
     def enemy_heals(self, fight_id: int) -> list[dict]:
-        """Healing done by the bosses — the regeneration, the soul reclaims, and
+        """Healing done by the bosses: the regeneration, the soul reclaims, and
         the shield absorbs, which log here rather than as damage."""
         return self.events(f"enemy_heal-{fight_id}", fight_id, "Healing", hostility="Enemies")
 
     def heals(self, fight_id: int) -> list[dict]:
-        """Healing on the raid — used to recover health at the moment a
-        healthstone or potion was pressed."""
+        """Healing on the raid, used to recover health at the moment a healthstone
+        or potion was pressed."""
         return self.events(f"heals-{fight_id}", fight_id, "Healing", hostility="Friendlies")

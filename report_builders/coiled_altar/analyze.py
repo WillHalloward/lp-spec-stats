@@ -1,12 +1,15 @@
 """The numbers behind the page.
 
-Five things this encounter is actually about, in the order the page tells them:
+What this encounter is about, in the order the page tells it:
 
-  progress  how far each pull got, phase by phase
-  orbs      who carried, and how many detonated in each frontal
-  veil      the flat absorb Malacrass hides behind, and the 15s to break it
-  burn      the intermission, and how much of the serpent comes back
-  edge      the falls, the largest single cause of death
+  progress    how far each pull got, phase by phase
+  orbs        who carried, and how many detonated in each frontal
+  veil        the flat absorb Malacrass hides behind, and the 15s to break it
+  burn        the intermission, and how much of the serpent comes back
+  edge        the falls, the largest single cause of death
+  control     the two mind controls, and what the raid did about them
+  souls       Gloombomb, and the three souls it leaves behind
+  mitigation  defensives, externals and consumables
 
 Everything keys off `spells.py` names resolved against the report's own
 ability table, so a patch that re-issues ids does not break the build.
@@ -137,8 +140,8 @@ class Analysis:
         return rows
 
     def ids_named(self, name: str) -> set[int]:
-        """Every gameID the report files under one ability name — Blizzard
-        often ships a cast and its damage component as separate ids."""
+        """Every gameID the report files under one ability name. Blizzard often
+        ships a cast and its damage component as separate ids."""
         return {gid for gid, n in self.abilities.items() if n == name}
 
     def transitions(self, fid: int) -> list[dict]:
@@ -352,8 +355,8 @@ class Analysis:
                 cost = sum(_amount(e) for e in taken
                            if self.ability(e) == S.NIGHTFALL
                            and s <= e["timestamp"] <= s + 20000)
-                # Attribute by killing blow, not by "died near the channel" —
-                # plenty of other things are killing people in the same window.
+                # Attribute by killing blow rather than by "died near the
+                # channel". Plenty of other things kill people in that window.
                 died = sum(1 for d in deaths
                            if (d.get("killingAbilityGameID") or 0) in nightfall_ids
                            and s <= d["timestamp"] <= s + 20000)
@@ -394,7 +397,7 @@ class Analysis:
     # Stage two ends on a fixed damage threshold into Malacrass, not on a clock:
     # the damage dealt by the handover is identical to three significant figures
     # in every pull. So the handover time is purely a choice about stage two
-    # damage — push with cooldowns and cross early, or hold and cross late with
+    # damage. Push with cooldowns and cross early, or hold and cross late with
     # the cooldowns still banked for the burn window. The constant below is only
     # the reporting line between the two, not a mechanic.
     EARLY_TRANSITION_SEC = 250.0
@@ -593,12 +596,12 @@ class Analysis:
     # two other things: the wipe reset despawning the raid, and players jumping
     # deliberately to reset a lost pull. Both arrive once the pull is already
     # gone, so the test is how much of the raid was dead at that moment rather
-    # than how close to the end it was — a knockback death is a real failure
+    # than how close to the end it was. A knockback death is a real failure
     # even if the raid wipes ninety seconds later.
     RESET_DEAD_SHARE = 0.5
     # A death in the last seconds of a wipe is part of the collapse whatever was
     # on the victim at the time, and the dead-share test alone is a knife edge in
-    # the middle of one — on this log two people died a millisecond apart either
+    # the middle of one: on this log two people died a millisecond apart either
     # side of it. So a fall also counts as collapse if the pull ended within this
     # long afterwards. Ten seconds is deliberate: it clears the collapse noise
     # without touching a single knockback or ghost-catch death, while fifteen
@@ -614,7 +617,7 @@ class Analysis:
     # somebody who is already over the edge, and the log has clear cases of a
     # possession broken four or five seconds before the victim still landed.
     # The bucket counts are flat from 5s to 10s, so this is not sitting on a
-    # slope — widening it further changes nothing.
+    # slope, and widening it further changes nothing.
     CONTROL_GRACE_MS = 5000
 
     def edge(self) -> dict:
@@ -669,8 +672,8 @@ class Analysis:
                     cause = "march"
                 else:
                     # A ghost merely chasing somebody has no way to push them
-                    # off — only the possession does — so a fixation with no
-                    # possession behind it is not a cause, just a coincidence.
+                    # off; only the possession does. A fixation with no
+                    # possession behind it is a coincidence.
                     cause = "unexplained"
                 if lost:
                     reset_falls += 1
@@ -700,56 +703,7 @@ class Analysis:
             "worst_pull": per_pull.most_common(1)[0] if per_pull else (0, 0),
             "victims": victims.most_common(8),
             "knockback_at": round(statistics.median(knockback_offsets), 1) if knockback_offsets else 0,
-            "touch_chain": self._touch_chain(),
         }
-
-    def _touch_chain(self) -> int:
-        """How often the log shows "a ghost caught somebody, and it killed them".
-
-        A mind control has no aura, so the only detectable chain is: a fixation
-        ends, the raid puts damage into that player (the way a control is
-        broken), and then they go over the edge. On the first night this fires
-        three times with a twentieth of a health bar of damage — far below a
-        real break — so it is reported as evidence of absence, not as a cause.
-        """
-        found = 0
-        for x in self.fights:
-            fid = x["id"]
-            deb = sorted(self.stream("debuffs", fid), key=lambda e: e["timestamp"])
-            windows: dict[int, list[tuple[int, int]]] = defaultdict(list)
-            open_: dict[int, int] = {}
-            for e in deb:
-                if self.ability(e) != S.FIXATE:
-                    continue
-                tid = e.get("targetID")
-                if e["type"] == "applydebuff":
-                    open_[tid] = e["timestamp"]
-                elif e["type"] == "removedebuff" and tid in open_:
-                    windows[tid].append((open_.pop(tid), e["timestamp"]))
-            friendly_fire: dict[int, list[tuple[int, float, float]]] = defaultdict(list)
-            for e in self.stream("taken", fid):
-                src, tgt = e.get("sourceID"), e.get("targetID")
-                if not (self.is_player(src) and self.is_player(tgt) and src != tgt):
-                    continue
-                if self.ability(e) in S.NOT_A_BREAK:
-                    continue
-                friendly_fire[tgt].append((e["timestamp"], _amount(e), e.get("maxHitPoints") or 0))
-            for d in self.stream("deaths", fid):
-                tid = d.get("targetID")
-                if not self.is_player(tid) or (d.get("killingAbilityGameID") or 0) != 0:
-                    continue
-                ts = d["timestamp"]
-                ended = [w for w in windows.get(tid, []) if w[1] <= ts - 1000]
-                if not ended:
-                    continue
-                end = max(w[1] for w in ended)
-                if (ts - end) / 1000 > 25:
-                    continue
-                hits = [h for h in friendly_fire.get(tid, []) if end - 500 <= h[0] <= ts]
-                mx = max((h[2] for h in hits), default=0)
-                if hits and mx and 100 * sum(h[1] for h in hits) / mx >= 5:
-                    found += 1
-        return found
 
     def march_sources(self, fid: int) -> dict[tuple[int, int], str]:
         """(target, timestamp) -> "cast" or "touch" for every Dreadmarch applied.
@@ -788,7 +742,7 @@ class Analysis:
         """Which mind control was on this player when they died.
 
         A control counts if it was active at the moment of death, or dropped
-        within `CONTROL_GRACE_MS` of it — Dreadmarch usually logs its removal on
+        within `CONTROL_GRACE_MS` of it. Dreadmarch usually logs its removal on
         the death itself, so the grace only catches the handful that do not.
         Dreadmarch resolves to its source, since the two mean different things.
         """
@@ -949,10 +903,6 @@ class Analysis:
                     batch = [t]
             if batch:
                 batches.append((len(batch), batch[-1]))
-            for size, end in batches[-len(batches):] if batches else []:
-                pass
-            for size, end in [(n, t) for n, t in batches if t in rem or True][:0]:
-                pass
             # Count the ghosts that appear in the 8s after each batch ended.
             for size, end in batches:
                 if not any(abs(end - t) < 1 for t in rem):
@@ -963,8 +913,8 @@ class Analysis:
                     spawn_lag.extend((f - end) / 1000 for f in fixes if 0 <= f - end <= 8000)
 
             # How far the possession shield was chewed down. Damage that the
-            # shield eats produces no damage event at all — it logs as an
-            # `absorbed` record in the healing stream — so the depletion has to
+            # shield eats produces no damage event at all; it logs as an
+            # `absorbed` record in the healing stream, so the depletion has to
             # be read from there, and the contributors from `attackerID`.
             windows: dict[int, list[tuple[int, int]]] = defaultdict(list)
             open_m: dict[int, int] = {}
@@ -1072,7 +1022,7 @@ class Analysis:
 
         Malacrass bombs three players; everyone the blast damages is left
         Gravebound at three stacks, and each stack is a soul to collect. Every
-        collection costs a tick of health, so the mechanic kills two ways —
+        collection costs a tick of health, so the mechanic kills two ways:
         collecting while already low, or not collecting at all.
         """
         gloom_casts = 0

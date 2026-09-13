@@ -739,7 +739,7 @@ bars('carriers-phase',O.carriers.slice(0,10).map(c=>
 /* player leaderboards - one row per raider, class-coloured */
 function leaderboard(id,rows,right,tipFor){
   const s=document.getElementById(id),W=900,L=132,R=118,T=8,rh=18;
-  s.textContent='';   /* redrawn on every pull change - clear or bars pile up */
+  s.textContent='';   /* redrawn on every pull change; clear or bars pile up */
   const H=T+rows.length*rh+14;
   s.setAttribute('viewBox','0 0 '+W+' '+H);
   const max=Math.max(...rows.map(d=>d.damage))||1;
@@ -749,7 +749,7 @@ function leaderboard(id,rows,right,tipFor){
     const col=d.class?'var(--cls-'+d.class+')':'var(--muted)';
     const r=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.damage)-L),height:bh,fill:col,rx:2});
     hook(r,tipFor(d));
-    /* Role goes in the same text node as the name — measuring glyph widths to
+    /* Role goes in the same text node as the name. Measuring glyph widths to
        place a separate badge guesses wrong on long names. */
     const tag=d.role==='Tank'?'· T  ':d.role==='Healer'?'· H  ':'';
     txt(s,L-8,yy+10,tag+d.name,{anchor:'end',size:11,fill:'var(--ink-2)'});

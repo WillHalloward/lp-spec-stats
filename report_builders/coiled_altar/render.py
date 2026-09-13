@@ -2,8 +2,8 @@
 
 Every number a sentence says out loud arrives as a {{token}} computed here, so
 the prose describes *this* night rather than the one before it. Rendering fails
-loudly on a token the builder does not compute — a new sentence cannot silently
-keep last night's figure.
+loudly on a token the builder does not compute, so a new sentence cannot
+silently keep last night's figure.
 """
 
 from __future__ import annotations
@@ -167,7 +167,6 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "fall_march": edge["buckets"].get("march", 0),
         "fall_unexplained": edge["buckets"].get("unexplained", 0),
         "knockback_at": f"{edge['knockback_at']:g}",
-        "touch_chain": word(edge["touch_chain"]),
         "worst_fall_pull": edge["worst_pull"][0],
         "worst_fall_count": edge["worst_pull"][1],
 
@@ -248,8 +247,8 @@ def _median_hp(rows: list[dict]) -> str:
 
 
 def _amp(players: list[dict]) -> dict:
-    """Steepest lift from stage one to the burn window, among the damage roles —
-    a healer who does almost nothing in both phases can post a silly ratio."""
+    """Steepest lift from stage one to the burn window, among the damage roles.
+    A healer who does almost nothing in both phases can post a silly ratio."""
     pool = [p for p in players if p.get("role") == "DPS" and p.get("multiple")]
     if not pool:
         return {"name": "—", "multiple": 0}

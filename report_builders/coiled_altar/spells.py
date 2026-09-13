@@ -44,19 +44,17 @@ HEAL_ABSORB = "Suffocating Darkness"
 CIRCLES = "Gloombomb"
 
 # --- mind control ---------------------------------------------------------
-# Two independent sources. MARCH is unavoidable and lands on 4-6 people at
-# once; FIXATE is the ghost, which only the boss frontal can destroy.
 # Both mind controls log as the SAME debuff. Malacrass casts it on 4-6 people at
-# once — that one is unavoidable. A ghost catching somebody applies it too, to
+# once, and that one is unavoidable. A ghost catching somebody applies it too, to
 # one person, with no cast anywhere near and always as that player's fixation
-# ends. That difference is the only way to tell the two apart, and they have
-# very different meanings, so the report splits them.
+# ends. That difference is the only way to tell the two apart, and they mean
+# opposite things, so the report splits them.
 MARCH = "Dreadmarch"
 # How close to a Malacrass cast an application has to be to count as cast-sourced.
 MARCH_CAST_GRACE_MS = 2500
 # How close to a fixation ending a lone application has to be to count as a catch.
 MARCH_TOUCH_GRACE_MS = 1500
-# Dreadmarch is an absorb shield and the possession lasts until it is gone — it
+# Dreadmarch is an absorb shield and the possession lasts until it is gone. It
 # does not expire and cannot be stunned off. Damage the shield eats produces no
 # damage event at all, only an `absorbed` record in the healing stream, so that
 # is where depletion has to be measured. Whichever way it ends, two more ghosts
@@ -99,8 +97,8 @@ REGEN = "Ghastly Regeneration"
 # healing a fixed slab of the resurrection. Every ghost is one or the other, so
 # blocks and reclaims sum to roughly the same total every pull.
 RECLAIM = "Reclaim Essence"
-# A blast counts as one ghost when it lands on at least this many people at once
-# — it is a raid-wide hit, so a smaller cluster is somebody's DoT, not a ghost.
+# A blast counts as one ghost when it lands on at least this many people at
+# once. A ghost blast is raid-wide, so a smaller cluster is somebody's DoT.
 GHOST_BLAST_MIN_TARGETS = 8
 MERGED = "Soulbound"
 
@@ -130,7 +128,7 @@ NOT_DEFENSIVE_FOR_SPEC = {
 # The shared EXTERNAL set mixes two different things: cooldowns handed to one
 # named player, and cooldowns dropped on the whole raid. Both are worth counting,
 # but calling a Spirit Link Totem an "external given" credits somebody with
-# something they did not do for anyone in particular — these log against
+# something they did not do for anyone in particular. These log against
 # Environment rather than a player, which is the giveaway. Split out here rather
 # than in the shared set, so the other report's numbers do not move.
 RAID_WIDE = {
@@ -140,7 +138,7 @@ RAID_WIDE = {
 }
 
 # Tanks press mitigation on cooldown as part of their rotation, which buries the
-# signal this section is after — did somebody press a save when the fight asked
+# signal this section is after: did somebody press a save when the fight asked
 # for one. They are counted everywhere else and left out here.
 MITIGATION_SKIP_ROLES = {"Tank"}
 
