@@ -343,63 +343,41 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
         {{march_casts}} casts and land on several people at once: that one is unavoidable. The other
         {{caught_by_ghost}} land on a single person with no cast anywhere near, always as their
         fixation ends. That is a ghost catching somebody, and it is the one you can prevent. All
-        {{controlled}} raiders were controlled at some point. The answer was {{cc_targeted}} targeted
-        stops, {{grips}} of them grips, and {{cc_ground}} ground-targeted ones.</p>
+        {{controlled}} raiders were controlled at some point. Of the {{caught_by_ghost}} caught,
+        {{caught_died}} were dead within thirty seconds and {{caught_fell}} went over the edge. The
+        answer was {{cc_targeted}} targeted stops, {{grips}} of them grips, and {{cc_ground}}
+        ground-targeted ones.</p>
     </div>
   </div>
 
-  <div class="note"><p>The ghost picks again. {{fixate_in_wave}} fixations arrive in a
-    spawn wave, but {{fixate_offwave}} land off-wave, in ones and twos, a median of {{offwave_gap}}s
-    after the last wave and mostly in stage three ({{offwave_p3}} against {{offwave_p2}} in stage two).
-    Those are the ghost choosing a new target, and they follow somebody dying
-    {{offwave_after_death}} of the time against {{wave_after_death}} for a wave fixation. That is the
-    only evidence the log offers that a ghost re-picks when its victim dies, and it is suggestive
-    rather than settled: most off-wave picks follow no death at all, so something else triggers
-    them too.</p></div>
+  <div class="note"><p>The ghost picks again. {{fixate_in_wave}} fixations arrive in a spawn wave,
+    but {{fixate_offwave}} land off-wave, in ones and twos, a median of {{offwave_gap}}s after the
+    last wave. Those are a ghost choosing a new target, and they follow somebody dying
+    {{offwave_after_death}} of the time against {{wave_after_death}} for a wave fixation. That is
+    suggestive rather than settled, since most off-wave picks follow no death at all.</p></div>
 
-  <div class="caveat"><p>On the counting. Three different things log identically to
-    a fall: a genuine mistake, the wipe reset despawning the raid, and somebody jumping on purpose
-    to reset a lost pull. They are separated here by how much of the raid was already dead at that
-    moment, and by whether the pull survived it. A death in the last ten seconds of a wipe is part
-    of the collapse whatever was on the victim, and the dead-share test alone is a knife edge in the
-    middle of one: two people here died a millisecond apart either side of it. Ten seconds is
-    chosen because it clears the collapse without touching a single knockback or ghost-catch death;
-    fifteen starts removing real knockback deaths, which land ninety-odd seconds before a pull ends.
-    {{reset_falls}} falls fell that side of the line, {{reset_jumps}} of them with no mechanic on the
-    victim at all: those are the resets and the collapses, and they are not counted against
-    anybody. The knockback is timed from Malacrass reaching zero rather than from the phase
-    marker, though on this log the two are the same millisecond in all sixteen pulls. A mind control
-    is credited only if it was on the victim at the moment they died or dropped within two seconds
-    of it; the lag between a Dreadmarch ending and a fall is a spike at zero and then scatter, so a
-    wider window would count coincidences as causes. The ghosts are destroyed by the boss frontal rather than killed, so they never
-    register a death and cannot be counted directly.</p>
-  <p style="margin-top:10px">Every possession makes two more ghosts. Dreadmarch
-    is an absorb shield: break it and the possession ends, otherwise the victim walks off. Either
-    way, two Manifestations of Dread emerge from the possessed player when it drops, and the log
-    bears that out exactly, at {{spawn_ratio}} new fixations per possessed player, arriving a median
-    {{spawn_lag}}s later. A four-person cast becomes eight ghosts; one person caught becomes two,
-    who can catch two more. The pulls that lost the intermission took a chain of mind controls
+  <div class="note"><p>Every possession makes two more ghosts. Dreadmarch is an absorb shield: it
+    does not expire and it cannot be stunned away. The raid shoots it off, and crowd control is what
+    keeps the victim away from the edge while that happens. Whichever way it ends, two Manifestations
+    of Dread emerge from the possessed player, at {{spawn_ratio}} new fixations each, arriving a
+    median {{spawn_lag}}s later. A four-person cast becomes eight ghosts; one person caught becomes
+    two, who can catch two more. The pulls that lost the intermission took a chain of mind controls
     rather than one bad one.</p>
-  <p style="margin-top:10px">The possession is a shield you shoot off. It does not
-    expire and it cannot be stunned away: Dreadmarch absorbs {{march_absorb}}, and the possession
-    lasts until that is gone. The raid broke {{breaks_done}} of {{possessions}} of them,
-    {{breaks_pct}}, with the median possession absorbing {{break_median}}, which is the shield
-    consumed to the last point. The crowd control is not the answer to the mind control; it is what
-    keeps the victim off the edge for the seconds it takes to shoot the shield off, which is why
-    {{cc_targeted}} targeted stops and {{cc_ground}} ground-targeted ones sit alongside it. The raid
-    does that work on its own, since the boss that applied the possession does not help break it,
-    and most of the damage is incidental, whatever was already cleaving. {{shield_top}} put the most
-    into them.</p>
+  <p style="margin-top:10px">The shield holds {{march_absorb}}, and the raid broke {{breaks_done}}
+    of {{possessions}} of them. The median possession absorbed {{break_median}}, the shield consumed
+    to the last point. Most of that damage is incidental, whatever was already cleaving;
+    {{shield_top}} put the most in. The boss that applied the possession does not help break it.</p></div>
 
-  <p style="margin-top:10px">Telling the two mind controls apart. They are the
-    same debuff, so the source has to be reconstructed: an application within a couple of seconds of
-    a Malacrass cast is the unavoidable one; a lone application on a single player as their fixation
-    ends is a ghost catching them. That split {{march_from_cast}} against {{caught_by_ghost}} and
-    left nothing unclassified, because every lone application coincided with a fixation ending. Of the
-    {{caught_by_ghost}} people caught, {{caught_died}} were dead within thirty seconds and
-    {{caught_fell}} of those went over the edge, typically six to fourteen seconds later. The
-    avoidable mind control kills an order of magnitude more people here than the unavoidable one
-    does.</p></div>
+  <div class="caveat"><p>On the counting. Three different things log identically to a fall: a
+    genuine mistake, the wipe reset despawning the raid, and somebody jumping on purpose to reset a
+    lost pull. They are separated by how much of the raid was already dead and by whether the pull
+    survived. {{reset_falls}} falls fell the wrong side of that line, {{reset_jumps}} of them with no
+    mechanic on the victim at all, and none of those are counted against anybody. A mind control
+    counts as the cause if it was on the victim when they died or broke within {{control_grace}}
+    seconds of it, because the shield coming down does not save somebody already over the edge. The
+    ghosts themselves are destroyed by the boss frontal rather than killed, so they never register a
+    death and cannot be counted directly. The builder's README has the thresholds and why they sit
+    where they do.</p></div>
 </section>
 
 <section>
@@ -458,14 +436,11 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     </div>
   </div>
 
-  <div class="caveat"><p>On the spell list. Defensives are counted from a fixed
-    roster of spell names shared with the other report, so a spec whose button is not on that list
-    reads as zero rather than as missing data. Throughput and utility casts are deliberately not
-    counted: healing totems, Prayer of Mending and the like are not personal saves. Nor are buttons
-    that only mitigate for the other specialisation: Metamorphosis is a defensive for a vengeance
-    demon hunter and pure damage for a havoc one, and counting it added a phantom cooldown a minute
-    to the wrong player until it was excluded. If somebody's count looks wrong, check the list before
-    concluding anything about them.</p></div>
+  <div class="caveat"><p>On the spell list. Defensives are counted from a fixed roster of spell
+    names, so a spec whose button is missing from it reads as zero rather than as missing data.
+    Throughput and utility casts are left out, and so are buttons that only mitigate for the other
+    specialisation, such as Metamorphosis for a havoc demon hunter. If a count looks wrong, check
+    the list before concluding anything about the player.</p></div>
 </section>
 
 <footer>
@@ -775,7 +750,7 @@ veilSel.addEventListener('change',drawVeil); drawVeil();
 const burnRows={}; B.forEach(r=>{burnRows[r.pull]=r;});
 const burnPulls=B.map(r=>r.pull);
 const burnSel=document.getElementById('burn-pull');
-fillPicker(burnSel,burnPulls,p=>'Pull '+p+' — handover '+burnRows[p].transition_mmss);
+fillPicker(burnSel,burnPulls,p=>'Pull '+p+', handover '+burnRows[p].transition_mmss);
 function drawBurn(){
   const pull=burnSel.value;
   let rows,ctx;

@@ -167,6 +167,7 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "fall_march": edge["buckets"].get("march", 0),
         "fall_unexplained": edge["buckets"].get("unexplained", 0),
         "knockback_at": f"{edge['knockback_at']:g}",
+        "control_grace": f"{a.CONTROL_GRACE_MS / 1000:g}",
         "worst_fall_pull": edge["worst_pull"][0],
         "worst_fall_count": edge["worst_pull"][1],
 
