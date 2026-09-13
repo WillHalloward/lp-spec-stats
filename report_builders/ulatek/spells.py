@@ -21,7 +21,8 @@ MAJOR = {"Anti-Magic Shell", "Icebound Fortitude", "Vampiric Blood", "Lichborne"
          "Survival of the Fittest", "Ice Block", "Ice Cold", "Greater Invisibility", "Fortifying Brew",
          "Divine Shield", "Divine Protection", "Shield of Vengeance", "Cloak of Shadows", "Evasion",
          "Astral Shift", "Unending Resolve", "Dark Pact", "Survival Instincts", "Netherwalk",
-         "Dispersion", "Rallying Cry", "Shield Wall", "Die by the Sword", "Celestial Brew",
+         "Dispersion", "Desperate Prayer", "Rallying Cry", "Shield Wall", "Die by the Sword",
+         "Celestial Brew",
          "Dampen Harm", "Diffuse Magic", "Touch of Karma", "Ardent Defender",
          "Guardian of Ancient Kings", "Metamorphosis", "Demon Spikes"}
 # Short-cooldown or rotational mitigation. Counted, but not as "did they press a save".
