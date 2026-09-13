@@ -208,9 +208,9 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 <section>
   <div class="head"><h2>The night, pull by pull</h2>
   <p>Bar height is how much boss was left when the pull ended, so shorter is better. Colour is
-     the furthest stage reached. The stage timings barely move — stage one runs 123s,
+     the furthest stage reached. The stage timings barely move: stage one runs 123s,
      stage two 126s and the intermission a fixed 38s in every pull that
-     got there — so the only variable is stage three, and how much of it you survive.</p></div>
+     got there. The only variable is stage three, and how much of it you survive.</p></div>
   <figure><svg id="c-pulls" viewBox="0 0 900 300" role="img"
     aria-label="Boss percentage remaining at the end of each pull"></svg>
   <figcaption>Best wipe of the night was 4.82% on pull 18; the three closest were 4.82%, 8.21% and 8.23%.</figcaption></figure>
@@ -219,7 +219,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 <section>
   <div class="head"><h2>The orbs, and what they cost</h2>
   <p>Poison orbs are carried and dropped into the tank frontal, which detonates everything sitting
-     in it. The carry is a flat 5 seconds — pick it up, get it placed, it goes off.
+     in it. The carry is a flat 5 seconds: pick it up, get it placed, it goes off.
      Each orb caught by the cleave stamps one stack of the burst DoT on the whole raid, so the
      stack count on a frontal <em>is</em> the orb count. 545 orbs were picked up across the
      night and 491 went off in a cleave, a median of 4 per frontal
@@ -227,8 +227,8 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <figure><svg id="c-orbs" viewBox="0 0 900 260" role="img"
     aria-label="Orbs detonated in each frontal cleave, across the night"></svg>
   <figcaption>One mark per cleave, left to right in pull order. The pulsing per-orb aura dealt
-    1.63bn across the night and the detonation DoT 1.95bn — the two
-    largest damage sources in the log, and both of them self-inflicted by design.</figcaption></figure>
+    1.63bn across the night and the detonation DoT 1.95bn. They are the
+    two largest damage sources in the log, and both are self-inflicted by design.</figcaption></figure>
 
   <div class="split">
     <div class="panel">
@@ -250,8 +250,8 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <div class="head"><h2>The shield, and fifteen seconds</h2>
   <p>Malacrass wraps himself in an absorb and starts a 15-second channel. Break the
      shield and the channel dies with it; miss and it resolves on the raid. The shield is a flat
-     18.6M every single time — not a percentage — so it is a fixed gate of about
-     1.2M raid damage per second, held for 15 seconds.</p></div>
+     18.6M every single time, not a percentage, so it is a fixed gate of about
+     1.2M raid damage per second held for 15 seconds.</p></div>
   <figure><svg id="c-veil" viewBox="0 0 900 300" role="img"
     aria-label="Time taken to break each shield, against the fifteen second deadline"></svg>
   <figcaption>29 of 36 shields broke, at a median of 9.7s and a
@@ -259,7 +259,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
   <div class="head" style="border-top:0;padding-top:0"><h3>Who broke the shield</h3>
   <p>Every hit that lands on the absorb counts towards breaking it, so this is damage onto
-     Malacrass inside the shield windows only — not damage for the night. 18.6M has to
+     Malacrass inside the shield windows only, not damage for the night. 18.6M has to
      come from somewhere, and with 25% of it coming from Indris, Vokster and Frdrschott the gate is
      more or less three people wide.</p></div>
   <div class="controls"><div class="ctl"><span class="lab">Show</span>
@@ -268,26 +268,25 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <figure><svg id="c-veil-players" viewBox="0 0 900 420" role="img"
     aria-label="Damage onto the shield during the shield windows, by player"></svg>
   <figcaption>624.7M onto the shield across 36 windows. Across all pulls the
-    number on the right is the average per window — the useful figure, since not everyone was alive
-    for all of them; on a single pull it is that pull's total.</figcaption></figure>
+    number on the right is the average per window, which is the useful figure since not everyone
+    was alive for all of them. On a single pull it is that pull's total.</figcaption></figure>
 </section>
 
 <section>
   <div class="head"><h2>The intermission is a resurrection race</h2>
-  <p>It looks like a survival phase and it is not — it is a race against a resurrection. Stage one
-     burns the serpent from full to nothing on a 274.9M health pool. In the
+  <p>Stage one burns the serpent from full to nothing on a 274.9M health pool. In the
      intermission Malacrass shields himself to near-immunity, binds what is left, and hauls it back
      up on a new and far larger 700.9M pool: 14.0M a second for
      34s. Whatever he has climbed to when the window closes is the handicap you carry
      into stage three. The kill held him to 35%; the worst pull let him reach
      100%.</p>
-  <p style="margin-top:8px">Most of that gap is not damage — it is the ghosts. About
+  <p style="margin-top:8px">The ghosts decide most of that gap, rather than the damage. About
      41 of them walk at the serpent across the window, and each one ends one of two
      ways. Body-block it and it dies, at the cost of a raid-wide blast worth about
      1.3M: 530 went that way across the night. Let it reach him and it
-     heals 21.0M instead — 69 of those, 1.37bn poured back
-     into the resurrection. One ghost through is worth 3% of the stage-three pool, so
-     the arithmetic is brutal: blocking costs a twentieth of what letting one past does. This is
+     heals 21.0M instead. 69 went that way, putting 1.37bn
+     back into the resurrection. One ghost through is worth 3% of the stage-three
+     pool, so blocking costs about a twentieth of what letting one past does. This is
      also where the lust goes, and on 15 of the pulls that reached it the haste landed
      between -1.5s and +9s of the window opening.</p></div>
   <figure><svg id="c-ghosts" viewBox="0 0 900 280" role="img"
@@ -299,7 +298,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <figcaption>Damage into the serpent during the intermission, as a multiple of that pull's own stage
     one rate. Median 2.17x; the kill managed 3.19x, the best of the night.</figcaption></figure>
   <div class="note"><p>The three strongest burn windows of the night are the kill and the two
-    closest wipes. Nothing else on the page separates the good pulls from the bad ones this cleanly.</p></div>
+    closest wipes.</p></div>
 
   <div class="head" style="border-top:0;padding-top:0"><h3>When stage two handed over</h3>
   <p>Stage two ends on a damage threshold, not a clock: every pull crosses after 167.5M into
@@ -309,18 +308,18 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
      held damage back and crossed at 4:18 (1.2M/s). Crossing early buys more
      stage three before the enrage, but those cooldowns are then not up for the burn window; holding
      back banks them for the burn and costs stage three time. On this night the held pulls burned
-     harder — median 2.28x against 1.88x, and both the kill and the
-     best wipe sit in that group — but that is one night with the two strategies unevenly sampled,
-     not a verdict.</p>
+     harder, a median 2.28x against 1.88x, and both the kill and the
+     best wipe sit in that group. That is one night with the two strategies unevenly sampled, so
+     treat it as a lead rather than a verdict.</p>
   <p>Either way the fight is being finished at the edge of the raid's own ceiling. The kill took
      7:57, and only two of 20 pulls lasted longer than eight minutes at
-     all — the longest reaching 8:48 with no sign of a damage ramp, so this log cannot
+     all. The longest reached 8:48 with no sign of a damage ramp, so this log cannot
      say where the enrage actually sits.</p></div>
   <figure><svg id="c-transition" viewBox="0 0 900 270" role="img"
     aria-label="Handover time against how much of the serpent came back by the end of the burn window"></svg>
   <figcaption>Across the bottom, when stage two handed over. Up the side, how much of the serpent had
-    come back when the burn window closed — the handicap carried into stage three, so lower is
-    better. The dashed line is the 4:10 split this page uses to call a handover early
+    come back when the burn window closed. That is the handicap carried into stage three, so lower
+    is better. The dashed line is the 4:10 split this page uses to call a handover early
     or late: a label, not a mechanic, since the real gate is the 167.5M damage threshold.</figcaption></figure>
 
   <div class="head" style="border-top:0;padding-top:0"><h3>Who burns the window</h3>
@@ -334,15 +333,15 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     <div class="ctl grow"><span class="lab">&nbsp;</span><em id="burn-ctx"></em></div></div>
   <figure><svg id="c-burn-players" viewBox="0 0 900 420" role="img"
     aria-label="Damage into the serpent during the intermission, by player"></svg>
-  <figcaption>Healers sit near 0.9x by definition — they are not the point of this
-    chart, and they are here so the shares add up.</figcaption></figure>
+  <figcaption>Healers sit near 0.9x by definition. They are here so the shares
+    add up rather than because the chart is about them.</figcaption></figure>
 </section>
 
 <section>
   <div class="head"><h2>The edge</h2>
   <p>Going off the platform logs like nothing else in the game: no killing ability, no killer, no
      damage event. 58 of them happened while the pull was still winnable, which is
-     22.7% of the 256 deaths that cost anything — comfortably the largest
+     22.7% of the 256 deaths that cost anything, comfortably the largest
      single cause on the night. A further 132 came once the pull was already going down,
      which is a different thing entirely and is counted separately below.</p></div>
   <figure><svg id="c-edge" viewBox="0 0 900 250" role="img"
@@ -354,11 +353,10 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
       <h3>What put them there</h3>
       <div class="bars" id="causes"></div>
       <p class="muted" style="font-size:12.5px">Two mechanics own almost all of it. The knockback
-        fires the instant Malacrass reaches zero — the same moment stage two hands over — and kills
-        4.5s later, every time: 32 of these. A ghost had caught
+        fires the instant Malacrass reaches zero, the same moment stage two hands over, and kills
+        4.5s later every time: 32 of these. A ghost had caught
         22 more. Malacrass's own unavoidable Dreadmarch accounts for 2,
-        and 2 are left unexplained — which for a night with this many falls is
-        about as tidy as the log gets.</p>
+        and 2 are left unexplained.</p>
     </div>
     <div class="panel">
       <h3>Answering a mind control</h3>
@@ -367,26 +365,27 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
         hides the difference that matters. 299 applications follow one of Malacrass's
         67 casts and land on several people at once: that one is unavoidable. The other
         107 land on a single person with no cast anywhere near, always as their
-        fixation ends — a ghost catching somebody, and the one you can prevent. All
+        fixation ends. That is a ghost catching somebody, and it is the one you can prevent. All
         20 raiders were controlled at some point. The answer was 70 targeted
-        stops — 43 of them grips — and 148 ground-targeted ones.</p>
+        stops, 43 of them grips, and 148 ground-targeted ones.</p>
     </div>
   </div>
 
-  <div class="note"><p><strong>The ghost picks again.</strong> 622 fixations arrive in a
+  <div class="note"><p>The ghost picks again. 622 fixations arrive in a
     spawn wave, but 127 land off-wave, in ones and twos, a median of 24s
     after the last wave and mostly in stage three (70 against 47 in stage two).
     Those are the ghost choosing a new target, and they follow somebody dying
-    38% of the time against 15% for a wave fixation — the only
-    evidence the log offers that a ghost re-picks when its victim dies. It is suggestive rather than
-    settled: most off-wave picks follow no death at all, so something else triggers them too.</p></div>
+    38% of the time against 15% for a wave fixation. That is the
+    only evidence the log offers that a ghost re-picks when its victim dies, and it is suggestive
+    rather than settled: most off-wave picks follow no death at all, so something else triggers
+    them too.</p></div>
 
-  <div class="caveat"><p><strong>On the counting.</strong> Three different things log identically to
+  <div class="caveat"><p>On the counting. Three different things log identically to
     a fall: a genuine mistake, the wipe reset despawning the raid, and somebody jumping on purpose
     to reset a lost pull. They are separated here by how much of the raid was already dead at that
     moment, and by whether the pull survived it. A death in the last ten seconds of a wipe is part
     of the collapse whatever was on the victim, and the dead-share test alone is a knife edge in the
-    middle of one — two people here died a millisecond apart either side of it. Ten seconds is
+    middle of one: two people here died a millisecond apart either side of it. Ten seconds is
     chosen because it clears the collapse without touching a single knockback or ghost-catch death;
     fifteen starts removing real knockback deaths, which land ninety-odd seconds before a pull ends.
     132 falls fell that side of the line, 108 of them with no mechanic on the
@@ -397,29 +396,29 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     of it; the lag between a Dreadmarch ending and a fall is a spike at zero and then scatter, so a
     wider window would count coincidences as causes. The ghosts are destroyed by the boss frontal rather than killed, so they never
     register a death and cannot be counted directly.</p>
-  <p style="margin-top:10px"><strong>Every possession makes two more ghosts.</strong> Dreadmarch
+  <p style="margin-top:10px">Every possession makes two more ghosts. Dreadmarch
     is an absorb shield: break it and the possession ends, otherwise the victim walks off. Either
-    way, two Manifestations of Dread emerge from the possessed player when it drops — and the log
+    way, two Manifestations of Dread emerge from the possessed player when it drops, and the log
     bears that out exactly, at 2 new fixations per possessed player, arriving a median
     3.3s later. A four-person cast becomes eight ghosts; one person caught becomes two,
-    who can catch two more. That is the shape of every collapse on this night: the pulls that lost
-    the intermission did not take one bad mind control, they took a chain of them.</p>
-  <p style="margin-top:10px"><strong>The possession is a shield you shoot off.</strong> It does not
+    who can catch two more. The pulls that lost the intermission took a chain of mind controls
+    rather than one bad one.</p>
+  <p style="margin-top:10px">The possession is a shield you shoot off. It does not
     expire and it cannot be stunned away: Dreadmarch absorbs 494,352, and the possession
-    lasts until that is gone. The raid broke 345 of 363 of them —
-    95% — with the median possession absorbing 494,351, which is the shield
+    lasts until that is gone. The raid broke 345 of 363 of them,
+    95%, with the median possession absorbing 494,351, which is the shield
     consumed to the last point. The crowd control is not the answer to the mind control; it is what
     keeps the victim off the edge for the seconds it takes to shoot the shield off, which is why
     70 targeted stops and 148 ground-targeted ones sit alongside it. The raid
-    does that work on its own — the boss that applied the possession does not help break it — and
-    most of the damage is incidental, whatever was already cleaving. Liimage, Ørnin and Thila put the most
+    does that work on its own, since the boss that applied the possession does not help break it,
+    and most of the damage is incidental, whatever was already cleaving. Liimage, Ørnin and Thila put the most
     into them.</p>
 
-  <p style="margin-top:10px"><strong>Telling the two mind controls apart.</strong> They are the
+  <p style="margin-top:10px">Telling the two mind controls apart. They are the
     same debuff, so the source has to be reconstructed: an application within a couple of seconds of
     a Malacrass cast is the unavoidable one; a lone application on a single player as their fixation
     ends is a ghost catching them. That split 299 against 107 and
-    left nothing unclassified — every lone application coincided with a fixation ending. Of the
+    left nothing unclassified, because every lone application coincided with a fixation ending. Of the
     107 people caught, 43 were dead within thirty seconds and
     39 of those went over the edge, typically six to fourteen seconds later. The
     avoidable mind control kills an order of magnitude more people here than the unavoidable one
@@ -429,13 +428,13 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 <section>
   <div class="head"><h2>Gloombomb, and the three souls</h2>
   <p>Malacrass bombs exactly three players a cast, 78 times across the
-     night, and the blast takes a median 34% of a health bar from everyone it catches —
+     night, and the blast takes a median 34% of a health bar from everyone it catches,
      which is more people than it targets. Everyone it damages is left Gravebound at three stacks,
      and so is whoever is standing in the frontal, which is why the tanks are the most-bound players
      on the roster without ever being selected. Each stack is a soul to collect and each collection
      costs about 10% of health: 965 of those ticks across the night.</p>
   <p style="margin-top:8px">Leaving one uncollected is the expensive mistake. The punishment hit
-     lands at a median 75% of a health bar — there were 22 of them all
+     lands at a median 75% of a health bar. There were 22 of them all
      night, and the damage split is clean enough to tell the two apart with nothing in between. Of
      the 28 deaths Gravebound owns, 19 were somebody leaving a soul and
      9 were somebody collecting theirs while already too low.</p></div>
@@ -449,7 +448,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <div class="head"><h2>Defensives and consumables</h2>
   <p>The fight names its own pressure: each shield channel and each intermission, 52 of
      them across the night. 902 major cooldowns were pressed and 278 of
-     those landed inside one — the rest went out on the ordinary chip damage, which on this boss is
+     those landed inside one. The rest went out on the ordinary chip damage, which on this boss is
      most of it. 225 healthstones and 103 potions went down, at a median
      36% health. The two tanks (Fleshcrusher and Vesemirr) are left out: they press mitigation on
      cooldown as rotation, which buries the question this section is actually asking.</p></div>
@@ -463,15 +462,15 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
       <h3>Health when the stone went down</h3>
       <div class="bars" id="mit-hp"></div>
       <p class="muted" style="font-size:12.5px">Median health at the moment of use, lowest first.
-        A stone pressed in the twenties is a stone pressed a beat late — the fight kills from
+        A stone pressed in the twenties is a stone pressed a beat late, since the fight kills from
         roughly a third of a health bar on a bad Nightfall.</p>
     </div>
     <div class="panel">
       <h3>Externals given</h3>
       <div class="bars" id="mit-ext"></div>
       <p class="muted" style="font-size:12.5px">82 cooldowns handed to a named
-        teammate. Cast on yourself it is a personal save, not an external, and it is counted as one —
-        which is why the mistweaver's total is smaller here than the raw Life Cocoon count.</p>
+        teammate. Cast on yourself it is a personal save rather than an external, and it is counted
+        as one, which is why the mistweaver's total is smaller here than the raw Life Cocoon count.</p>
     </div>
     <div class="panel">
       <h3>Raid-wide cooldowns</h3>
@@ -482,10 +481,10 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     </div>
   </div>
 
-  <div class="caveat"><p><strong>On the spell list.</strong> Defensives are counted from a fixed
+  <div class="caveat"><p>On the spell list. Defensives are counted from a fixed
     roster of spell names shared with the other report, so a spec whose button is not on that list
     reads as zero rather than as missing data. Throughput and utility casts are deliberately not
-    counted — healing totems, Prayer of Mending and the like are not personal saves. Nor are buttons
+    counted: healing totems, Prayer of Mending and the like are not personal saves. Nor are buttons
     that only mitigate for the other specialisation: Metamorphosis is a defensive for a vengeance
     demon hunter and pure damage for a havoc one, and counting it added a phantom cooldown a minute
     to the wrong player until it was excluded. If somebody's count looks wrong, check the list before
