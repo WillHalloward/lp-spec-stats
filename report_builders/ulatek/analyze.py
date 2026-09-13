@@ -48,6 +48,10 @@ class Analysis:
         self.encounter_id, self.difficulty = encounter_id, difficulty
         self.fight = {x["id"]: x for x in self.fights}
         self.ids = [x["id"] for x in self.fights]
+        # Warcraft Logs numbers fights across the whole report, trash included, so
+        # a 25-pull night can end on fight 31. The page counts pulls on this boss,
+        # which is what the raid calls them.
+        self.pull_no = {fid: n for n, fid in enumerate(self.ids, 1)}
 
         self.heart_id = self._npc(*spells.HEART)
         self.boss_ids = self._npcs(*spells.BOSS)
@@ -162,16 +166,16 @@ class Analysis:
                             slot["heart" if short == "h" else "boss"] += _amount(e)
                             break
             if wins:
-                bins[fid] = [{p: {"h": [round(x) for x in v["h"]], "b": [round(x) for x in v["b"]]}
+                bins[self.pull_no[fid]] = [{p: {"h": [round(x) for x in v["h"]], "b": [round(x) for x in v["b"]]}
                               for p, v in w.items()} for w in per]
             for i, (a, b) in enumerate(wins):
                 window_secs += (b - a) / 1000
-                windows_out.append({"fight": fid, "idx": i + 1, "dur": round((b - a) / 1000, 1),
+                windows_out.append({"fight": self.pull_no[fid], "idx": i + 1, "dur": round((b - a) / 1000, 1),
                                     "dmg": round(wsum[i]["h"] + wsum[i]["b"]),
                                     "heart": round(wsum[i]["h"]), "boss": round(wsum[i]["b"])})
             heart_tot += sum(w["h"] for w in wsum)
             boss_tot += sum(w["b"] for w in wsum)
-            fights_out.append({"pull": fid, "n_windows": len(wins),
+            fights_out.append({"pull": self.pull_no[fid], "n_windows": len(wins),
                                "window_dmg": [round(w["h"] + w["b"]) for w in wsum],
                                "window_heart": [round(w["h"]) for w in wsum],
                                "window_boss": [round(w["b"]) for w in wsum],
@@ -216,7 +220,7 @@ class Analysis:
                 if self.ability.get(d.get("killingAbilityGameID")) == spells.WAVE:
                     p = self.player_of(d.get("targetID"))
                     if p:
-                        deaths.append({"fight": fid, "player": p})
+                        deaths.append({"fight": self.pull_no[fid], "player": p})
             instances = len({e.get("targetInstance", 1) for e in self.vipers(fid)})
             per_pull[fid] = {"casts": casts, "tank": tank, "nontank": nontank, "vipers": instances}
         return {"per_player": per_player, "per_pull": per_pull, "deaths": deaths}
@@ -401,7 +405,7 @@ class Analysis:
                 p = self.player_of(d.get("targetID"))
                 if p in idx:
                     ev.append([idx[p], int(self.rel(fid, d["timestamp"])), "death", ""])
-            pulls[fid] = {"dur": dur, "boss_pct": self.fight[fid]["bossPercentage"],
+            pulls[self.pull_no[fid]] = {"dur": dur, "boss_pct": self.fight[fid]["bossPercentage"],
                           "raid": [round(v / 1000) for v in raid],
                           "taken": [[round(v / 1000) for v in r] for r in taken],
                           "absorb": [[round(v / 1000) for v in r] for r in absorb],
@@ -517,15 +521,40 @@ class Analysis:
                     ret.setdefault(team.get(p), []).append(min(back))
             side_ret = {s: {"first": min(v), "median": statistics.median(v), "last": max(v)}
                         for s, v in ret.items() if s and len(v) >= 4}
-            for p, xs in v["x"].items():
-                mine = team.get(p)
-                if mine and (statistics.median(xs) < 0) != (mine == "west"):
-                    wrong.append({"pull": fid, "player": p, "went": "west" if statistics.median(xs) < 0 else "east",
-                                  "samples": len(xs)})
+            stood = {p: ("west" if statistics.median(xs) < 0 else "east") for p, xs in v["x"].items()}
+            for p, side in stood.items():
+                if team.get(p) and side != team[p]:
+                    wrong.append({"pull": fid, "player": p, "went": side, "samples": len(v["x"][p])})
             rows.append({"pull": fid, "window": win, "dur": win[1] - win[0], "agg": agg,
                          "ret": side_ret, "iso_players": dict(iso_players),
-                         "boss_again": boss_again})
-        return {"team": team, "rows": rows, "wrong": wrong,
+                         "boss_again": boss_again, "stood": stood,
+                         "sizes": {s: sum(1 for x in stood.values() if x == s) for s in ("west", "east")}})
+        moves, oneoffs = [], []
+        for p in team:
+            seq = [(r["pull"], r["stood"].get(p)) for r in rows if r["stood"].get(p)]
+            runs: list[list] = []
+            for pull, side in seq:
+                if runs and runs[-1][0] == side:
+                    runs[-1][1].append(pull)
+                else:
+                    runs.append([side, [pull]])
+            # a single pull between two runs of the same side is a wrong turn;
+            # anything that sticks is a reassignment
+            for i, (side, pulls) in enumerate(runs):
+                if len(pulls) == 1 and 0 < i < len(runs) - 1 and runs[i - 1][0] == runs[i + 1][0]:
+                    oneoffs.append({"player": p, "pull": pulls[0], "went": side})
+            kept = [r for i, r in enumerate(runs)
+                    if not (len(r[1]) == 1 and 0 < i < len(runs) - 1 and runs[i - 1][0] == runs[i + 1][0])]
+            merged: list[list] = []
+            for side, pulls in kept:
+                if merged and merged[-1][0] == side:
+                    merged[-1][1] += pulls
+                else:
+                    merged.append([side, list(pulls)])
+            for i in range(1, len(merged)):
+                moves.append({"player": p, "from": merged[i - 1][0], "to": merged[i][0],
+                              "at": merged[i][1][0], "pulls": len(merged[i][1])})
+        return {"team": team, "rows": rows, "wrong": wrong, "moves": moves, "oneoffs": oneoffs,
                 "phases": {k: v for k, v in phases.items()}}
 
     # ---- everything the page needs ----
@@ -566,8 +595,9 @@ class Analysis:
             })
 
         fights = []
+        by_no = {n: fid for fid, n in self.pull_no.items()}
         for f in burn["fights"]:
-            fid = f["pull"]
+            fid = by_no[f["pull"]]
             wp = waves["per_pull"][fid]
             fights.append({**f, "dur": round((self.fight[fid]["endTime"] - self.fight[fid]["startTime"]) / 1000),
                            "boss_pct": self.fight[fid]["bossPercentage"],
@@ -641,7 +671,7 @@ class Analysis:
         pulls, first, gaps = [], {"west": 0, "east": 0}, []
         late = {"west": 0, "east": 0}
         for r in split["rows"]:
-            row = {"pull": r["pull"], "start": r["window"][0], "dur": r["dur"],
+            row = {"pull": self.pull_no[r["pull"]], "start": r["window"][0], "dur": r["dur"],
                    "boss_again": (round(r["boss_again"] - r["window"][0], 1)
                                   if r.get("boss_again") is not None else None)}
             for s in ("west", "east"):
@@ -662,12 +692,17 @@ class Analysis:
                 gaps.append(row["west"]["back"] - row["east"]["back"])
                 first["west" if row["west"]["back"] < row["east"]["back"] else "east"] += 1
             pulls.append(row)
-        mistake = max(split["wrong"], key=lambda w: w["samples"]) if split["wrong"] else None
+        for s in ("west", "east"):
+            sides[s]["roles"] = Counter(self.role.get(p, "dps") for p in sides[s]["members"])
+        sizes = [(r["sizes"]["west"], r["sizes"]["east"]) for r in split["rows"]]
         return {"sides": sides, "pulls": pulls, "secs": secs, "first": first, "late": late,
+                "moves": [{**m, "at": self.pull_no.get(m["at"], m["at"])} for m in split.get("moves", [])],
+                "oneoffs": [{**o, "pull": self.pull_no.get(o["pull"], o["pull"])} for o in split.get("oneoffs", [])],
+                "sizes": sizes,
                 "median_gap": round(statistics.median(gaps), 1) if gaps else None,
                 "clean": len(gaps),
                 "roles": {p: self.role.get(p, "dps") for p in team},
                 "spec": {p: self.spec.get(p, "") for p in team},
                 "cls": {p: self.players[p]["subType"] for p in team},
                 "iso_by_player": dict(iso_by_player),
-                "wrong": split["wrong"], "mistake": mistake}
+                "wrong": split["wrong"]}

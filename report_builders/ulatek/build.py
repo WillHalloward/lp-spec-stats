@@ -56,6 +56,8 @@ def main() -> None:
     ap.add_argument("--date", help="night's date, YYYY-MM-DD (default: the report's own start date)")
     ap.add_argument("--night", default="raid night", help="phrase for the intro, e.g. \"Ragz Raiders progression night\"")
     ap.add_argument("--slug", help="file name under reports/ (default: <boss>-<difficulty>-prog-<date>)")
+    ap.add_argument("--title", help="title for the reports index (default: <boss> <difficulty> \u2014 the prog night in numbers)")
+    ap.add_argument("--team", help="team name, added to the index title and summary when two teams raid the same night")
     ap.add_argument("--encounter", type=int, help="encounter id, if the report holds more than one boss")
     ap.add_argument("--difficulty", type=int, help="3 normal, 4 heroic, 5 mythic")
     ap.add_argument("--out", type=Path, help="write the HTML here instead of publishing")
@@ -79,10 +81,12 @@ def main() -> None:
         path.write_text(doc, encoding="utf-8")
         index_path = REPORTS / "index.json"
         rows = json.loads(index_path.read_text(encoding="utf-8")) if index_path.exists() else []
+        team_bit = f" — {args.team}" if args.team else ""
         row = {"slug": slug,
-               "title": f"{tok['boss']} {tok['difficulty']} — the prog night in numbers",
+               "title": args.title or f"{tok['boss']} {tok['difficulty']}{team_bit} — the prog night in numbers",
                "date": date, "kind": "prog night",
-               "summary": (f"{tok['pulls']} pulls at {tok['difficulty'].lower()} {tok['boss']}: "
+               "summary": ((f"{args.team}, " if args.team else "")
+                           + f"{tok['pulls']} pulls at {tok['difficulty'].lower()} {tok['boss']}: "
                            "burn-window damage on the Venomous Heart and the boss beside it, the two "
                            "split-phase teams side by side, who ate waves, defensive cooldowns through "
                            "the heavy damage, and where the healthstones went."),

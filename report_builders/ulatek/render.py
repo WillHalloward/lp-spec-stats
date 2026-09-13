@@ -103,8 +103,16 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
                     west_tank = p
                 else:
                     east_tank = p
-    crossings = [w for w in split.get("wrong", []) if w is not split.get("mistake")]
-    mistake = split.get("mistake")
+    moves = split.get("moves", [])
+    oneoffs = split.get("oneoffs", [])
+    sizes = split.get("sizes", [])
+
+    def shape(side: str) -> str:
+        r = sides.get(side, {}).get("roles", {})
+        bits = [f"{r.get('tank', 0)} tank{'s' if r.get('tank', 0) != 1 else ''}",
+                f"{r.get('healer', 0)} healer{'s' if r.get('healer', 0) != 1 else ''}",
+                f"{r.get('dps', 0)} damage"]
+        return ", ".join(bits)
 
     early = sum(p["early_deaths"] for p in mit["players"])
     early_nodef = sum(p["early_no_def"] for p in mit["players"])
@@ -173,18 +181,24 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "split_dead_word": word(len(split_rows) - split.get("clean", 0)),
         # the phase is reported, not policed: one side ran short, and the page says
         # which side and by how much rather than naming who walked the wrong way
-        "mistake_sentence": (
-            f"on pull {mistake['pull']} one player spent the phase on the {mistake['went']} side, "
-            f"leaving it {word(len(sides.get(mistake['went'],{}).get('members',[]))+1)} against "
-            f"{word(len(sides.get('east' if mistake['went']=='west' else 'west',{}).get('members',[]))-1)} "
-            "for its length."
-            if mistake else "both sides held their ten on every pull."),
-        "crossings_sentence": (
-            f"{word(len(crossings))} other crossing{'s' if len(crossings)!=1 else ''} in the data "
-            "{}".format("is" if len(crossings) == 1 else "are")
-            + " a handful of samples each in the opening seconds with the coordinate shrinking "
-              "toward zero, which is what running to your own side looks like as the phase starts."
-            if crossings else "Every other sample sits on its own side."),
+        "split_shape": (f"west {len(sides.get('west',{}).get('members',[]))} "
+                        f"({shape('west')}) and east {len(sides.get('east',{}).get('members',[]))} "
+                        f"({shape('east')})" if sides else "one side each"),
+        "split_size_min": min((min(w, e) for w, e in sizes), default=0),
+        "split_size_max": max((max(w, e) for w, e in sizes), default=0),
+        # a side that changes for a run of pulls is a reassignment; a single odd
+        # pull is someone walking the wrong way. The page reports both as counts.
+        "split_change_sentence": (
+            (f"{word(len(moves)).capitalize()} player{'s' if len(moves) != 1 else ''} moved to the other "
+             f"side partway through, at "
+             + names(f"pull {n}" for n in sorted({m['at'] for m in moves}))
+             + ", so each pull is read on its own. "
+             if moves else "Nobody changed sides all night. ")
+            + (f"{word(len(oneoffs)).capitalize()} pull"
+               f"{'s' if len(oneoffs) != 1 else ''} had somebody on the far side of their own assignment ("
+               + names(f"pull {o['pull']}" for o in sorted(oneoffs, key=lambda o: o['pull']))
+               + "), which is what a wrong turn looks like."
+               if oneoffs else "No pull had anyone standing on the far side of their own assignment.")),
         "maxdur": P["dtps"]["maxdur"],
         "n_nontank": len(P["dtps"]["players"]), "tank_names": names(P["dtps"]["tanks"]),
         "raid_reduced": round(100 * dt_tot["reduced"] / dt_inc),

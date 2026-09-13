@@ -1,5 +1,21 @@
 [
   {
+    "slug": "ulatek-hc-ragz-2026-09-13",
+    "title": "Ula'tek Heroic — Ragz Raiders — the prog night in numbers",
+    "date": "2026-09-13",
+    "kind": "prog night",
+    "summary": "Ragz Raiders, 16 pulls at heroic Ula'tek: burn-window damage on the Venomous Heart and the boss beside it, the two split-phase teams side by side, who ate waves, defensive cooldowns through the heavy damage, and where the healthstones went.",
+    "source": "https://www.warcraftlogs.com/reports/Bdan1hTvKGNp6YDQ"
+  },
+  {
+    "slug": "ulatek-hc-piian-2026-09-13",
+    "title": "Ula'tek Heroic — Piian's Mid-Pressure — the prog night in numbers",
+    "date": "2026-09-13",
+    "kind": "prog night",
+    "summary": "Piian's Mid-Pressure, 25 pulls at heroic Ula'tek: burn-window damage on the Venomous Heart and the boss beside it, the two split-phase teams side by side, who ate waves, defensive cooldowns through the heavy damage, and where the healthstones went.",
+    "source": "https://www.warcraftlogs.com/reports/pGFQH28M3dnbPjhW"
+  },
+  {
     "slug": "the-coiled-altar-heroic-prog-2026-09-12",
     "title": "The Coiled Altar Heroic — the prog night in numbers",
     "date": "2026-09-12",
@@ -9,10 +25,10 @@
   },
   {
     "slug": "ulatek-hc-prog-2026-09-10",
-    "title": "Ula'tek Heroic — the prog night in numbers",
+    "title": "Ula'tek Heroic — Ragz Raiders — the prog night in numbers",
     "date": "2026-09-10",
     "kind": "prog night",
-    "summary": "21 pulls at heroic Ula'tek: burn-window damage on the Venomous Heart and the boss beside it, the two split-phase teams side by side, who ate waves, defensive cooldowns through the heavy damage, and where the healthstones went.",
+    "summary": "Ragz Raiders, 21 pulls at heroic Ula'tek: burn-window damage on the Venomous Heart and the boss beside it, the two split-phase teams side by side, who ate waves, defensive cooldowns through the heavy damage, and where the healthstones went.",
     "source": "https://www.warcraftlogs.com/reports/8Tt6dBX3GkZwNC4Y"
   }
 ]
