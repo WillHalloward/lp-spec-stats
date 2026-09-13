@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>Coiled Altar Prog Ledger</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root{
+  --ground:#eaeee6; --surface:#f7faf3; --surface-2:#eef2e8;
+  --ink:#131c17; --ink-2:#3c4c42; --muted:#63735f; --rule:#cdd6c6;
+  --accent:#5f7a0d;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --crit:#c93b3a;
+  --cls-DeathKnight:#a81833;
+  --cls-DemonHunter:#8a26aa;
+  --cls-Druid:#b45900;
+  --cls-Evoker:#237567;
+  --cls-Hunter:#5f8a24;
+  --cls-Mage:#1a7f9e;
+  --cls-Monk:#00875a;
+  --cls-Paladin:#c05286;
+  --cls-Rogue:#867700;
+  --cls-Shaman:#0059b0;
+  --cls-Warlock:#5d60c8;
+  --cls-Priest:#4a4a4a;
+  --cls-Warrior:#856436;
+  --grid:#d7dfd0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0e1411; --surface:#151d18; --surface-2:#1b241d;
+  --ink:#e9efe5; --ink-2:#c3cfbe; --muted:#93a397; --rule:#2b3830;
+  --accent:#a9c93c;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
+  --cls-DeathKnight:#c41e3a;
+  --cls-DemonHunter:#a330c9;
+  --cls-Druid:#ff7c0a;
+  --cls-Evoker:#33937f;
+  --cls-Hunter:#aad372;
+  --cls-Mage:#3fc7eb;
+  --cls-Monk:#00ff98;
+  --cls-Paladin:#f48cba;
+  --cls-Rogue:#fff468;
+  --cls-Shaman:#0070dd;
+  --cls-Warlock:#8788ee;
+  --cls-Priest:#ffffff;
+  --cls-Warrior:#c69b6d;
+  --grid:#26312a;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ground:#0e1411; --surface:#151d18; --surface-2:#1b241d;
+  --ink:#e9efe5; --ink-2:#c3cfbe; --muted:#93a397; --rule:#2b3830;
+  --accent:#a9c93c;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
+  --cls-DeathKnight:#c41e3a;
+  --cls-DemonHunter:#a330c9;
+  --cls-Druid:#ff7c0a;
+  --cls-Evoker:#33937f;
+  --cls-Hunter:#aad372;
+  --cls-Mage:#3fc7eb;
+  --cls-Monk:#00ff98;
+  --cls-Paladin:#f48cba;
+  --cls-Rogue:#fff468;
+  --cls-Shaman:#0070dd;
+  --cls-Warlock:#8788ee;
+  --cls-Priest:#ffffff;
+  --cls-Warrior:#c69b6d;
+  --grid:#26312a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:1060px;margin:0 auto;padding-inline:20px;padding-block:40px 72px;
+  display:flex;flex-direction:column;gap:44px}
+h1,h2,h3,.lab{font-family:"Barlow Condensed","Arial Narrow",sans-serif;margin:0}
+h1{font-size:clamp(38px,7vw,60px);font-weight:700;line-height:.98;letter-spacing:.01em;text-wrap:balance}
+h2{font-size:26px;font-weight:600;letter-spacing:.02em}
+h3{font-size:17px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.lab{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:600;color:var(--muted)}
+p{margin:0;max-width:66ch;color:var(--ink-2)}
+a{color:var(--accent)}
+header .rule{height:3px;background:var(--accent);width:74px;margin:14px 0 18px}
+header .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.tile{background:var(--surface);padding:16px 16px 14px;display:flex;flex-direction:column;gap:4px}
+.tile .n{font-family:"IBM Plex Mono",monospace;font-size:27px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:14px;color:var(--muted);font-weight:400}
+.tile .lab{font-size:11px}
+section{display:flex;flex-direction:column;gap:14px}
+section > .head{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--rule);padding-top:14px}
+figure{margin:0;background:var(--surface);border:1px solid var(--rule);padding:16px 14px 10px}
+figcaption{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);padding-top:6px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2);padding-bottom:8px}
+.legend i{width:11px;height:11px;display:inline-block;margin-right:6px;vertical-align:-1px;border-radius:2px}
+.tblwrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.09em;font-size:12px;
+  text-align:right;color:var(--muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+.chip{font-family:"Barlow Condensed",sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--rule);padding:1px 6px;color:var(--muted)}
+.pos{color:var(--s3)} .neg{color:var(--crit)}
+.note{background:var(--surface-2);border-left:3px solid var(--accent);padding:14px 16px;font-size:14.5px}
+.note p{max-width:78ch}
+.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--ink);color:var(--ground);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;line-height:1.45;padding:7px 9px;z-index:9;max-width:230px}
+.tip b{font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.controls{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-start;background:var(--surface);border:1px solid var(--rule);padding:12px 14px}
+.ctl{display:flex;flex-direction:column;gap:6px}
+.ctl.grow{flex:1 1 420px;min-width:0}
+.ctl em{font-style:normal;color:var(--ink-2);letter-spacing:.06em}
+select{font-family:"IBM Plex Mono",monospace;font-size:13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--rule);padding:6px 8px;min-width:200px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip-btn{font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--surface-2);color:var(--muted);border:1px solid var(--rule);padding:3px 8px;cursor:pointer;line-height:1.5}
+.chip-btn:hover{color:var(--ink)}
+.chip-btn[aria-pressed="true"]{color:var(--ink);border-color:currentColor}
+.chip-btn .sw{display:inline-block;width:8px;height:8px;margin-right:6px;background:currentColor;border-radius:2px}
+.chip-btn[aria-pressed="false"] .sw{background:var(--rule)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.seg-ctl{display:flex;border:1px solid var(--rule);width:max-content}
+.seg{font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--surface-2);color:var(--muted);
+  border:0;border-right:1px solid var(--rule);padding:6px 10px;cursor:pointer}
+.seg:last-child{border-right:0}
+.seg:hover{color:var(--ink)}
+.seg[aria-pressed="true"]{background:var(--ink);color:var(--ground)}
+.role{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;
+  border:1px solid currentColor;padding:0 3px;margin-right:5px;opacity:.75;vertical-align:1px}
+.legend .lg{display:inline-flex;align-items:center;gap:6px}
+.legend .lg svg{overflow:visible}
+.linkish{font-family:"IBM Plex Mono",monospace;font-size:11px;background:none;border:0;border-bottom:1px solid var(--rule);
+  color:var(--muted);cursor:pointer;padding:0 0 1px;margin-left:8px;letter-spacing:0;text-transform:none}
+.linkish:hover{color:var(--ink);border-color:currentColor}
+
+.sliders{display:flex;flex-direction:column;gap:6px;min-width:min(100%,420px)}
+.sliders label{display:flex;align-items:center;gap:10px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.sliders label span{width:32px;text-align:right}
+.sliders input[type=range]{flex:1;accent-color:var(--accent);height:20px}
+
+.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.team{background:var(--surface);padding:16px 18px}
+.team-head{font-family:"Barlow Condensed",sans-serif;font-size:17px;font-weight:600;letter-spacing:.04em;
+  display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.team .dot{width:10px;height:10px;border-radius:2px;display:inline-block}
+.team ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.team li{font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5}
+.muted{color:var(--muted)}
+.bar-key{margin:2px 0 10px;max-width:100%}
+footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
+
+/* report-specific */
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.panel{background:var(--surface);padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.bars{display:flex;flex-direction:column;gap:7px}
+/* Value column sizes to the widest value in the list rather than a fixed width,
+   so a two-part figure like "103 / 47" cannot wrap onto a second line. */
+.brow{display:grid;grid-template-columns:118px 1fr max-content;align-items:center;gap:10px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px}
+.brow .track{background:var(--surface-2);height:13px;position:relative}
+.brow .fill{position:absolute;inset:0 auto 0 0;border-radius:2px}
+.brow .v{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.caveat{border-left:3px solid var(--muted);background:var(--surface-2);padding:12px 15px;font-size:14px}
+.caveat p{max-width:78ch}
+</style>
+<style>img{max-width:100%}[hidden]{display:none!important}</style>
+<style>
+/* Strip tying the report back to the site it is served from. */
+.report-nav{display:flex;gap:18px;align-items:center;justify-content:center;
+  background:#070912;color:#8b95ad;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;
+  padding:10px 16px;border-bottom:1px solid #1c2438}
+.report-nav a{color:#8b95ad;text-decoration:none}
+.report-nav a:hover{color:#e0a526}
+.report-nav span{color:#e0a526;letter-spacing:.12em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<nav class="report-nav">
+  <a href="/reports">&larr; Reports</a>
+  <span>Low Pressure</span>
+  <a href="https://www.warcraftlogs.com/reports/37LT6jAbWXFKqv8x">Warcraft Logs</a>
+</nav>
+<div class="wrap">
+<header>
+  <div class="lab">Warcraft Logs 37LT6jAbWXFKqv8x &middot; Heroic</div>
+  <h1>The Coiled Altar, 20 pulls,<br>and a very long drop.</h1>
+  <div class="rule"></div>
+  <p>Two bosses, three stages and an intermission, on the Piian progression night of 12 September. This is
+     what the orbs cost, what the shield demanded, and where the floor ran out.</p>
+  <div class="meta" style="margin-top:14px">
+    <span>The Venomous Abyss &middot; Heroic</span>
+    <span>20 pulls, 14 reached stage three</span>
+    <span>Killed on pull 20 in 7:57</span>
+    <span><a href="https://www.warcraftlogs.com/reports/37LT6jAbWXFKqv8x">open the log</a></span>
+  </div>
+</header>
+
+<div class="tiles" id="tiles"></div>
+
+<section>
+  <div class="head"><h2>The night, pull by pull</h2>
+  <p>Bar height is how much boss was left when the pull ended, so shorter is better. Colour is
+     the furthest stage reached. The stage timings barely move — stage one runs 123s,
+     stage two 126s and the intermission a fixed 38s in every pull that
+     got there — so the only variable is stage three, and how much of it you survive.</p></div>
+  <figure><svg id="c-pulls" viewBox="0 0 900 300" role="img"
+    aria-label="Boss percentage remaining at the end of each pull"></svg>
+  <figcaption>Best wipe of the night was 4.82% on pull 18; the three closest were 4.82%, 8.21% and 8.23%.</figcaption></figure>
+</section>
+
+<section>
+  <div class="head"><h2>The orbs, and what they cost</h2>
+  <p>Poison orbs are carried and dropped into the tank frontal, which detonates everything sitting
+     in it. The carry is a flat 5 seconds — pick it up, get it placed, it goes off.
+     Each orb caught by the cleave stamps one stack of the burst DoT on the whole raid, so the
+     stack count on a frontal <em>is</em> the orb count. 545 orbs were picked up across the
+     night and 491 went off in a cleave, a median of 4 per frontal
+     and a high of 8. Only four of 140 cleaves went off empty.</p></div>
+  <figure><svg id="c-orbs" viewBox="0 0 900 260" role="img"
+    aria-label="Orbs detonated in each frontal cleave, across the night"></svg>
+  <figcaption>One mark per cleave, left to right in pull order. The pulsing per-orb aura dealt
+    1.63bn across the night and the detonation DoT 1.95bn — the two
+    largest damage sources in the log, and both of them self-inflicted by design.</figcaption></figure>
+
+  <div class="split">
+    <div class="panel">
+      <h3>Who carried</h3>
+      <div class="bars" id="carriers"></div>
+      <p class="muted" style="font-size:12.5px">18 different people picked up at least one
+        orb, but Liimage, Piiaan and Vesemirr handled 67% of them. Liimage alone carried 150.</p>
+    </div>
+    <div class="panel">
+      <h3>Stage one against stage three</h3>
+      <div class="bars" id="carriers-phase"></div>
+      <p class="muted" style="font-size:12.5px">The job concentrates in stage one and spreads out in
+        stage three, where several people who never touched an orb early pick one up late.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head"><h2>The shield, and fifteen seconds</h2>
+  <p>Malacrass wraps himself in an absorb and starts a 15-second channel. Break the
+     shield and the channel dies with it; miss and it resolves on the raid. The shield is a flat
+     18.6M every single time — not a percentage — so it is a fixed gate of about
+     1.2M raid damage per second, held for 15 seconds.</p></div>
+  <figure><svg id="c-veil" viewBox="0 0 900 300" role="img"
+    aria-label="Time taken to break each shield, against the fifteen second deadline"></svg>
+  <figcaption>29 of 36 shields broke, at a median of 9.7s and a
+    best of 7.9s. The seven that did not killed 56 people between them.</figcaption></figure>
+
+  <div class="head" style="border-top:0;padding-top:0"><h3>Who broke the shield</h3>
+  <p>Every hit that lands on the absorb counts towards breaking it, so this is damage onto
+     Malacrass inside the shield windows only — not damage for the night. 18.6M has to
+     come from somewhere, and with 25% of it coming from Indris, Vokster and Frdrschott the gate is
+     more or less three people wide.</p></div>
+  <div class="controls"><div class="ctl"><span class="lab">Show</span>
+    <select id="veil-pull" aria-label="Which pull to show shield damage for"></select></div>
+    <div class="ctl grow"><span class="lab">&nbsp;</span><em id="veil-ctx"></em></div></div>
+  <figure><svg id="c-veil-players" viewBox="0 0 900 420" role="img"
+    aria-label="Damage onto the shield during the shield windows, by player"></svg>
+  <figcaption>624.7M onto the shield across 36 windows. Across all pulls the
+    number on the right is the average per window — the useful figure, since not everyone was alive
+    for all of them; on a single pull it is that pull's total.</figcaption></figure>
+</section>
+
+<section>
+  <div class="head"><h2>The intermission is a resurrection race</h2>
+  <p>It looks like a survival phase and it is not — it is a race against a resurrection. Stage one
+     burns the serpent from full to nothing on a 274.9M health pool. In the
+     intermission Malacrass shields himself to near-immunity, binds what is left, and hauls it back
+     up on a new and far larger 700.9M pool: 14.0M a second for
+     34s. Whatever he has climbed to when the window closes is the handicap you carry
+     into stage three. The kill held him to 35%; the worst pull let him reach
+     100%.</p>
+  <p style="margin-top:8px">Most of that gap is not damage — it is the ghosts. About
+     41 of them walk at the serpent across the window, and each one ends one of two
+     ways. Body-block it and it dies, at the cost of a raid-wide blast worth about
+     1.3M: 530 went that way across the night. Let it reach him and it
+     heals 21.0M instead — 69 of those, 1.37bn poured back
+     into the resurrection. One ghost through is worth 3% of the stage-three pool, so
+     the arithmetic is brutal: blocking costs a twentieth of what letting one past does. This is
+     also where the lust goes, and on 15 of the pulls that reached it the haste landed
+     between -1.5s and +9s of the window opening.</p></div>
+  <figure><svg id="c-ghosts" viewBox="0 0 900 280" role="img"
+    aria-label="Ghosts blocked against ghosts let through, per pull"></svg>
+  <figcaption>Each pull's ghosts, blocked against let through. The two add up to about the same
+    number every time, which is what makes it a straight trade rather than a damage race.</figcaption></figure>
+  <figure><svg id="c-burn" viewBox="0 0 900 290" role="img"
+    aria-label="Damage into the serpent during the intermission, relative to the stage one rate"></svg>
+  <figcaption>Damage into the serpent during the intermission, as a multiple of that pull's own stage
+    one rate. Median 2.17x; the kill managed 3.19x, the best of the night.</figcaption></figure>
+  <div class="note"><p>The three strongest burn windows of the night are the kill and the two
+    closest wipes. Nothing else on the page separates the good pulls from the bad ones this cleanly.</p></div>
+
+  <div class="head" style="border-top:0;padding-top:0"><h3>When stage two handed over</h3>
+  <p>Stage two ends on a damage threshold, not a clock: every pull crosses after 167.5M into
+     Malacrass, identical to three figures across the night. So the handover time is entirely a
+     choice about how fast you feed it. 7 pulls spent cooldowns and crossed early at a
+     median 4:01 (1.4M/s into Malacrass through stage two); 9
+     held damage back and crossed at 4:18 (1.2M/s). Crossing early buys more
+     stage three before the enrage, but those cooldowns are then not up for the burn window; holding
+     back banks them for the burn and costs stage three time. On this night the held pulls burned
+     harder — median 2.28x against 1.88x, and both the kill and the
+     best wipe sit in that group — but that is one night with the two strategies unevenly sampled,
+     not a verdict.</p>
+  <p>Either way the fight is being finished at the edge of the raid's own ceiling. The kill took
+     7:57, and only two of 20 pulls lasted longer than eight minutes at
+     all — the longest reaching 8:48 with no sign of a damage ramp, so this log cannot
+     say where the enrage actually sits.</p></div>
+  <figure><svg id="c-transition" viewBox="0 0 900 270" role="img"
+    aria-label="Handover time against how much of the serpent came back by the end of the burn window"></svg>
+  <figcaption>Across the bottom, when stage two handed over. Up the side, how much of the serpent had
+    come back when the burn window closed — the handicap carried into stage three, so lower is
+    better. The dashed line is the 4:10 split this page uses to call a handover early
+    or late: a label, not a mechanic, since the real gate is the 167.5M damage threshold.</figcaption></figure>
+
+  <div class="head" style="border-top:0;padding-top:0"><h3>Who burns the window</h3>
+  <p>Damage into the serpent during the intermissions only, totalled across the
+     577.8s of burn window the night contained. The bar is the damage; the multiplier
+     is that player's own intermission rate against their own stage one rate, which is the honest
+     way to ask who actually lifts when the amp and the haste are up. Tuari put in the
+     most at 248.1M, but Liimage has the steepest lift at 3.77x.</p></div>
+  <div class="controls"><div class="ctl"><span class="lab">Show</span>
+    <select id="burn-pull" aria-label="Which pull to show burn-window damage for"></select></div>
+    <div class="ctl grow"><span class="lab">&nbsp;</span><em id="burn-ctx"></em></div></div>
+  <figure><svg id="c-burn-players" viewBox="0 0 900 420" role="img"
+    aria-label="Damage into the serpent during the intermission, by player"></svg>
+  <figcaption>Healers sit near 0.9x by definition — they are not the point of this
+    chart, and they are here so the shares add up.</figcaption></figure>
+</section>
+
+<section>
+  <div class="head"><h2>The edge</h2>
+  <p>Going off the platform logs like nothing else in the game: no killing ability, no killer, no
+     damage event. 58 of them happened while the pull was still winnable, which is
+     22.7% of the 256 deaths that cost anything — comfortably the largest
+     single cause on the night. A further 132 came once the pull was already going down,
+     which is a different thing entirely and is counted separately below.</p></div>
+  <figure><svg id="c-edge" viewBox="0 0 900 250" role="img"
+    aria-label="Falls per pull, split by cause"></svg>
+  <figcaption>Worst was pull 17, which lost 7 people over the side.</figcaption></figure>
+
+  <div class="split">
+    <div class="panel">
+      <h3>What put them there</h3>
+      <div class="bars" id="causes"></div>
+      <p class="muted" style="font-size:12.5px">Two mechanics own almost all of it. The knockback
+        fires the instant Malacrass reaches zero — the same moment stage two hands over — and kills
+        4.5s later, every time: 32 of these. A ghost had caught
+        22 more. Malacrass's own unavoidable Dreadmarch accounts for 2,
+        and 2 are left unexplained — which for a night with this many falls is
+        about as tidy as the log gets.</p>
+    </div>
+    <div class="panel">
+      <h3>Answering a mind control</h3>
+      <div class="bars" id="cc"></div>
+      <p class="muted" style="font-size:12.5px">Both mind controls log as the same debuff, which
+        hides the difference that matters. 299 applications follow one of Malacrass's
+        67 casts and land on several people at once: that one is unavoidable. The other
+        107 land on a single person with no cast anywhere near, always as their
+        fixation ends — a ghost catching somebody, and the one you can prevent. All
+        20 raiders were controlled at some point. The answer was 70 targeted
+        stops — 43 of them grips — and 148 ground-targeted ones.</p>
+    </div>
+  </div>
+
+  <div class="note"><p><strong>The ghost picks again.</strong> 622 fixations arrive in a
+    spawn wave, but 127 land off-wave, in ones and twos, a median of 24s
+    after the last wave and mostly in stage three (70 against 47 in stage two).
+    Those are the ghost choosing a new target, and they follow somebody dying
+    38% of the time against 15% for a wave fixation — the only
+    evidence the log offers that a ghost re-picks when its victim dies. It is suggestive rather than
+    settled: most off-wave picks follow no death at all, so something else triggers them too.</p></div>
+
+  <div class="caveat"><p><strong>On the counting.</strong> Three different things log identically to
+    a fall: a genuine mistake, the wipe reset despawning the raid, and somebody jumping on purpose
+    to reset a lost pull. They are separated here by how much of the raid was already dead at that
+    moment, and by whether the pull survived it. A death in the last ten seconds of a wipe is part
+    of the collapse whatever was on the victim, and the dead-share test alone is a knife edge in the
+    middle of one — two people here died a millisecond apart either side of it. Ten seconds is
+    chosen because it clears the collapse without touching a single knockback or ghost-catch death;
+    fifteen starts removing real knockback deaths, which land ninety-odd seconds before a pull ends.
+    132 falls fell that side of the line, 108 of them with no mechanic on the
+    victim at all: those are the resets and the collapses, and they are not counted against
+    anybody. The knockback is timed from Malacrass reaching zero rather than from the phase
+    marker, though on this log the two are the same millisecond in all sixteen pulls. A mind control
+    is credited only if it was on the victim at the moment they died or dropped within two seconds
+    of it; the lag between a Dreadmarch ending and a fall is a spike at zero and then scatter, so a
+    wider window would count coincidences as causes. The ghosts are destroyed by the boss frontal rather than killed, so they never
+    register a death and cannot be counted directly.</p>
+  <p style="margin-top:10px"><strong>Every possession makes two more ghosts.</strong> Dreadmarch
+    is an absorb shield: break it and the possession ends, otherwise the victim walks off. Either
+    way, two Manifestations of Dread emerge from the possessed player when it drops — and the log
+    bears that out exactly, at 2 new fixations per possessed player, arriving a median
+    3.3s later. A four-person cast becomes eight ghosts; one person caught becomes two,
+    who can catch two more. That is the shape of every collapse on this night: the pulls that lost
+    the intermission did not take one bad mind control, they took a chain of them.</p>
+  <p style="margin-top:10px"><strong>The possession is a shield you shoot off.</strong> It does not
+    expire and it cannot be stunned away: Dreadmarch absorbs 494,352, and the possession
+    lasts until that is gone. The raid broke 345 of 363 of them —
+    95% — with the median possession absorbing 494,351, which is the shield
+    consumed to the last point. The crowd control is not the answer to the mind control; it is what
+    keeps the victim off the edge for the seconds it takes to shoot the shield off, which is why
+    70 targeted stops and 148 ground-targeted ones sit alongside it. The raid
+    does that work on its own — the boss that applied the possession does not help break it — and
+    most of the damage is incidental, whatever was already cleaving. Liimage, Ørnin and Thila put the most
+    into them.</p>
+
+  <p style="margin-top:10px"><strong>Telling the two mind controls apart.</strong> They are the
+    same debuff, so the source has to be reconstructed: an application within a couple of seconds of
+    a Malacrass cast is the unavoidable one; a lone application on a single player as their fixation
+    ends is a ghost catching them. That split 299 against 107 and
+    left nothing unclassified — every lone application coincided with a fixation ending. Of the
+    107 people caught, 43 were dead within thirty seconds and
+    39 of those went over the edge, typically six to fourteen seconds later. The
+    avoidable mind control kills an order of magnitude more people here than the unavoidable one
+    does.</p></div>
+</section>
+
+<section>
+  <div class="head"><h2>Gloombomb, and the three souls</h2>
+  <p>Malacrass bombs exactly three players a cast, 78 times across the
+     night, and the blast takes a median 34% of a health bar from everyone it catches —
+     which is more people than it targets. Everyone it damages is left Gravebound at three stacks,
+     and so is whoever is standing in the frontal, which is why the tanks are the most-bound players
+     on the roster without ever being selected. Each stack is a soul to collect and each collection
+     costs about 10% of health: 965 of those ticks across the night.</p>
+  <p style="margin-top:8px">Leaving one uncollected is the expensive mistake. The punishment hit
+     lands at a median 75% of a health bar — there were 22 of them all
+     night, and the damage split is clean enough to tell the two apart with nothing in between. Of
+     the 28 deaths Gravebound owns, 19 were somebody leaving a soul and
+     9 were somebody collecting theirs while already too low.</p></div>
+  <figure><svg id="c-souls" viewBox="0 0 900 420" role="img"
+    aria-label="Gloombomb selections and Gravebound stacks per player"></svg>
+  <figcaption>Bar is how often each player was left Gravebound; the solid part is how much of that
+    came from being picked for the bomb. Numbers on the right are souls collected and deaths.</figcaption></figure>
+</section>
+
+<section>
+  <div class="head"><h2>Defensives and consumables</h2>
+  <p>The fight names its own pressure: each shield channel and each intermission, 52 of
+     them across the night. 902 major cooldowns were pressed and 278 of
+     those landed inside one — the rest went out on the ordinary chip damage, which on this boss is
+     most of it. 225 healthstones and 103 potions went down, at a median
+     36% health. The two tanks (Fleshcrusher and Vesemirr) are left out: they press mitigation on
+     cooldown as rotation, which buries the question this section is actually asking.</p></div>
+  <figure><svg id="c-mit" viewBox="0 0 900 420" role="img"
+    aria-label="Defensive cooldowns and consumables used, by player"></svg>
+  <figcaption>Bar is major cooldowns, darker where they landed in a shield window or the
+    intermission. Numbers on the right are healthstones and potions.</figcaption></figure>
+
+  <div class="split">
+    <div class="panel">
+      <h3>Health when the stone went down</h3>
+      <div class="bars" id="mit-hp"></div>
+      <p class="muted" style="font-size:12.5px">Median health at the moment of use, lowest first.
+        A stone pressed in the twenties is a stone pressed a beat late — the fight kills from
+        roughly a third of a health bar on a bad Nightfall.</p>
+    </div>
+    <div class="panel">
+      <h3>Externals given</h3>
+      <div class="bars" id="mit-ext"></div>
+      <p class="muted" style="font-size:12.5px">82 cooldowns handed to a named
+        teammate. Cast on yourself it is a personal save, not an external, and it is counted as one —
+        which is why the mistweaver's total is smaller here than the raw Life Cocoon count.</p>
+    </div>
+    <div class="panel">
+      <h3>Raid-wide cooldowns</h3>
+      <div class="bars" id="mit-raid"></div>
+      <p class="muted" style="font-size:12.5px">185 of them, a separate thing from an
+        external: nobody in particular receives one. They log against the environment rather than a
+        player, which is how the two are told apart.</p>
+    </div>
+  </div>
+
+  <div class="caveat"><p><strong>On the spell list.</strong> Defensives are counted from a fixed
+    roster of spell names shared with the other report, so a spec whose button is not on that list
+    reads as zero rather than as missing data. Throughput and utility casts are deliberately not
+    counted — healing totems, Prayer of Mending and the like are not personal saves. Nor are buttons
+    that only mitigate for the other specialisation: Metamorphosis is a defensive for a vengeance
+    demon hunter and pure damage for a havoc one, and counting it added a phantom cooldown a minute
+    to the wrong player until it was excluded. If somebody's count looks wrong, check the list before
+    concluding anything about them.</p></div>
+</section>
+
+<footer>
+  Built from Warcraft Logs report 37LT6jAbWXFKqv8x &middot; 20 pulls at Heroic The Coiled Altar &middot; 12 September.
+  Numbers are derived from the log's own event stream; see the builder's README for what each one means.
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<script id="progress" type="application/json">[{"pull":1,"kill":false,"best":63.66,"duration":213.3,"reached":"P2","phases":{"P1":118.6,"P2":94.6}},{"pull":2,"kill":false,"best":26.63,"duration":342.4,"reached":"P3","phases":{"P1":121.5,"P2":119.5,"INT":38.1,"P3":63.4}},{"pull":3,"kill":false,"best":84.68,"duration":99.4,"reached":"P1","phases":{"P1":99.4}},{"pull":4,"kill":false,"best":10.72,"duration":429.8,"reached":"P3","phases":{"P1":124.1,"P2":107.1,"INT":38.3,"P3":160.3}},{"pull":5,"kill":false,"best":20.42,"duration":382.9,"reached":"P3","phases":{"P1":121.9,"P2":132.8,"INT":37.5,"P3":90.6}},{"pull":6,"kill":false,"best":73.8,"duration":169.5,"reached":"P2","phases":{"P1":116.1,"P2":53.4}},{"pull":7,"kill":false,"best":8.23,"duration":443.6,"reached":"P3","phases":{"P1":124.1,"P2":122.6,"INT":38.6,"P3":158.3}},{"pull":8,"kill":false,"best":15.96,"duration":396.3,"reached":"P3","phases":{"P1":121.3,"P2":134.8,"INT":38.7,"P3":101.5}},{"pull":9,"kill":false,"best":42.47,"duration":269.7,"reached":"P3","phases":{"P1":119.8,"P2":107.6,"INT":38.4,"P3":3.9}},{"pull":10,"kill":false,"best":46.78,"duration":267.1,"reached":"INT","phases":{"P1":122.9,"P2":125.6,"INT":18.6}},{"pull":11,"kill":false,"best":45.5,"duration":283.1,"reached":"INT","phases":{"P1":120.5,"P2":138.0,"INT":24.6}},{"pull":12,"kill":false,"best":12.94,"duration":456.3,"reached":"P3","phases":{"P1":119.6,"P2":139.5,"INT":37.9,"P3":159.4}},{"pull":13,"kill":false,"best":24.56,"duration":319.3,"reached":"P3","phases":{"P1":124.3,"P2":133.5,"INT":37.8,"P3":23.7}},{"pull":14,"kill":false,"best":8.21,"duration":527.9,"reached":"P3","phases":{"P1":119.4,"P2":136.2,"INT":37.9,"P3":234.4}},{"pull":15,"kill":false,"best":15.04,"duration":359.1,"reached":"P3","phases":{"P1":124.5,"P2":133.7,"INT":38.2,"P3":62.6}},{"pull":16,"kill":false,"best":80,"duration":142.5,"reached":"P2","phases":{"P1":127.8,"P2":14.7}},{"pull":17,"kill":false,"best":13.38,"duration":433.6,"reached":"P3","phases":{"P1":124.8,"P2":118.1,"INT":38.7,"P3":152.0}},{"pull":18,"kill":false,"best":4.82,"duration":493.5,"reached":"P3","phases":{"P1":123.5,"P2":135.7,"INT":38.1,"P3":196.2}},{"pull":19,"kill":false,"best":20.42,"duration":330.0,"reached":"P3","phases":{"P1":123.5,"P2":108.2,"INT":37.8,"P3":60.6}},{"pull":20,"kill":true,"best":0,"duration":476.7,"reached":"P3","phases":{"P1":125.3,"P2":132.9,"INT":38.7,"P3":179.8}}]</script>
+<script id="orbs" type="application/json">{"cleaves":[{"pull":1,"t":23.0,"phase":"P1","orbs":4},{"pull":1,"t":40.0,"phase":"P1","orbs":0},{"pull":1,"t":60.0,"phase":"P1","orbs":4},{"pull":1,"t":77.0,"phase":"P1","orbs":2},{"pull":1,"t":108.0,"phase":"P1","orbs":5},{"pull":2,"t":23.0,"phase":"P1","orbs":3},{"pull":2,"t":40.0,"phase":"P1","orbs":2},{"pull":2,"t":60.0,"phase":"P1","orbs":4},{"pull":2,"t":77.0,"phase":"P1","orbs":2},{"pull":2,"t":108.0,"phase":"P1","orbs":5},{"pull":2,"t":318.0,"phase":"P3","orbs":5},{"pull":3,"t":23.0,"phase":"P1","orbs":6},{"pull":3,"t":40.0,"phase":"P1","orbs":1},{"pull":3,"t":60.0,"phase":"P1","orbs":2},{"pull":3,"t":77.0,"phase":"P1","orbs":4},{"pull":4,"t":23.0,"phase":"P1","orbs":4},{"pull":4,"t":40.0,"phase":"P1","orbs":3},{"pull":4,"t":60.0,"phase":"P1","orbs":2},{"pull":4,"t":77.0,"phase":"P1","orbs":3},{"pull":4,"t":108.0,"phase":"P1","orbs":5},{"pull":4,"t":309.0,"phase":"P3","orbs":5},{"pull":4,"t":341.2,"phase":"P3","orbs":3},{"pull":4,"t":375.7,"phase":"P3","orbs":4},{"pull":4,"t":413.6,"phase":"P3","orbs":0},{"pull":5,"t":23.0,"phase":"P1","orbs":4},{"pull":5,"t":40.0,"phase":"P1","orbs":1},{"pull":5,"t":60.0,"phase":"P1","orbs":2},{"pull":5,"t":77.0,"phase":"P1","orbs":5},{"pull":5,"t":108.0,"phase":"P1","orbs":6},{"pull":5,"t":330.9,"phase":"P3","orbs":4},{"pull":5,"t":363.1,"phase":"P3","orbs":1},{"pull":6,"t":23.0,"phase":"P1","orbs":5},{"pull":6,"t":40.0,"phase":"P1","orbs":1},{"pull":6,"t":60.0,"phase":"P1","orbs":4},{"pull":6,"t":77.0,"phase":"P1","orbs":2},{"pull":6,"t":108.0,"phase":"P1","orbs":5},{"pull":7,"t":23.0,"phase":"P1","orbs":2},{"pull":7,"t":40.0,"phase":"P1","orbs":4},{"pull":7,"t":60.0,"phase":"P1","orbs":3},{"pull":7,"t":77.0,"phase":"P1","orbs":4},{"pull":7,"t":108.0,"phase":"P1","orbs":5},{"pull":7,"t":324.3,"phase":"P3","orbs":5},{"pull":7,"t":356.5,"phase":"P3","orbs":4},{"pull":7,"t":391.0,"phase":"P3","orbs":2},{"pull":7,"t":428.9,"phase":"P3","orbs":5},{"pull":8,"t":23.0,"phase":"P1","orbs":3},{"pull":8,"t":40.1,"phase":"P1","orbs":3},{"pull":8,"t":60.0,"phase":"P1","orbs":3},{"pull":8,"t":77.0,"phase":"P1","orbs":4},{"pull":8,"t":108.0,"phase":"P1","orbs":4},{"pull":8,"t":333.9,"phase":"P3","orbs":3},{"pull":8,"t":366.0,"phase":"P3","orbs":4},{"pull":9,"t":23.0,"phase":"P1","orbs":3},{"pull":9,"t":40.0,"phase":"P1","orbs":1},{"pull":9,"t":60.0,"phase":"P1","orbs":4},{"pull":9,"t":77.0,"phase":"P1","orbs":2},{"pull":9,"t":108.0,"phase":"P1","orbs":5},{"pull":10,"t":23.0,"phase":"P1","orbs":3},{"pull":10,"t":40.0,"phase":"P1","orbs":2},{"pull":10,"t":60.0,"phase":"P1","orbs":3},{"pull":10,"t":77.0,"phase":"P1","orbs":4},{"pull":10,"t":108.0,"phase":"P1","orbs":5},{"pull":11,"t":23.0,"phase":"P1","orbs":5},{"pull":11,"t":40.0,"phase":"P1","orbs":1},{"pull":11,"t":60.0,"phase":"P1","orbs":4},{"pull":11,"t":77.0,"phase":"P1","orbs":3},{"pull":11,"t":108.1,"phase":"P1","orbs":5},{"pull":12,"t":23.0,"phase":"P1","orbs":6},{"pull":12,"t":40.0,"phase":"P1","orbs":1},{"pull":12,"t":60.0,"phase":"P1","orbs":3},{"pull":12,"t":77.0,"phase":"P1","orbs":4},{"pull":12,"t":108.0,"phase":"P1","orbs":5},{"pull":12,"t":335.6,"phase":"P3","orbs":5},{"pull":12,"t":367.8,"phase":"P3","orbs":4},{"pull":12,"t":402.3,"phase":"P3","orbs":5},{"pull":12,"t":440.2,"phase":"P3","orbs":3},{"pull":13,"t":23.0,"phase":"P1","orbs":5},{"pull":13,"t":40.0,"phase":"P1","orbs":1},{"pull":13,"t":60.0,"phase":"P1","orbs":4},{"pull":13,"t":77.0,"phase":"P1","orbs":3},{"pull":13,"t":108.0,"phase":"P1","orbs":5},{"pull":14,"t":23.0,"phase":"P1","orbs":4},{"pull":14,"t":40.0,"phase":"P1","orbs":2},{"pull":14,"t":60.0,"phase":"P1","orbs":3},{"pull":14,"t":77.0,"phase":"P1","orbs":3},{"pull":14,"t":108.0,"phase":"P1","orbs":7},{"pull":14,"t":332.2,"phase":"P3","orbs":5},{"pull":14,"t":364.4,"phase":"P3","orbs":5},{"pull":14,"t":398.8,"phase":"P3","orbs":4},{"pull":14,"t":436.8,"phase":"P3","orbs":3},{"pull":14,"t":468.9,"phase":"P3","orbs":5},{"pull":14,"t":502.3,"phase":"P3","orbs":3},{"pull":15,"t":23.0,"phase":"P1","orbs":6},{"pull":15,"t":40.0,"phase":"P1","orbs":0},{"pull":15,"t":60.0,"phase":"P1","orbs":3},{"pull":15,"t":77.0,"phase":"P1","orbs":2},{"pull":15,"t":108.1,"phase":"P1","orbs":8},{"pull":15,"t":335.5,"phase":"P3","orbs":2},{"pull":16,"t":23.0,"phase":"P1","orbs":4},{"pull":16,"t":40.0,"phase":"P1","orbs":3},{"pull":16,"t":60.0,"phase":"P1","orbs":3},{"pull":16,"t":77.0,"phase":"P1","orbs":2},{"pull":16,"t":108.0,"phase":"P1","orbs":5},{"pull":16,"t":125.0,"phase":"P1","orbs":1},{"pull":17,"t":23.0,"phase":"P1","orbs":6},{"pull":17,"t":40.0,"phase":"P1","orbs":1},{"pull":17,"t":60.0,"phase":"P1","orbs":3},{"pull":17,"t":77.0,"phase":"P1","orbs":4},{"pull":17,"t":108.0,"phase":"P1","orbs":6},{"pull":17,"t":320.5,"phase":"P3","orbs":4},{"pull":17,"t":352.7,"phase":"P3","orbs":4},{"pull":17,"t":387.2,"phase":"P3","orbs":3},{"pull":17,"t":425.1,"phase":"P3","orbs":0},{"pull":18,"t":23.0,"phase":"P1","orbs":4},{"pull":18,"t":40.0,"phase":"P1","orbs":1},{"pull":18,"t":60.0,"phase":"P1","orbs":2},{"pull":18,"t":77.0,"phase":"P1","orbs":1},{"pull":18,"t":108.0,"phase":"P1","orbs":7},{"pull":18,"t":336.3,"phase":"P3","orbs":5},{"pull":18,"t":368.5,"phase":"P3","orbs":1},{"pull":18,"t":403.0,"phase":"P3","orbs":3},{"pull":18,"t":440.9,"phase":"P3","orbs":8},{"pull":18,"t":473.1,"phase":"P3","orbs":3},{"pull":19,"t":23.0,"phase":"P1","orbs":4},{"pull":19,"t":40.0,"phase":"P1","orbs":3},{"pull":19,"t":60.0,"phase":"P1","orbs":1},{"pull":19,"t":77.0,"phase":"P1","orbs":5},{"pull":19,"t":108.1,"phase":"P1","orbs":5},{"pull":19,"t":308.9,"phase":"P3","orbs":3},{"pull":20,"t":23.0,"phase":"P1","orbs":4},{"pull":20,"t":40.0,"phase":"P1","orbs":2},{"pull":20,"t":60.0,"phase":"P1","orbs":3},{"pull":20,"t":77.0,"phase":"P1","orbs":5},{"pull":20,"t":108.0,"phase":"P1","orbs":6},{"pull":20,"t":125.0,"phase":"P1","orbs":3},{"pull":20,"t":335.9,"phase":"P3","orbs":5},{"pull":20,"t":368.0,"phase":"P3","orbs":3},{"pull":20,"t":402.5,"phase":"P3","orbs":3},{"pull":20,"t":440.5,"phase":"P3","orbs":4},{"pull":20,"t":472.7,"phase":"P3","orbs":3}],"carriers":[{"name":"Liimage","p1":103,"p3":47,"total":150,"share":27.5},{"name":"Piiaan","p1":105,"p3":16,"total":121,"share":22.2},{"name":"Vesemirr","p1":80,"p3":15,"total":95,"share":17.4},{"name":"Fleshcrusher","p1":27,"p3":15,"total":42,"share":7.7},{"name":"Aeonara","p1":23,"p3":16,"total":39,"share":7.2},{"name":"Vokster","p1":19,"p3":5,"total":24,"share":4.4},{"name":"Mysticake","p1":2,"p3":13,"total":15,"share":2.8},{"name":"Squirtgun","p1":1,"p3":10,"total":11,"share":2.0},{"name":"Tuari","p1":0,"p3":10,"total":10,"share":1.8},{"name":"Indris","p1":2,"p3":6,"total":8,"share":1.5},{"name":"Ørnin","p1":0,"p3":6,"total":6,"share":1.1},{"name":"Thila","p1":5,"p3":0,"total":5,"share":0.9},{"name":"Shazàm","p1":1,"p3":4,"total":5,"share":0.9},{"name":"Frdrschott","p1":2,"p3":3,"total":5,"share":0.9},{"name":"Evonux","p1":1,"p3":3,"total":4,"share":0.7},{"name":"Niydra","p1":0,"p3":2,"total":2,"share":0.4},{"name":"Kruwger","p1":0,"p3":2,"total":2,"share":0.4},{"name":"Alfi","p1":0,"p3":1,"total":1,"share":0.2}]}</script>
+<script id="veil" type="application/json">[{"pull":1,"t":197.0,"phase":"P2","break_seconds":15.0,"resolved":true,"absorbed":10453853.0,"raid_damage":1333886,"deaths":2},{"pull":2,"t":199.5,"phase":"P2","break_seconds":9.1,"resolved":false,"absorbed":18646931.0,"raid_damage":0,"deaths":0},{"pull":2,"t":320.8,"phase":"P3","break_seconds":15.1,"resolved":true,"absorbed":9648339.0,"raid_damage":10552711,"deaths":9},{"pull":4,"t":202.5,"phase":"P2","break_seconds":8.8,"resolved":false,"absorbed":18646929.0,"raid_damage":0,"deaths":0},{"pull":4,"t":311.8,"phase":"P3","break_seconds":13.4,"resolved":false,"absorbed":18646916.0,"raid_damage":0,"deaths":0},{"pull":4,"t":411.7,"phase":"P3","break_seconds":15.0,"resolved":true,"absorbed":7510528.0,"raid_damage":4919664,"deaths":4},{"pull":5,"t":200.1,"phase":"P2","break_seconds":9.7,"resolved":false,"absorbed":18646914.0,"raid_damage":0,"deaths":0},{"pull":5,"t":333.6,"phase":"P3","break_seconds":14.1,"resolved":false,"absorbed":18646913.0,"raid_damage":0,"deaths":0},{"pull":7,"t":202.0,"phase":"P2","break_seconds":8.0,"resolved":false,"absorbed":18646921.0,"raid_damage":0,"deaths":0},{"pull":7,"t":327.0,"phase":"P3","break_seconds":10.8,"resolved":false,"absorbed":18646919.0,"raid_damage":0,"deaths":0},{"pull":7,"t":427.0,"phase":"P3","break_seconds":15.1,"resolved":true,"absorbed":16344201.0,"raid_damage":4734691,"deaths":8},{"pull":8,"t":200.1,"phase":"P2","break_seconds":9.4,"resolved":false,"absorbed":18646940.0,"raid_damage":0,"deaths":0},{"pull":8,"t":336.6,"phase":"P3","break_seconds":12.3,"resolved":false,"absorbed":18646922.0,"raid_damage":0,"deaths":0},{"pull":9,"t":198.3,"phase":"P2","break_seconds":9.6,"resolved":false,"absorbed":18646927.0,"raid_damage":0,"deaths":0},{"pull":10,"t":201.3,"phase":"P2","break_seconds":9.7,"resolved":false,"absorbed":18646926.0,"raid_damage":0,"deaths":0},{"pull":11,"t":198.6,"phase":"P2","break_seconds":8.7,"resolved":false,"absorbed":18646925.0,"raid_damage":0,"deaths":0},{"pull":12,"t":197.4,"phase":"P2","break_seconds":7.9,"resolved":false,"absorbed":18646927.0,"raid_damage":0,"deaths":0},{"pull":12,"t":338.3,"phase":"P3","break_seconds":13.7,"resolved":false,"absorbed":18646927.0,"raid_damage":0,"deaths":0},{"pull":12,"t":438.3,"phase":"P3","break_seconds":15.2,"resolved":true,"absorbed":17873716.0,"raid_damage":9138105,"deaths":13},{"pull":13,"t":202.9,"phase":"P2","break_seconds":9.0,"resolved":false,"absorbed":18646920.0,"raid_damage":0,"deaths":0},{"pull":14,"t":197.7,"phase":"P2","break_seconds":9.2,"resolved":false,"absorbed":18646927.0,"raid_damage":0,"deaths":0},{"pull":14,"t":334.9,"phase":"P3","break_seconds":13.7,"resolved":false,"absorbed":18646931.0,"raid_damage":0,"deaths":0},{"pull":14,"t":434.9,"phase":"P3","break_seconds":13.3,"resolved":false,"absorbed":18646918.0,"raid_damage":0,"deaths":0},{"pull":15,"t":202.6,"phase":"P2","break_seconds":8.9,"resolved":false,"absorbed":18646919.0,"raid_damage":0,"deaths":0},{"pull":15,"t":338.2,"phase":"P3","break_seconds":15.2,"resolved":true,"absorbed":17904059.0,"raid_damage":11869289,"deaths":13},{"pull":17,"t":202.7,"phase":"P2","break_seconds":9.4,"resolved":false,"absorbed":18646933.0,"raid_damage":0,"deaths":0},{"pull":17,"t":323.3,"phase":"P3","break_seconds":11.3,"resolved":false,"absorbed":18646923.0,"raid_damage":0,"deaths":0},{"pull":17,"t":423.2,"phase":"P3","break_seconds":15.0,"resolved":false,"absorbed":5132064.0,"raid_damage":0,"deaths":0},{"pull":18,"t":201.9,"phase":"P2","break_seconds":10.0,"resolved":false,"absorbed":18646927.0,"raid_damage":0,"deaths":0},{"pull":18,"t":339.0,"phase":"P3","break_seconds":11.2,"resolved":false,"absorbed":18646911.0,"raid_damage":0,"deaths":0},{"pull":18,"t":439.1,"phase":"P3","break_seconds":14.4,"resolved":false,"absorbed":18646931.0,"raid_damage":0,"deaths":0},{"pull":19,"t":201.2,"phase":"P2","break_seconds":10.1,"resolved":false,"absorbed":18646930.0,"raid_damage":0,"deaths":0},{"pull":19,"t":311.6,"phase":"P3","break_seconds":15.1,"resolved":true,"absorbed":14896193.0,"raid_damage":5859363,"deaths":7},{"pull":20,"t":203.1,"phase":"P2","break_seconds":9.4,"resolved":false,"absorbed":18646931.0,"raid_damage":0,"deaths":0},{"pull":20,"t":338.6,"phase":"P3","break_seconds":9.5,"resolved":false,"absorbed":18646928.0,"raid_damage":0,"deaths":0},{"pull":20,"t":438.6,"phase":"P3","break_seconds":10.4,"resolved":false,"absorbed":18646909.0,"raid_damage":0,"deaths":0}]</script>
+<script id="veilp" type="application/json">[{"name":"Indris","class":"Paladin","spec":"Retribution","role":"DPS","damage":57597484,"share":9.2,"windows":31,"per_window":1857983,"by_pull":{"1":2537188,"2":2606031,"4":2332603,"5":586473,"7":5845616,"8":1411101,"9":1615203,"10":1213980,"11":1733501,"12":1840059,"13":2239429,"14":6529215,"15":6110240,"17":3255809,"18":7765922,"19":4275621,"20":5699493}},{"name":"Vokster","class":"Warrior","spec":"Arms","role":"DPS","damage":55415350,"share":8.9,"windows":36,"per_window":1539315,"by_pull":{"1":1010747,"2":2959938,"4":3481021,"5":4146618,"7":3238124,"8":4080655,"9":2097677,"10":1102493,"11":1688391,"12":5592755,"13":2656295,"14":4884487,"15":2945877,"17":4338188,"18":3676309,"19":3487377,"20":4028398}},{"name":"Frdrschott","class":"DeathKnight","spec":"Unholy","role":"DPS","damage":45301589,"share":7.3,"windows":34,"per_window":1332400,"by_pull":{"1":1932483,"2":2520257,"4":3613357,"5":3936183,"7":3581192,"8":1231177,"9":1878990,"10":1020726,"11":2421439,"12":4133218,"13":1635215,"14":3396742,"15":2345871,"17":3141333,"18":3509775,"19":2241320,"20":2762311}},{"name":"Ørnin","class":"Warlock","spec":"Demonology","role":"DPS","damage":45081619,"share":7.2,"windows":33,"per_window":1366110,"by_pull":{"2":1556964,"4":4351819,"5":2162451,"7":5181159,"8":2383213,"9":786712,"10":1180450,"11":1028674,"12":3534102,"13":1346207,"14":3893460,"15":3496729,"17":1609569,"18":4481443,"19":1818216,"20":6270451}},{"name":"Evonux","class":"Warrior","spec":"Arms","role":"DPS","damage":44544877,"share":7.1,"windows":31,"per_window":1436932,"by_pull":{"2":1543777,"4":3207617,"5":2662901,"7":3701602,"8":2252594,"9":1388133,"10":1180087,"11":449008,"12":5505447,"13":1829459,"14":7613472,"15":1617604,"17":1743243,"18":5543602,"19":4755,"20":4301576}},{"name":"Mysticake","class":"Monk","spec":"Windwalker","role":"DPS","damage":44487209,"share":7.1,"windows":32,"per_window":1390225,"by_pull":{"1":938975,"2":1219601,"4":2502564,"5":2352759,"7":4615785,"8":3099558,"9":1672961,"10":1369848,"11":1425457,"12":1146716,"13":959556,"14":4731513,"15":4000751,"17":3899856,"18":4799674,"19":942964,"20":4808671}},{"name":"Piiaan","class":"Hunter","spec":"BeastMastery","role":"DPS","damage":44063094,"share":7.1,"windows":31,"per_window":1421390,"by_pull":{"2":3355136,"4":3283564,"5":3310801,"7":3922753,"8":2948479,"9":2324987,"10":2163908,"11":1391629,"12":4510723,"13":534283,"14":1140944,"15":1231993,"17":2181730,"18":2811067,"19":3534184,"20":5416913}},{"name":"Alfi","class":"DemonHunter","spec":"Havoc","role":"DPS","damage":43155170,"share":6.9,"windows":34,"per_window":1269270,"by_pull":{"1":12848,"2":749649,"4":5537493,"5":3742229,"7":2617309,"8":2072288,"9":861977,"10":1699251,"11":1150785,"12":4911298,"13":1022154,"14":5276247,"15":853357,"17":4445121,"18":2835470,"19":2280341,"20":3087353}},{"name":"Kruwger","class":"Paladin","spec":"Retribution","role":"DPS","damage":41917786,"share":6.7,"windows":31,"per_window":1352187,"by_pull":{"1":183324,"2":4477993,"4":2515745,"5":2138219,"7":4912054,"8":3759948,"9":1163823,"10":1430014,"11":644591,"12":663201,"13":1522564,"14":3829399,"15":2870099,"17":2098755,"18":3625644,"19":3368491,"20":2713922}},{"name":"Thila","class":"Hunter","spec":"BeastMastery","role":"DPS","damage":39419605,"share":6.3,"windows":31,"per_window":1271600,"by_pull":{"1":1892729,"2":1286855,"4":890795,"5":2528214,"7":2206595,"8":2882252,"9":949839,"10":1565249,"11":1817528,"12":5287467,"13":952487,"14":1863352,"15":1499663,"17":4456830,"18":3535394,"19":2737015,"20":3067341}},{"name":"Liimage","class":"Mage","spec":"Arcane","role":"DPS","damage":34574794,"share":5.5,"windows":31,"per_window":1115316,"by_pull":{"1":945795,"4":2175581,"5":3431398,"7":3856803,"8":1901416,"9":679257,"10":928976,"11":887335,"12":3509574,"13":572292,"14":2057662,"15":2576090,"17":2154335,"18":4522598,"19":1288459,"20":3087223}},{"name":"Tuari","class":"Shaman","spec":"Elemental","role":"DPS","damage":32278780,"share":5.2,"windows":31,"per_window":1041251,"by_pull":{"1":100908,"2":2036026,"4":2402919,"5":2022431,"7":2334103,"8":2797447,"9":593249,"10":389737,"11":596753,"12":1315258,"13":864859,"14":3906864,"15":1770851,"17":2455775,"18":3558909,"19":2052391,"20":3080300}},{"name":"Atheniás","class":"Shaman","spec":"Elemental","role":"DPS","damage":30751603,"share":4.9,"windows":31,"per_window":991987,"by_pull":{"2":1381094,"4":1766854,"5":2589632,"7":615066,"8":2003139,"9":976952,"10":1357376,"11":1263899,"12":3663845,"13":320780,"14":1971301,"15":2986822,"17":3527897,"18":1093256,"19":2234934,"20":2998756}},{"name":"Niydra","class":"Warlock","spec":"Demonology","role":"DPS","damage":30470047,"share":4.9,"windows":29,"per_window":1050691,"by_pull":{"1":217824,"2":848326,"4":3923075,"7":3311309,"8":3220264,"9":773970,"10":1119647,"11":905955,"12":5937319,"13":1067356,"14":2887387,"15":190842,"17":637236,"18":1871641,"19":1099694,"20":2458202}},{"name":"Fleshcrusher","class":"DeathKnight","spec":"Blood","role":"Tank","damage":15057782,"share":2.4,"windows":35,"per_window":430222,"by_pull":{"1":20100,"2":748748,"4":1021746,"5":917762,"7":2145929,"8":360986,"9":565291,"10":291996,"11":305406,"12":1453002,"13":787174,"14":657653,"15":836950,"17":2294692,"18":897421,"19":771883,"20":981043}},{"name":"Vesemirr","class":"Warrior","spec":"Protection","role":"Tank","damage":14693851,"share":2.4,"windows":36,"per_window":408163,"by_pull":{"1":805027,"2":673929,"4":1384214,"5":507245,"7":1296726,"8":531126,"9":324239,"10":526435,"11":836154,"12":1291008,"13":182763,"14":1029607,"15":1047660,"17":278688,"18":1565196,"19":1295182,"20":1118652}},{"name":"Glugfufiter","class":"Monk","spec":"Mistweaver","role":"Healer","damage":3063179,"share":0.5,"windows":32,"per_window":95724,"by_pull":{"1":85390,"2":301694,"4":551410,"5":240523,"7":261125,"8":236418,"9":43126,"10":53528,"11":102260,"12":147188,"13":131452,"14":222695,"15":189960,"18":267010,"19":113951,"20":115449}},{"name":"Squirtgun","class":"Shaman","spec":"Restoration","role":"Healer","damage":1821388,"share":0.3,"windows":17,"per_window":107140,"by_pull":{"2":12667,"4":38740,"5":34319,"7":42672,"8":183264,"10":747,"12":815905,"14":371786,"18":297991,"20":23297}},{"name":"Shazàm","class":"Paladin","spec":"Holy","role":"Healer","damage":961254,"share":0.2,"windows":26,"per_window":36971,"by_pull":{"2":57525,"4":78937,"5":46409,"7":54925,"8":128477,"9":19771,"10":56695,"11":40647,"12":103131,"13":25958,"14":125521,"17":57545,"18":99847,"19":9370,"20":56496}},{"name":"Aeonara","class":"Priest","spec":"Holy","role":"Healer","damage":41994,"share":0.0,"windows":2,"per_window":20997,"by_pull":{"14":27996,"18":13998}}]</script>
+<script id="veilw" type="application/json">{"1":1,"2":2,"4":3,"5":2,"7":3,"8":2,"9":1,"10":1,"11":1,"12":3,"13":1,"14":3,"15":2,"17":3,"18":3,"19":2,"20":3}</script>
+<script id="burn" type="application/json">[{"pull":2,"kill":false,"best":26.63,"base_dps":2263071.488555903,"burn_dps":2158553.7448170893,"ratio":0.95,"shielded_share":0.0004,"lust_offset":6.5,"seconds":38.1,"transition":240.9,"transition_mmss":"4:00","band":"early","p2_seconds":119.5,"gate_damage":167577578,"p2_dps":1402558,"serpent_hp_end":65.26495924148993,"serpent_hp_start":3.6380482114367265e-07,"reclaims":3,"reclaimed":63083274,"blocked":40,"ghosts":43,"blast_damage":38688758.0},{"pull":4,"kill":false,"best":10.72,"base_dps":2214175.022554453,"burn_dps":4151668.415283432,"ratio":1.88,"shielded_share":0.0018,"lust_offset":5.6,"seconds":38.3,"transition":231.2,"transition_mmss":"3:51","band":"early","p2_seconds":107.1,"gate_damage":167524095,"p2_dps":1564345,"serpent_hp_end":48.312334799259446,"serpent_hp_start":3.6380482114367265e-07,"reclaims":1,"reclaimed":21027758,"blocked":43,"ghosts":44,"blast_damage":58620580.0},{"pull":5,"kill":false,"best":20.42,"base_dps":2255154.0853158324,"burn_dps":4174209.295512052,"ratio":1.85,"shielded_share":0.0005,"lust_offset":5.5,"seconds":37.5,"transition":254.7,"transition_mmss":"4:14","band":"late","p2_seconds":132.8,"gate_damage":167597577,"p2_dps":1261887,"serpent_hp_end":54.64088256209244,"serpent_hp_start":3.6380482114367265e-07,"reclaims":3,"reclaimed":63083274,"blocked":38,"ghosts":41,"blast_damage":47131792.0},{"pull":7,"kill":false,"best":8.23,"base_dps":2215502.563069235,"burn_dps":4573225.144987572,"ratio":2.06,"shielded_share":0.0002,"lust_offset":7.3,"seconds":38.6,"transition":246.7,"transition_mmss":"4:06","band":"early","p2_seconds":122.6,"gate_damage":167462228,"p2_dps":1365790,"serpent_hp_end":48.79955834607523,"serpent_hp_start":3.6380482114367265e-07,"reclaims":2,"reclaimed":42055516,"blocked":39,"ghosts":41,"blast_damage":49022190.0},{"pull":8,"kill":false,"best":15.96,"base_dps":2266216.7629819545,"burn_dps":5137462.740943621,"ratio":2.27,"shielded_share":0.0003,"lust_offset":6.3,"seconds":38.7,"transition":256.1,"transition_mmss":"4:16","band":"late","p2_seconds":134.8,"gate_damage":167457446,"p2_dps":1242413,"serpent_hp_end":45.633195868276275,"serpent_hp_start":3.6380482114367265e-07,"reclaims":2,"reclaimed":42055516,"blocked":37,"ghosts":39,"blast_damage":45802440.0},{"pull":9,"kill":false,"best":42.47,"base_dps":2294043.464835046,"burn_dps":2933382.4978493783,"ratio":1.28,"shielded_share":0.0002,"lust_offset":5.0,"seconds":38.4,"transition":227.4,"transition_mmss":"3:47","band":"early","p2_seconds":107.6,"gate_damage":167487478,"p2_dps":1556836,"serpent_hp_end":99.97580070154069,"serpent_hp_start":3.6380482114367265e-07,"reclaims":20,"reclaimed":337035444,"blocked":21,"ghosts":41,"blast_damage":28470803.0},{"pull":10,"kill":false,"best":46.78,"base_dps":2235863.2899242714,"burn_dps":44229.95428878731,"ratio":0.02,"shielded_share":0.0043,"lust_offset":null,"seconds":18.6,"transition":248.5,"transition_mmss":"4:08","band":"early","p2_seconds":125.6,"gate_damage":167522015,"p2_dps":1334167,"serpent_hp_end":36.882660550872586,"serpent_hp_start":3.6380482114367265e-07,"reclaims":3,"reclaimed":63083274,"blocked":1,"ghosts":4,"blast_damage":553352.0},{"pull":11,"kill":false,"best":45.5,"base_dps":2281460.678447224,"burn_dps":1244642.3345797432,"ratio":0.55,"shielded_share":0.0024,"lust_offset":9.0,"seconds":24.6,"transition":258.5,"transition_mmss":"4:18","band":"late","p2_seconds":138.0,"gate_damage":167869001,"p2_dps":1216151,"serpent_hp_end":79.63103293872075,"serpent_hp_start":3.6380482114367265e-07,"reclaims":14,"reclaimed":294388612,"blocked":2,"ghosts":16,"blast_damage":2048552.0},{"pull":12,"kill":false,"best":12.94,"base_dps":2299277.482313983,"burn_dps":3781260.416116597,"ratio":1.64,"shielded_share":0.0002,"lust_offset":4.3,"seconds":37.9,"transition":259.1,"transition_mmss":"4:19","band":"late","p2_seconds":139.5,"gate_damage":167473366,"p2_dps":1200681,"serpent_hp_end":50.58724947283182,"serpent_hp_start":3.6380482114367265e-07,"reclaims":1,"reclaimed":21027758,"blocked":39,"ghosts":40,"blast_damage":48050314.0},{"pull":13,"kill":false,"best":24.56,"base_dps":2211240.420893433,"burn_dps":5043514.4120060345,"ratio":2.28,"shielded_share":0.0002,"lust_offset":6.2,"seconds":37.8,"transition":257.8,"transition_mmss":"4:17","band":"late","p2_seconds":133.5,"gate_damage":167439892,"p2_dps":1254654,"serpent_hp_end":52.814643531803114,"serpent_hp_start":3.6380482114367265e-07,"reclaims":4,"reclaimed":84111032,"blocked":36,"ghosts":40,"blast_damage":45443352.0},{"pull":14,"kill":false,"best":8.21,"base_dps":2301345.1356329536,"burn_dps":5717507.277001506,"ratio":2.48,"shielded_share":0.0004,"lust_offset":-1.5,"seconds":37.9,"transition":255.7,"transition_mmss":"4:15","band":"late","p2_seconds":136.2,"gate_damage":167708937,"p2_dps":1230918,"serpent_hp_end":49.118088304984774,"serpent_hp_start":3.6380482114367265e-07,"reclaims":4,"reclaimed":84111032,"blocked":35,"ghosts":39,"blast_damage":53091369.0},{"pull":15,"kill":false,"best":15.04,"base_dps":2208617.945135074,"burn_dps":5733130.37440721,"ratio":2.6,"shielded_share":0.0004,"lust_offset":4.8,"seconds":38.2,"transition":258.3,"transition_mmss":"4:18","band":"late","p2_seconds":133.7,"gate_damage":167480788,"p2_dps":1252230,"serpent_hp_end":36.811507460000605,"serpent_hp_start":3.6380482114367265e-07,"reclaims":0,"reclaimed":0,"blocked":39,"ghosts":39,"blast_damage":51516675.0},{"pull":17,"kill":false,"best":13.38,"base_dps":2202914.3860042794,"burn_dps":5069270.44643319,"ratio":2.3,"shielded_share":0.0002,"lust_offset":5.7,"seconds":38.7,"transition":242.8,"transition_mmss":"4:02","band":"early","p2_seconds":118.1,"gate_damage":167457254,"p2_dps":1418324,"serpent_hp_end":52.03865268502986,"serpent_hp_start":3.6380482114367265e-07,"reclaims":4,"reclaimed":84111032,"blocked":42,"ghosts":46,"blast_damage":48842391.0},{"pull":18,"kill":false,"best":4.82,"base_dps":2224806.862054731,"burn_dps":6923529.045969773,"ratio":3.11,"shielded_share":0.0004,"lust_offset":4.8,"seconds":38.1,"transition":259.2,"transition_mmss":"4:19","band":"late","p2_seconds":135.7,"gate_damage":167510827,"p2_dps":1234802,"serpent_hp_end":39.354110581812975,"serpent_hp_start":3.6380482114367265e-07,"reclaims":3,"reclaimed":63083274,"blocked":40,"ghosts":43,"blast_damage":57022681.0},{"pull":19,"kill":false,"best":20.42,"base_dps":2225989.893427489,"burn_dps":5304636.931382148,"ratio":2.38,"shielded_share":0.0011,"lust_offset":6.2,"seconds":37.8,"transition":231.7,"transition_mmss":"3:51","band":"early","p2_seconds":108.2,"gate_damage":167520759,"p2_dps":1548437,"serpent_hp_end":45.40170428837067,"serpent_hp_start":3.6380482114367265e-07,"reclaims":3,"reclaimed":63083274,"blocked":40,"ghosts":43,"blast_damage":50514548.0},{"pull":20,"kill":true,"best":0,"base_dps":2194008.9691108293,"burn_dps":7002141.486252296,"ratio":3.19,"shielded_share":0.0002,"lust_offset":5.8,"seconds":38.7,"transition":258.2,"transition_mmss":"4:18","band":"late","p2_seconds":132.9,"gate_damage":167527863,"p2_dps":1260319,"serpent_hp_end":35.37822215622818,"serpent_hp_start":3.6380482114367265e-07,"reclaims":2,"reclaimed":42055516,"blocked":38,"ghosts":40,"blast_damage":64474710.0}]</script>
+<script id="burnp" type="application/json">[{"name":"Tuari","class":"Shaman","spec":"Elemental","role":"DPS","damage":248081825,"share":9.5,"dps":429387.0876733857,"base_dps":162615.4153672312,"multiple":2.64,"by_pull":{"2":{"damage":2392885,"dps":62795,"multiple":0.41},"4":{"damage":15339537,"dps":400343,"multiple":2.58},"5":{"damage":17447890,"dps":464719,"multiple":2.7},"7":{"damage":15866664,"dps":410798,"multiple":2.52},"8":{"damage":18182623,"dps":469811,"multiple":3.15},"9":{"damage":16648370,"dps":433992,"multiple":2.58},"11":{"damage":10506487,"dps":427024,"multiple":2.6},"13":{"damage":21981381,"dps":581810,"multiple":3.5},"14":{"damage":24745319,"dps":653618,"multiple":4.23},"15":{"damage":16249310,"dps":425742,"multiple":2.5},"17":{"damage":20550909,"dps":531553,"multiple":3.17},"18":{"damage":22861479,"dps":599850,"multiple":3.45},"19":{"damage":21272518,"dps":562929,"multiple":3.52},"20":{"damage":24036453,"dps":621724,"multiple":3.72}}},{"name":"Liimage","class":"Mage","spec":"Arcane","role":"DPS","damage":239790024,"share":9.2,"dps":415035.4023656963,"base_dps":110089.94303220426,"multiple":3.77,"by_pull":{"4":{"damage":20552471,"dps":536394,"multiple":7.66},"5":{"damage":20018376,"dps":533184,"multiple":4.37},"7":{"damage":15892550,"dps":411468,"multiple":3.81},"8":{"damage":20915213,"dps":540417,"multiple":3.95},"9":{"damage":17451831,"dps":454937,"multiple":4.27},"12":{"damage":19641285,"dps":518595,"multiple":3.84},"13":{"damage":17996576,"dps":476339,"multiple":4.69},"14":{"damage":17290921,"dps":456719,"multiple":3.95},"15":{"damage":16256463,"dps":425930,"multiple":4.43},"17":{"damage":15105618,"dps":390710,"multiple":4.02},"18":{"damage":17892421,"dps":469469,"multiple":4.56},"19":{"damage":19711115,"dps":521610,"multiple":4.5},"20":{"damage":21065184,"dps":544869,"multiple":5.21}}},{"name":"Atheniás","class":"Shaman","spec":"Elemental","role":"DPS","damage":207204237,"share":7.9,"dps":358634.99423634115,"base_dps":174433.27190547387,"multiple":2.06,"by_pull":{"2":{"damage":12318206,"dps":323262,"multiple":1.69},"4":{"damage":10139292,"dps":264623,"multiple":1.49},"5":{"damage":17371452,"dps":462683,"multiple":2.47},"8":{"damage":15262188,"dps":394351,"multiple":2.34},"9":{"damage":4647635,"dps":121155,"multiple":0.73},"11":{"damage":9411765,"dps":382530,"multiple":2.21},"12":{"damage":13494575,"dps":356302,"multiple":1.96},"13":{"damage":10389941,"dps":275004,"multiple":1.47},"14":{"damage":19027694,"dps":502594,"multiple":2.69},"15":{"damage":18452850,"dps":483477,"multiple":2.68},"17":{"damage":21695498,"dps":561158,"multiple":3.43},"18":{"damage":22714020,"dps":595981,"multiple":3.77},"19":{"damage":12891879,"dps":341154,"multiple":2.01},"20":{"damage":19387242,"dps":501468,"multiple":3.22}}},{"name":"Alfi","class":"DemonHunter","spec":"Havoc","role":"DPS","damage":202484273,"share":7.7,"dps":350465.54612830974,"base_dps":145777.03522702475,"multiple":2.4,"by_pull":{"2":{"damage":10848833,"dps":284701,"multiple":1.86},"4":{"damage":9759110,"dps":254701,"multiple":1.67},"5":{"damage":14485109,"dps":385807,"multiple":2.74},"7":{"damage":15129849,"dps":391721,"multiple":2.81},"8":{"damage":13747821,"dps":355222,"multiple":2.31},"9":{"damage":8093580,"dps":210985,"multiple":1.51},"10":{"damage":29253,"dps":1573,"multiple":0.01},"11":{"damage":1711512,"dps":69562,"multiple":0.47},"12":{"damage":11882701,"dps":313743,"multiple":2.07},"13":{"damage":15762394,"dps":417204,"multiple":3.02},"14":{"damage":11621653,"dps":306972,"multiple":2.04},"15":{"damage":16576744,"dps":434321,"multiple":3.14},"17":{"damage":16320320,"dps":422128,"multiple":2.91},"18":{"damage":19344204,"dps":507562,"multiple":3.52},"19":{"damage":14694376,"dps":388853,"multiple":2.52},"20":{"damage":22476814,"dps":581382,"multiple":4.15}}},{"name":"Vokster","class":"Warrior","spec":"Arms","role":"DPS","damage":201675119,"share":7.7,"dps":349065.0393417313,"base_dps":137124.68971622168,"multiple":2.55,"by_pull":{"2":{"damage":7132924,"dps":187186,"multiple":1.34},"4":{"damage":10762574,"dps":280890,"multiple":1.87},"5":{"damage":15199810,"dps":404842,"multiple":3.01},"7":{"damage":14253804,"dps":369040,"multiple":2.7},"8":{"damage":15901820,"dps":410879,"multiple":2.9},"9":{"damage":14539830,"dps":379026,"multiple":2.57},"10":{"damage":5490,"dps":295,"multiple":0.0},"12":{"damage":13015779,"dps":343660,"multiple":2.59},"13":{"damage":15618508,"dps":413396,"multiple":3.11},"14":{"damage":16031743,"dps":423459,"multiple":2.98},"15":{"damage":17869539,"dps":468193,"multiple":3.71},"17":{"damage":12731584,"dps":329305,"multiple":2.38},"18":{"damage":17632934,"dps":462661,"multiple":3.8},"19":{"damage":14646634,"dps":387590,"multiple":2.88},"20":{"damage":16332146,"dps":422445,"multiple":3.27}}},{"name":"Frdrschott","class":"DeathKnight","spec":"Unholy","role":"DPS","damage":172802164,"share":6.6,"dps":299090.90657334035,"base_dps":162468.5907150448,"multiple":1.84,"by_pull":{"4":{"damage":10878730,"dps":283921,"multiple":1.95},"5":{"damage":9999105,"dps":266323,"multiple":1.68},"7":{"damage":11893317,"dps":307926,"multiple":1.8},"8":{"damage":1949858,"dps":50381,"multiple":0.31},"9":{"damage":7582304,"dps":197657,"multiple":1.11},"11":{"damage":325371,"dps":13224,"multiple":0.08},"12":{"damage":8322379,"dps":219739,"multiple":1.38},"13":{"damage":13119456,"dps":347250,"multiple":2.21},"14":{"damage":16130897,"dps":426078,"multiple":2.65},"15":{"damage":13582163,"dps":355861,"multiple":2.25},"17":{"damage":6081457,"dps":157298,"multiple":0.95},"18":{"damage":25205253,"dps":661347,"multiple":3.92},"19":{"damage":23723218,"dps":627781,"multiple":3.86},"20":{"damage":24008656,"dps":621005,"multiple":3.75}}},{"name":"Indris","class":"Paladin","spec":"Retribution","role":"DPS","damage":170424122,"share":6.5,"dps":294974.9237570055,"base_dps":156018.66954803103,"multiple":1.89,"by_pull":{"2":{"damage":9867673,"dps":258953,"multiple":1.62},"4":{"damage":8999805,"dps":234884,"multiple":1.55},"7":{"damage":18861574,"dps":488338,"multiple":3.02},"10":{"damage":580770,"dps":31233,"multiple":0.2},"13":{"damage":20989577,"dps":555559,"multiple":3.75},"14":{"damage":22392878,"dps":591481,"multiple":3.32},"15":{"damage":24975718,"dps":654380,"multiple":4.36},"17":{"damage":13631655,"dps":352585,"multiple":2.2},"18":{"damage":20678677,"dps":542577,"multiple":3.38},"19":{"damage":7139312,"dps":188926,"multiple":1.15},"20":{"damage":22306483,"dps":576976,"multiple":3.91}}},{"name":"Kruwger","class":"Paladin","spec":"Retribution","role":"DPS","damage":167486450,"share":6.4,"dps":289890.31739932636,"base_dps":154239.43607389295,"multiple":1.88,"by_pull":{"2":{"damage":13759715,"dps":361091,"multiple":2.41},"4":{"damage":10121329,"dps":264154,"multiple":1.68},"7":{"damage":17261488,"dps":446911,"multiple":2.91},"8":{"damage":16406120,"dps":423909,"multiple":2.89},"9":{"damage":7885152,"dps":205551,"multiple":1.34},"11":{"damage":6400031,"dps":260122,"multiple":1.67},"14":{"damage":17490969,"dps":462003,"multiple":2.86},"15":{"damage":18396798,"dps":482008,"multiple":3.32},"17":{"damage":13723848,"dps":354970,"multiple":2.29},"18":{"damage":15023277,"dps":394188,"multiple":2.52},"19":{"damage":12708542,"dps":336303,"multiple":2.27},"20":{"damage":18309181,"dps":473583,"multiple":2.99}}},{"name":"Evonux","class":"Warrior","spec":"Arms","role":"DPS","damage":164216178,"share":6.3,"dps":284230.03748974483,"base_dps":153362.94125565753,"multiple":1.85,"by_pull":{"4":{"damage":15941923,"dps":416064,"multiple":2.62},"5":{"damage":17258226,"dps":459668,"multiple":3.25},"7":{"damage":14479307,"dps":374878,"multiple":2.67},"8":{"damage":20970179,"dps":541837,"multiple":3.48},"12":{"damage":18364280,"dps":484878,"multiple":3.42},"13":{"damage":21154233,"dps":559917,"multiple":3.82},"17":{"damage":16461774,"dps":425787,"multiple":2.74},"18":{"damage":21989122,"dps":576961,"multiple":4.07},"20":{"damage":17597134,"dps":455165,"multiple":3.1}}},{"name":"Ørnin","class":"Warlock","spec":"Demonology","role":"DPS","damage":159803386,"share":6.1,"dps":276592.2514270681,"base_dps":152489.63443114812,"multiple":1.81,"by_pull":{"2":{"damage":10094262,"dps":264900,"multiple":1.77},"4":{"damage":8346433,"dps":217832,"multiple":1.4},"5":{"damage":11348554,"dps":302265,"multiple":2.07},"7":{"damage":13501335,"dps":349558,"multiple":2.37},"8":{"damage":15231519,"dps":393559,"multiple":2.77},"9":{"damage":1117584,"dps":29133,"multiple":0.17},"11":{"damage":743207,"dps":30207,"multiple":0.19},"12":{"damage":13435722,"dps":354748,"multiple":2.25},"13":{"damage":12893539,"dps":341270,"multiple":2.19},"14":{"damage":12842117,"dps":339209,"multiple":2.31},"15":{"damage":11693579,"dps":306379,"multiple":1.97},"17":{"damage":12940597,"dps":334711,"multiple":2.39},"18":{"damage":13344291,"dps":350134,"multiple":2.31},"19":{"damage":8936374,"dps":236481,"multiple":1.52},"20":{"damage":13334273,"dps":344902,"multiple":2.21}}},{"name":"Mysticake","class":"Monk","spec":"Windwalker","role":"DPS","damage":143978798,"share":5.5,"dps":249202.60385836283,"base_dps":148344.1850219366,"multiple":1.68,"by_pull":{"4":{"damage":10034719,"dps":261894,"multiple":1.87},"5":{"damage":9752469,"dps":259754,"multiple":1.78},"7":{"damage":8927859,"dps":231148,"multiple":1.55},"8":{"damage":12509454,"dps":323225,"multiple":2.05},"9":{"damage":5977132,"dps":155813,"multiple":1.03},"11":{"damage":20537,"dps":835,"multiple":0.01},"12":{"damage":10660964,"dps":281485,"multiple":1.79},"14":{"damage":11107977,"dps":293404,"multiple":1.97},"15":{"damage":15060152,"dps":394586,"multiple":2.6},"17":{"damage":17796255,"dps":460304,"multiple":2.97},"18":{"damage":15264022,"dps":400504,"multiple":2.67},"19":{"damage":13873278,"dps":367125,"multiple":3.04},"20":{"damage":12993980,"dps":336100,"multiple":2.25}}},{"name":"Piiaan","class":"Hunter","spec":"BeastMastery","role":"DPS","damage":141052012,"share":5.4,"dps":244136.8392994991,"base_dps":134962.55433153096,"multiple":1.81,"by_pull":{"2":{"damage":7657870,"dps":200962,"multiple":1.5},"4":{"damage":11497044,"dps":300059,"multiple":2.09},"5":{"damage":9376983,"dps":249753,"multiple":1.72},"8":{"damage":11513797,"dps":297499,"multiple":1.88},"9":{"damage":7651579,"dps":199462,"multiple":1.8},"11":{"damage":1183332,"dps":48095,"multiple":0.34},"12":{"damage":6854775,"dps":180989,"multiple":1.27},"13":{"damage":9996766,"dps":264598,"multiple":2.49},"14":{"damage":8436341,"dps":222836,"multiple":1.7},"15":{"damage":11454535,"dps":300116,"multiple":2.3},"17":{"damage":13056456,"dps":337708,"multiple":2.82},"18":{"damage":14063149,"dps":368995,"multiple":2.66},"19":{"damage":13557439,"dps":358767,"multiple":2.55},"20":{"damage":14751946,"dps":381572,"multiple":2.78}}},{"name":"Niydra","class":"Warlock","spec":"Demonology","role":"DPS","damage":134914597,"share":5.2,"dps":233514.0266339886,"base_dps":151384.19556699583,"multiple":1.54,"by_pull":{"4":{"damage":8465670,"dps":220943,"multiple":1.5},"7":{"damage":12520746,"dps":324170,"multiple":2.18},"8":{"damage":15458242,"dps":399417,"multiple":2.39},"12":{"damage":10478622,"dps":276671,"multiple":1.78},"13":{"damage":14269613,"dps":377693,"multiple":2.44},"14":{"damage":18483884,"dps":488230,"multiple":3.08},"15":{"damage":16719873,"dps":438071,"multiple":2.94},"18":{"damage":13213478,"dps":346701,"multiple":2.21},"19":{"damage":9749943,"dps":258010,"multiple":1.8},"20":{"damage":15554526,"dps":402331,"multiple":2.81}}},{"name":"Thila","class":"Hunter","spec":"BeastMastery","role":"DPS","damage":117434044,"share":4.5,"dps":203258.18768411686,"base_dps":152395.19292155255,"multiple":1.33,"by_pull":{"4":{"damage":2,"dps":0,"multiple":0.0},"5":{"damage":10091991,"dps":268797,"multiple":1.71},"7":{"damage":10487724,"dps":271534,"multiple":1.77},"8":{"damage":9247541,"dps":238942,"multiple":1.54},"9":{"damage":9341009,"dps":243503,"multiple":1.46},"12":{"damage":9272645,"dps":244829,"multiple":1.61},"13":{"damage":9428948,"dps":249569,"multiple":1.68},"14":{"damage":10216401,"dps":269854,"multiple":1.78},"15":{"damage":11543201,"dps":302439,"multiple":1.98},"17":{"damage":7459044,"dps":192930,"multiple":1.31},"18":{"damage":6589318,"dps":172894,"multiple":1.1},"19":{"damage":10525749,"dps":278540,"multiple":1.86},"20":{"damage":13230471,"dps":342218,"multiple":2.41}}},{"name":"Fleshcrusher","class":"DeathKnight","spec":"Blood","role":"Tank","damage":63790068,"share":2.4,"dps":110409.66633088593,"base_dps":57314.47120709314,"multiple":1.93,"by_pull":{"2":{"damage":1907064,"dps":50046,"multiple":0.9},"4":{"damage":2187282,"dps":57085,"multiple":1.01},"5":{"damage":1929754,"dps":51398,"multiple":1.0},"7":{"damage":3063945,"dps":79327,"multiple":1.68},"8":{"damage":5128182,"dps":132504,"multiple":2.69},"9":{"damage":6725499,"dps":175321,"multiple":2.94},"11":{"damage":16617,"dps":675,"multiple":0.01},"12":{"damage":3738504,"dps":98709,"multiple":1.79},"13":{"damage":2729643,"dps":72249,"multiple":0.98},"14":{"damage":3685339,"dps":97344,"multiple":1.53},"15":{"damage":3471072,"dps":90944,"multiple":1.6},"17":{"damage":3972110,"dps":102739,"multiple":1.68},"18":{"damage":9254171,"dps":242815,"multiple":3.53},"19":{"damage":10101676,"dps":267318,"multiple":5.92},"20":{"damage":5879210,"dps":152071,"multiple":2.54}}},{"name":"Vesemirr","class":"Warrior","spec":"Protection","role":"Tank","damage":62671231,"share":2.4,"dps":108473.15138864369,"base_dps":51477.04868880246,"multiple":2.11,"by_pull":{"2":{"damage":4743129,"dps":124472,"multiple":2.17},"4":{"damage":4684521,"dps":122260,"multiple":1.93},"5":{"damage":999368,"dps":26618,"multiple":0.41},"7":{"damage":3201562,"dps":82890,"multiple":1.38},"8":{"damage":4853549,"dps":125408,"multiple":3.59},"9":{"damage":3589309,"dps":93567,"multiple":1.35},"12":{"damage":3247275,"dps":85739,"multiple":1.81},"13":{"damage":3967022,"dps":105000,"multiple":2.11},"14":{"damage":5329372,"dps":140769,"multiple":3.6},"15":{"damage":5504456,"dps":144220,"multiple":2.96},"17":{"damage":4447554,"dps":115037,"multiple":2.73},"18":{"damage":4991117,"dps":130959,"multiple":2.73},"19":{"damage":5880480,"dps":155614,"multiple":3.15},"20":{"damage":7232517,"dps":187075,"multiple":3.53}}},{"name":"Glugfufiter","class":"Monk","spec":"Mistweaver","role":"Healer","damage":9705582,"share":0.4,"dps":16798.69772465288,"base_dps":17379.79448352666,"multiple":0.97,"by_pull":{"2":{"damage":801834,"dps":21042,"multiple":1.32},"4":{"damage":748929,"dps":19546,"multiple":1.18},"5":{"damage":684966,"dps":18244,"multiple":1.02},"7":{"damage":1040245,"dps":26933,"multiple":1.58},"8":{"damage":490411,"dps":12671,"multiple":0.74},"9":{"damage":133308,"dps":3475,"multiple":0.2},"10":{"damage":85075,"dps":4575,"multiple":0.23},"11":{"damage":107136,"dps":4354,"multiple":0.29},"12":{"damage":439672,"dps":11609,"multiple":0.59},"14":{"damage":842388,"dps":22251,"multiple":1.22},"15":{"damage":906907,"dps":23762,"multiple":1.33},"18":{"damage":1406158,"dps":36895,"multiple":2.42},"19":{"damage":976966,"dps":25853,"multiple":1.57},"20":{"damage":1041587,"dps":26942,"multiple":1.47}}},{"name":"Squirtgun","class":"Shaman","spec":"Restoration","role":"Healer","damage":5395436,"share":0.2,"dps":9338.574281965804,"base_dps":12336.842234083999,"multiple":0.76,"by_pull":{"2":{"damage":729454,"dps":19143,"multiple":1.66},"4":{"damage":210438,"dps":5492,"multiple":0.59},"5":{"damage":756635,"dps":20153,"multiple":1.27},"8":{"damage":516217,"dps":13338,"multiple":3.11},"9":{"damage":902294,"dps":23521,"multiple":2.99},"10":{"damage":121868,"dps":6554,"multiple":0.72},"12":{"damage":8035,"dps":212,"multiple":0.01},"13":{"damage":68215,"dps":1806,"multiple":0.1},"14":{"damage":141107,"dps":3727,"multiple":0.18},"17":{"damage":13455,"dps":348,"multiple":0.02},"18":{"damage":1749286,"dps":45899,"multiple":14.82},"19":{"damage":17267,"dps":457,"multiple":0.02},"20":{"damage":161165,"dps":4169,"multiple":0.32}}},{"name":"Shazàm","class":"Paladin","spec":"Holy","role":"Healer","damage":2796327,"share":0.1,"dps":4839.96240640545,"base_dps":5405.736451026665,"multiple":0.9,"by_pull":{"4":{"damage":357007,"dps":9317,"multiple":1.92},"7":{"damage":254018,"dps":6577,"multiple":1.12},"8":{"damage":545349,"dps":14091,"multiple":2.47},"9":{"damage":48921,"dps":1275,"multiple":0.23},"12":{"damage":353975,"dps":9346,"multiple":1.45},"14":{"damage":364357,"dps":9624,"multiple":2.02},"15":{"damage":103027,"dps":2699,"multiple":0.6},"18":{"damage":408565,"dps":10720,"multiple":2.9},"20":{"damage":361108,"dps":9340,"multiple":1.59}}},{"name":"Aeonara","class":"Priest","spec":"Holy","role":"Healer","damage":1646619,"share":0.1,"dps":2850.0150582077617,"base_dps":3175.3233376234257,"multiple":0.9,"by_pull":{"4":{"damage":48511,"dps":1266,"multiple":0.42},"7":{"damage":261,"dps":7,"multiple":0.0},"9":{"damage":192149,"dps":5009,"multiple":4.37},"12":{"damage":269,"dps":7,"multiple":0.0},"13":{"damage":183206,"dps":4849,"multiple":2.06},"14":{"damage":277751,"dps":7336,"multiple":3.52},"18":{"damage":244597,"dps":6418,"multiple":2.39},"19":{"damage":50159,"dps":1327,"multiple":0.24},"20":{"damage":649716,"dps":16805,"multiple":10.33}}}]</script>
+<script id="edge" type="application/json">{"buckets":{"unexplained":2,"knockback":32,"caught":22,"march":2},"rows":[{"pull":1,"t":200.9,"who":"Alfi","phase":"P2","cause":"unexplained"},{"pull":2,"t":247.7,"who":"Mysticake","phase":"INT","cause":"knockback"},{"pull":2,"t":250.1,"who":"Evonux","phase":"INT","cause":"caught"},{"pull":2,"t":259.6,"who":"Shazàm","phase":"INT","cause":"caught"},{"pull":2,"t":260.0,"who":"Niydra","phase":"INT","cause":"caught"},{"pull":4,"t":235.5,"who":"Thila","phase":"INT","cause":"knockback"},{"pull":5,"t":259.0,"who":"Indris","phase":"INT","cause":"knockback"},{"pull":5,"t":259.1,"who":"Kruwger","phase":"INT","cause":"knockback"},{"pull":5,"t":259.1,"who":"Niydra","phase":"INT","cause":"knockback"},{"pull":5,"t":259.2,"who":"Vesemirr","phase":"INT","cause":"knockback"},{"pull":7,"t":251.0,"who":"Piiaan","phase":"INT","cause":"knockback"},{"pull":7,"t":252.5,"who":"Atheniás","phase":"INT","cause":"knockback"},{"pull":7,"t":258.8,"who":"Squirtgun","phase":"INT","cause":"caught"},{"pull":7,"t":280.5,"who":"Squirtgun","phase":"INT","cause":"caught"},{"pull":8,"t":260.4,"who":"Aeonara","phase":"INT","cause":"knockback"},{"pull":8,"t":260.5,"who":"Indris","phase":"INT","cause":"knockback"},{"pull":8,"t":374.2,"who":"Thila","phase":"P3","cause":"march"},{"pull":9,"t":232.8,"who":"Niydra","phase":"INT","cause":"knockback"},{"pull":9,"t":232.8,"who":"Indris","phase":"INT","cause":"knockback"},{"pull":9,"t":239.8,"who":"Evonux","phase":"INT","cause":"caught"},{"pull":9,"t":248.0,"who":"Ørnin","phase":"INT","cause":"caught"},{"pull":10,"t":220.3,"who":"Tuari","phase":"P2","cause":"caught"},{"pull":10,"t":245.7,"who":"Piiaan","phase":"P2","cause":"caught"},{"pull":10,"t":248.2,"who":"Evonux","phase":"P2","cause":"caught"},{"pull":10,"t":252.8,"who":"Ørnin","phase":"INT","cause":"knockback"},{"pull":10,"t":252.8,"who":"Shazàm","phase":"INT","cause":"knockback"},{"pull":10,"t":252.8,"who":"Fleshcrusher","phase":"INT","cause":"knockback"},{"pull":11,"t":256.6,"who":"Shazàm","phase":"P2","cause":"caught"},{"pull":11,"t":262.8,"who":"Aeonara","phase":"INT","cause":"knockback"},{"pull":11,"t":263.0,"who":"Vesemirr","phase":"INT","cause":"knockback"},{"pull":11,"t":265.1,"who":"Thila","phase":"INT","cause":"knockback"},{"pull":11,"t":266.4,"who":"Evonux","phase":"INT","cause":"knockback"},{"pull":12,"t":264.0,"who":"Tuari","phase":"INT","cause":"knockback"},{"pull":12,"t":264.9,"who":"Indris","phase":"INT","cause":"knockback"},{"pull":12,"t":266.4,"who":"Kruwger","phase":"INT","cause":"knockback"},{"pull":12,"t":267.3,"who":"Aeonara","phase":"INT","cause":"march"},{"pull":12,"t":383.0,"who":"Ørnin","phase":"P3","cause":"caught"},{"pull":13,"t":263.0,"who":"Mysticake","phase":"INT","cause":"knockback"},{"pull":13,"t":263.3,"who":"Kruwger","phase":"INT","cause":"knockback"},{"pull":13,"t":263.3,"who":"Shazàm","phase":"INT","cause":"knockback"},{"pull":13,"t":263.3,"who":"Glugfufiter","phase":"INT","cause":"knockback"},{"pull":13,"t":264.6,"who":"Atheniás","phase":"INT","cause":"knockback"},{"pull":14,"t":249.4,"who":"Evonux","phase":"P2","cause":"caught"},{"pull":15,"t":197.1,"who":"Shazàm","phase":"P2","cause":"caught"},{"pull":15,"t":249.3,"who":"Squirtgun","phase":"P2","cause":"caught"},{"pull":17,"t":197.8,"who":"Evonux","phase":"P2","cause":"caught"},{"pull":17,"t":247.2,"who":"Niydra","phase":"INT","cause":"knockback"},{"pull":17,"t":247.2,"who":"Shazàm","phase":"INT","cause":"knockback"},{"pull":17,"t":247.3,"who":"Glugfufiter","phase":"INT","cause":"knockback"},{"pull":17,"t":402.7,"who":"Frdrschott","phase":"P3","cause":"caught"},{"pull":17,"t":408.5,"who":"Aeonara","phase":"P3","cause":"caught"},{"pull":17,"t":415.0,"who":"Tuari","phase":"P3","cause":"caught"},{"pull":18,"t":421.4,"who":"Niydra","phase":"P3","cause":"unexplained"},{"pull":19,"t":194.5,"who":"Shazàm","phase":"P2","cause":"caught"},{"pull":19,"t":194.9,"who":"Aeonara","phase":"P2","cause":"caught"},{"pull":19,"t":237.3,"who":"Squirtgun","phase":"INT","cause":"knockback"},{"pull":19,"t":302.0,"who":"Glugfufiter","phase":"P3","cause":"caught"},{"pull":20,"t":262.7,"who":"Glugfufiter","phase":"INT","cause":"knockback"}],"per_pull":{"1":1,"2":4,"4":1,"5":4,"7":4,"8":3,"9":4,"10":6,"11":5,"12":5,"13":5,"14":1,"15":2,"17":7,"18":1,"19":4,"20":1}}</script>
+<script id="control" type="application/json">{"cc_targeted":[["Death Grip",43],["Hammer of Justice",14],["Holy Word: Chastise",8],["Storm Bolt",4],["Chains of Ice",1]],"cc_ground":[["Ring of Peace",52],["Leg Sweep",32],["Gorefiend's Grasp",27],["Shadowfury",13],["Blinding Light",13],["Shockwave",5],["Capacitor Totem",5],["Thunderstorm",1]],"breakers":[["Frdrschott",7455327],["Atheniás",6635951],["Vesemirr",6197754],["Alfi",5384561],["Kruwger",3767820],["Fleshcrusher",3465298],["Thila",3238305],["Indris",2898892]]}</script>
+<script id="mit" type="application/json">[{"name":"Alfi","class":"DemonHunter","spec":"Havoc","role":"DPS","major":122,"major_pressure":20,"minor":0,"external":0,"raidwide":11,"raid_spells":[["Darkness",11]],"stone":11,"potion":7,"consumables":18,"pulls_with_consumable":12,"hp_at_use":37.6,"taken":336888681.0,"deaths":18,"top_spells":[["Blur",122]]},{"name":"Ørnin","class":"Warlock","spec":"Demonology","role":"DPS","major":91,"major_pressure":26,"minor":0,"external":0,"raidwide":0,"raid_spells":[],"stone":42,"potion":13,"consumables":55,"pulls_with_consumable":19,"hp_at_use":38.0,"taken":471507356.0,"deaths":18,"top_spells":[["Dark Pact",70],["Unending Resolve",21]]},{"name":"Glugfufiter","class":"Monk","spec":"Mistweaver","role":"Healer","major":65,"major_pressure":26,"minor":0,"external":22,"raidwide":40,"raid_spells":[["Revival",40]],"stone":9,"potion":8,"consumables":17,"pulls_with_consumable":10,"hp_at_use":65.6,"taken":373913217.0,"deaths":19,"top_spells":[["Life Cocoon",55],["Fortifying Brew",32]]},{"name":"Indris","class":"Paladin","spec":"Retribution","role":"DPS","major":85,"major_pressure":37,"minor":0,"external":1,"raidwide":0,"raid_spells":[],"stone":3,"potion":6,"consumables":9,"pulls_with_consumable":6,"hp_at_use":59.4,"taken":356591008.0,"deaths":17,"top_spells":[["Divine Protection",71],["Lay on Hands",7],["Divine Shield",7]]},{"name":"Shazàm","class":"Paladin","spec":"Holy","role":"Healer","major":41,"major_pressure":23,"minor":0,"external":37,"raidwide":34,"raid_spells":[["Aura Mastery",34]],"stone":14,"potion":4,"consumables":18,"pulls_with_consumable":14,"hp_at_use":33.7,"taken":377315169.0,"deaths":21,"top_spells":[["Divine Protection",32],["Blessing of Sacrifice",25],["Lay on Hands",13]]},{"name":"Niydra","class":"Warlock","spec":"Demonology","role":"DPS","major":76,"major_pressure":21,"minor":0,"external":0,"raidwide":0,"raid_spells":[],"stone":36,"potion":6,"consumables":42,"pulls_with_consumable":17,"hp_at_use":34.1,"taken":409756577.0,"deaths":20,"top_spells":[["Dark Pact",61],["Unending Resolve",15]]},{"name":"Thila","class":"Hunter","spec":"BeastMastery","role":"DPS","major":62,"major_pressure":29,"minor":0,"external":0,"raidwide":0,"raid_spells":[],"stone":12,"potion":10,"consumables":22,"pulls_with_consumable":14,"hp_at_use":44.7,"taken":360610751.0,"deaths":21,"top_spells":[["Survival of the Fittest",34],["Exhilaration",27],["Aspect of the Turtle",1]]},{"name":"Frdrschott","class":"DeathKnight","spec":"Unholy","role":"DPS","major":62,"major_pressure":21,"minor":0,"external":0,"raidwide":13,"raid_spells":[["Anti-Magic Zone",13]],"stone":11,"potion":4,"consumables":15,"pulls_with_consumable":12,"hp_at_use":32.3,"taken":429448406.0,"deaths":19,"top_spells":[["Anti-Magic Shell",56],["Icebound Fortitude",6]]},{"name":"Kruwger","class":"Paladin","spec":"Retribution","role":"DPS","major":59,"major_pressure":12,"minor":0,"external":0,"raidwide":0,"raid_spells":[],"stone":9,"potion":6,"consumables":15,"pulls_with_consumable":9,"hp_at_use":32.0,"taken":366028297.0,"deaths":20,"top_spells":[["Divine Protection",54],["Divine Shield",4],["Blessing of Protection",1]]},{"name":"Piiaan","class":"Hunter","spec":"BeastMastery","role":"DPS","major":49,"major_pressure":8,"minor":0,"external":0,"raidwide":0,"raid_spells":[],"stone":7,"potion":0,"consumables":7,"pulls_with_consumable":7,"hp_at_use":26.4,"taken":417270652.0,"deaths":24,"top_spells":[["Survival of the Fittest",26],["Exhilaration",23]]},{"name":"Mysticake","class":"Monk","spec":"Windwalker","role":"DPS","major":40,"major_pressure":14,"minor":0,"external":0,"raidwide":0,"raid_spells":[],"stone":8,"potion":4,"consumables":12,"pulls_with_consumable":8,"hp_at_use":32.3,"taken":349620788.0,"deaths":18,"top_spells":[["Touch of Karma",25],["Fortifying Brew",15]]},{"name":"Vokster","class":"Warrior","spec":"Arms","role":"DPS","major":38,"major_pressure":13,"minor":0,"external":0,"raidwide":32,"raid_spells":[["Rallying Cry",32]],"stone":8,"potion":0,"consumables":8,"pulls_with_consumable":8,"hp_at_use":61.7,"taken":402784374.0,"deaths":15,"top_spells":[["Die by the Sword",38]]},{"name":"Tuari","class":"Shaman","spec":"Elemental","role":"DPS","major":30,"major_pressure":4,"minor":0,"external":0,"raidwide":0,"raid_spells":[],"stone":15,"potion":6,"consumables":21,"pulls_with_consumable":14,"hp_at_use":36.0,"taken":386146052.0,"deaths":20,"top_spells":[["Astral Shift",30]]},{"name":"Aeonara","class":"Priest","spec":"Holy","role":"Healer","major":7,"major_pressure":1,"minor":0,"external":22,"raidwide":0,"raid_spells":[],"stone":5,"potion":9,"consumables":14,"pulls_with_consumable":10,"hp_at_use":31.2,"taken":384032844.0,"deaths":15,"top_spells":[["Guardian Spirit",22],["Desperate Prayer",7]]},{"name":"Evonux","class":"Warrior","spec":"Arms","role":"DPS","major":20,"major_pressure":8,"minor":0,"external":0,"raidwide":21,"raid_spells":[["Rallying Cry",21]],"stone":14,"potion":0,"consumables":14,"pulls_with_consumable":14,"hp_at_use":32.8,"taken":353705537.0,"deaths":20,"top_spells":[["Die by the Sword",20]]},{"name":"Squirtgun","class":"Shaman","spec":"Restoration","role":"Healer","major":19,"major_pressure":3,"minor":0,"external":0,"raidwide":34,"raid_spells":[["Spirit Link Totem",34]],"stone":0,"potion":4,"consumables":4,"pulls_with_consumable":4,"hp_at_use":52.8,"taken":413986970.0,"deaths":23,"top_spells":[["Astral Shift",19]]},{"name":"Atheniás","class":"Shaman","spec":"Elemental","role":"DPS","major":19,"major_pressure":5,"minor":0,"external":0,"raidwide":0,"raid_spells":[],"stone":13,"potion":4,"consumables":17,"pulls_with_consumable":13,"hp_at_use":35.9,"taken":372385093.0,"deaths":18,"top_spells":[["Astral Shift",19]]},{"name":"Liimage","class":"Mage","spec":"Arcane","role":"DPS","major":17,"major_pressure":7,"minor":267,"external":0,"raidwide":0,"raid_spells":[],"stone":8,"potion":12,"consumables":20,"pulls_with_consumable":12,"hp_at_use":34.1,"taken":419053432.0,"deaths":18,"top_spells":[["Ice Cold",17]]}]</script>
+<script id="souls" type="application/json">[{"name":"Fleshcrusher","class":"DeathKnight","spec":"Blood","role":"Tank","selected":0,"bound":52,"collected":96,"deaths":0},{"name":"Vesemirr","class":"Warrior","spec":"Protection","role":"Tank","selected":0,"bound":38,"collected":75,"deaths":4},{"name":"Aeonara","class":"Priest","spec":"Holy","role":"Healer","selected":25,"bound":32,"collected":58,"deaths":0},{"name":"Ørnin","class":"Warlock","spec":"Demonology","role":"DPS","selected":27,"bound":28,"collected":53,"deaths":1},{"name":"Squirtgun","class":"Shaman","spec":"Restoration","role":"Healer","selected":23,"bound":27,"collected":49,"deaths":1},{"name":"Liimage","class":"Mage","spec":"Arcane","role":"DPS","selected":17,"bound":26,"collected":48,"deaths":2},{"name":"Thila","class":"Hunter","spec":"BeastMastery","role":"DPS","selected":21,"bound":24,"collected":41,"deaths":3},{"name":"Atheniás","class":"Shaman","spec":"Elemental","role":"DPS","selected":19,"bound":23,"collected":43,"deaths":4},{"name":"Niydra","class":"Warlock","spec":"Demonology","role":"DPS","selected":19,"bound":22,"collected":40,"deaths":1},{"name":"Tuari","class":"Shaman","spec":"Elemental","role":"DPS","selected":16,"bound":20,"collected":33,"deaths":2},{"name":"Piiaan","class":"Hunter","spec":"BeastMastery","role":"DPS","selected":17,"bound":20,"collected":34,"deaths":2},{"name":"Glugfufiter","class":"Monk","spec":"Mistweaver","role":"Healer","selected":8,"bound":16,"collected":28,"deaths":1},{"name":"Alfi","class":"DemonHunter","spec":"Havoc","role":"DPS","selected":8,"bound":13,"collected":21,"deaths":0},{"name":"Kruwger","class":"Paladin","spec":"Retribution","role":"DPS","selected":8,"bound":10,"collected":20,"deaths":0},{"name":"Vokster","class":"Warrior","spec":"Arms","role":"DPS","selected":4,"bound":8,"collected":13,"deaths":2},{"name":"Frdrschott","class":"DeathKnight","spec":"Unholy","role":"DPS","selected":6,"bound":8,"collected":13,"deaths":2},{"name":"Mysticake","class":"Monk","spec":"Windwalker","role":"DPS","selected":4,"bound":7,"collected":13,"deaths":0},{"name":"Shazàm","class":"Paladin","spec":"Holy","role":"Healer","selected":4,"bound":7,"collected":9,"deaths":2},{"name":"Evonux","class":"Warrior","spec":"Arms","role":"DPS","selected":6,"bound":7,"collected":12,"deaths":1},{"name":"Indris","class":"Paladin","spec":"Retribution","role":"DPS","selected":2,"bound":5,"collected":8,"deaths":0}]</script>
+
+<script>
+const P=JSON.parse(document.getElementById('progress').textContent);
+const O=JSON.parse(document.getElementById('orbs').textContent);
+const V=JSON.parse(document.getElementById('veil').textContent);
+const B=JSON.parse(document.getElementById('burn').textContent);
+const E=JSON.parse(document.getElementById('edge').textContent);
+const C=JSON.parse(document.getElementById('control').textContent);
+const VP=JSON.parse(document.getElementById('veilp').textContent);
+const BP=JSON.parse(document.getElementById('burnp').textContent);
+const VW=JSON.parse(document.getElementById('veilw').textContent);
+const M=JSON.parse(document.getElementById('mit').textContent);
+const SO=JSON.parse(document.getElementById('souls').textContent);
+
+const tip=document.getElementById('tip');
+function hook(el,html){
+  el.addEventListener('pointerenter',()=>{tip.innerHTML=html;tip.style.opacity=1;});
+  el.addEventListener('pointermove',e=>{
+    const w=tip.offsetWidth,h=tip.offsetHeight;
+    tip.style.left=Math.min(e.clientX+14,innerWidth-w-8)+'px';
+    tip.style.top=Math.max(8,e.clientY-h-12)+'px';});
+  el.addEventListener('pointerleave',()=>tip.style.opacity=0);
+}
+const NS='http://www.w3.org/2000/svg';
+function mk(p,t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;}
+function txt(p,x,y,s,o){o=o||{};const e=mk(p,'text',Object.assign({x:x,y:y,fill:o.fill||'var(--muted)',
+  'font-size':o.size||11,'font-family':'IBM Plex Mono, monospace','text-anchor':o.anchor||'start',
+  'font-weight':o.weight||400},o.extra||{}));e.textContent=s;return e;}
+const fmtM=v=>v>=1e9?(v/1e9).toFixed(2)+'bn':(v/1e6).toFixed(1)+'M';
+const PHCOL={P1:'var(--s1)',P2:'var(--s4)',INT:'var(--s5)',P3:'var(--s3)'};
+const PHNAME={P1:'stage one',P2:'stage two',INT:'intermission',P3:'stage three'};
+
+/* tiles */
+const tiles=[
+ ['20','pulls, one kill'],
+ ['4.82%','best wipe before it'],
+ ['491','orbs detonated'],
+ ['29<small>/36</small>','shields broken in time'],
+ ['18.6M','absorb, every time'],
+ ['3.19<small>x</small>','burn on the kill'],
+ ['58','deaths off the edge'],
+ ['32','of them to the knockback']];
+document.getElementById('tiles').innerHTML=tiles.map(t=>
+  '<div class="tile"><span class="n">'+t[0]+'</span><span class="lab">'+t[1]+'</span></div>').join('');
+
+/* chart 1 - pulls */
+(function(){
+  const s=document.getElementById('c-pulls'),W=900,H=300,L=42,R=10,T=14,Bm=36;
+  const n=P.length,iw=(W-L-R)/n,bw=Math.min(30,iw-6);
+  const y=v=>T+(100-v)/100*(H-T-Bm);
+  [0,25,50,75,100].forEach(v=>{
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v+'%',{anchor:'end'});});
+  P.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2,yy=y(d.best),h=Math.max(2,y(0)-yy);
+    const r=mk(s,'rect',{x:x,y:yy,width:bw,height:h,fill:d.kill?'var(--accent)':PHCOL[d.reached]||'var(--s1)',rx:3});
+    const segs=Object.keys(d.phases).map(k=>PHNAME[k]+' '+d.phases[k]+'s').join(', ');
+    hook(r,'<b>Pull '+d.pull+'</b><br>'+(d.kill?'kill':d.best+'% boss left')+'<br>'+
+      Math.round(d.duration)+'s total<br>'+segs);
+    txt(s,x+bw/2,yy-5,d.kill?'kill':d.best+'%',{anchor:'middle',size:9});
+    txt(s,x+bw/2,H-14,d.pull,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+})();
+
+/* chart 2 - orbs per cleave */
+(function(){
+  const s=document.getElementById('c-orbs'),W=900,H=260,L=42,R=10,T=14,Bm=36;
+  const c=O.cleaves,n=c.length,max=Math.max(4,...c.map(d=>d.orbs));
+  const iw=(W-L-R)/n,bw=Math.max(2,Math.min(9,iw-1));
+  const y=v=>T+(1-v/max)*(H-T-Bm);
+  for(let v=0;v<=max;v++){
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v,{anchor:'end'});}
+  let last=null;
+  c.forEach((d,i)=>{
+    const x=L+i*iw,yy=y(d.orbs),h=Math.max(1.5,y(0)-yy);
+    const r=mk(s,'rect',{x:x,y:yy,width:bw,height:h,rx:1.5,
+      fill:d.phase==='P3'?'var(--s3)':'var(--s1)',opacity:d.orbs?1:.3});
+    hook(r,'<b>Pull '+d.pull+'</b> at '+d.t+'s<br>'+PHNAME[d.phase]+'<br>'+
+      (d.orbs?d.orbs+' orb'+(d.orbs===1?'':'s')+' detonated':'nothing in the cleave'));
+    if(d.pull!==last){txt(s,x,H-14,d.pull,{anchor:'middle',size:9});last=d.pull;}});
+  txt(s,W-R,H-1,'cleaves, in pull order',{anchor:'end',size:10});
+  txt(s,L,H-1,'orbs caught per frontal',{size:10});
+})();
+
+/* carrier bars */
+function bars(el,rows,opt){
+  opt=opt||{};
+  const max=Math.max(...rows.map(r=>r.value))||1;
+  document.getElementById(el).innerHTML=rows.map(r=>
+    '<div class="brow"><span>'+r.label+'</span><span class="track">'+
+    '<span class="fill" style="width:'+(100*r.value/max)+'%;background:'+(r.color||'var(--s1)')+'"></span>'+
+    '</span><span class="v">'+(r.text!==undefined?r.text:r.value)+'</span></div>').join('');
+}
+bars('carriers',O.carriers.slice(0,10).map(c=>({label:c.name,value:c.total,text:c.total})));
+bars('carriers-phase',O.carriers.slice(0,10).map(c=>
+  ({label:c.name,value:c.p1+c.p3,text:c.p1+' / '+c.p3,
+    color:c.p1>=c.p3?'var(--s1)':'var(--s3)'})));
+
+/* chart 3 - the veil */
+(function(){
+  const s=document.getElementById('c-veil'),W=900,H=300,L=42,R=10,T=14,Bm=36;
+  const n=V.length,iw=(W-L-R)/n,bw=Math.min(22,iw-5);
+  const DEADLINE=15,max=Math.max(DEADLINE+2,...V.map(d=>d.break_seconds));
+  const y=v=>T+(1-v/max)*(H-T-Bm);
+  [0,5,10,15].forEach(v=>{
+    if(v>max)return;
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v+'s',{anchor:'end'});});
+  mk(s,'line',{x1:L,x2:W-R,y1:y(DEADLINE),y2:y(DEADLINE),stroke:'var(--crit)','stroke-width':1.5,'stroke-dasharray':'4 3'});
+  txt(s,W-R,y(DEADLINE)-6,'channel completes',{anchor:'end',size:10,fill:'var(--crit)'});
+  V.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2,yy=y(d.break_seconds),h=Math.max(2,y(0)-yy);
+    const r=mk(s,'rect',{x:x,y:yy,width:bw,height:h,rx:2,
+      fill:d.resolved?'var(--crit)':'var(--s3)'});
+    hook(r,'<b>Pull '+d.pull+'</b> at '+d.t+'s ('+PHNAME[d.phase]+')<br>'+
+      (d.resolved?'resolved &mdash; shield held':'broken in '+d.break_seconds+'s')+
+      '<br>'+fmtM(d.absorbed)+' absorbed'+
+      (d.deaths?'<br>'+d.deaths+' killed by the channel':''));
+    txt(s,x+bw/2,H-14,d.pull,{anchor:'middle',size:9});});
+  txt(s,W-R,H-1,'shield channels, in pull order',{anchor:'end',size:10});
+})();
+
+/* chart 4 - the burn window */
+(function(){
+  const s=document.getElementById('c-burn'),W=900,H=290,L=42,R=10,T=14,Bm=36;
+  const rows=B.filter(d=>d.ratio>0),n=rows.length,iw=(W-L-R)/n,bw=Math.min(30,iw-6);
+  const max=Math.max(3.5,...rows.map(d=>d.ratio));
+  const y=v=>T+(1-v/max)*(H-T-Bm);
+  [0,1,2,3].forEach(v=>{
+    if(v>max)return;
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v+'x',{anchor:'end'});});
+  rows.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2,yy=y(d.ratio),h=Math.max(2,y(0)-yy);
+    const r=mk(s,'rect',{x:x,y:yy,width:bw,height:h,rx:3,
+      fill:d.kill?'var(--accent)':'var(--s1)'});
+    hook(r,'<b>Pull '+d.pull+'</b><br>'+d.ratio+'x the stage one rate<br>'+
+      fmtM(d.burn_dps)+'/s for '+d.seconds+'s<br>'+
+      (d.kill?'the kill':d.best+'% boss left')+
+      (d.lust_offset===null?'<br>no haste':'<br>haste at '+d.lust_offset+'s'));
+    txt(s,x+bw/2,yy-5,d.ratio,{anchor:'middle',size:9});
+    txt(s,x+bw/2,H-14,d.pull,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+})();
+
+/* ghosts: blocked against let through */
+(function(){
+  const s=document.getElementById('c-ghosts'),W=900,H=280,L=44,R=12,T=14,Bm=38;
+  const rows=B.filter(d=>d.ghosts>0);
+  const n=rows.length,iw=(W-L-R)/n,bw=Math.min(30,iw-6);
+  const max=Math.max(...rows.map(d=>d.ghosts));
+  const y=v=>T+(1-v/max)*(H-T-Bm);
+  for(let v=0;v<=max;v+=10){
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v,{anchor:'end'});}
+  rows.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2;
+    const yb=y(d.blocked), hb=y(0)-yb;
+    const yt=y(d.ghosts), ht=yb-yt;
+    const tipTxt='<b>Pull '+d.pull+'</b><br>'+d.blocked+' ghosts blocked<br>'+
+      d.reclaims+' reached the serpent<br>serpent back to '+
+      (d.serpent_hp_end!==null?d.serpent_hp_end.toFixed(1)+'%':'?')+
+      '<br>'+(d.kill?'the kill':d.best+'% boss left');
+    const r1=mk(s,'rect',{x:x,y:yb,width:bw,height:Math.max(1,hb),
+      fill:d.kill?'var(--accent)':'var(--s3)',rx:2}); hook(r1,tipTxt);
+    if(ht>0){const r2=mk(s,'rect',{x:x,y:yt,width:bw,height:ht,fill:'var(--crit)',rx:2});hook(r2,tipTxt);}
+    txt(s,x+bw/2,H-14,d.pull,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+  txt(s,L,H-1,'green blocked, red reached the serpent',{size:10});
+})();
+
+/* chart - handover time against outcome */
+(function(){
+  const s=document.getElementById('c-transition'),W=900,H=250,L=46,R=14,T=14,Bm=38;
+  const rows=B.filter(d=>d.serpent_hp_end!==null),SPLIT=250;
+  const xs=rows.map(d=>d.transition),lo=Math.min(...xs)-8,hi=Math.max(...xs)+8;
+  const x=v=>L+(v-lo)/(hi-lo)*(W-L-R);
+  const y=v=>T+v/100*(H-T-Bm);
+  [0,25,50,75,100].forEach(v=>{
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v+'%',{anchor:'end'});});
+  mk(s,'line',{x1:x(SPLIT),x2:x(SPLIT),y1:T,y2:y(100),stroke:'var(--muted)',
+    'stroke-width':1.2,'stroke-dasharray':'4 3'});
+  for(let t=Math.ceil(lo/15)*15;t<=hi;t+=15)
+    txt(s,x(t),H-14,Math.floor(t/60)+':'+String(Math.round(t%60)).padStart(2,'0'),
+      {anchor:'middle',size:10});
+  rows.forEach(d=>{
+    const hp=d.serpent_hp_end;
+    const c=mk(s,'circle',{cx:x(d.transition),cy:y(hp),r:d.kill?7:5,
+      fill:d.kill?'var(--accent)':(d.band==='late'?'var(--s3)':'var(--s2)'),
+      opacity:d.kill?1:.85});
+    hook(c,'<b>Pull '+d.pull+'</b><br>handover at '+d.transition_mmss+' ('+d.band+')<br>'+
+      'serpent back to '+hp.toFixed(1)+'% by the end of the burn<br>'+
+      'stage two ran '+d.p2_seconds+'s &middot; '+d.ratio+'x burn<br>'+
+      (d.kill?'the kill':d.best+'% boss left at the wipe'));
+    txt(s,x(d.transition),y(hp)-9,d.pull,{anchor:'middle',size:9});});
+  txt(s,W-R,H-1,'handover time',{anchor:'end',size:10});
+  txt(s,L,H-1,'serpent health when the burn window closed',{size:10});
+})();
+
+/* chart 5 - falls per pull */
+(function(){
+  const s=document.getElementById('c-edge'),W=900,H=250,L=42,R=10,T=14,Bm=36;
+  const order=['knockback','caught','march','unexplained'];
+  const COL={knockback:'var(--crit)',caught:'var(--s2)',march:'var(--s1)',unexplained:'var(--s4)'};
+  const byPull={};
+  E.rows.forEach(r=>{(byPull[r.pull]=byPull[r.pull]||{})[r.cause]=((byPull[r.pull]||{})[r.cause]||0)+1;});
+  const pulls=P.map(p=>p.pull);
+  const max=Math.max(1,...pulls.map(p=>order.reduce((a,c)=>a+((byPull[p]||{})[c]||0),0)));
+  const n=pulls.length,iw=(W-L-R)/n,bw=Math.min(30,iw-6);
+  const y=v=>T+(1-v/max)*(H-T-Bm);
+  for(let v=0;v<=max;v+=Math.ceil(max/5)){
+    mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v,{anchor:'end'});}
+  pulls.forEach((p,i)=>{
+    const x=L+i*iw+(iw-bw)/2;let acc=0;
+    order.forEach(c=>{
+      const v=(byPull[p]||{})[c]||0;if(!v)return;
+      const yy=y(acc+v),h=y(acc)-yy;acc+=v;
+      const r=mk(s,'rect',{x:x,y:yy,width:bw,height:h,fill:COL[c],rx:1.5});
+      hook(r,'<b>Pull '+p+'</b><br>'+v+' to '+c);});
+    txt(s,x+bw/2,H-14,p,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+})();
+
+/* player leaderboards - one row per raider, class-coloured */
+function leaderboard(id,rows,right,tipFor){
+  const s=document.getElementById(id),W=900,L=132,R=118,T=8,rh=18;
+  s.textContent='';   /* redrawn on every pull change - clear or bars pile up */
+  const H=T+rows.length*rh+14;
+  s.setAttribute('viewBox','0 0 '+W+' '+H);
+  const max=Math.max(...rows.map(d=>d.damage))||1;
+  const x=v=>L+v/max*(W-L-R);
+  rows.forEach((d,i)=>{
+    const yy=T+i*rh,bh=12;
+    const col=d.class?'var(--cls-'+d.class+')':'var(--muted)';
+    const r=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.damage)-L),height:bh,fill:col,rx:2});
+    hook(r,tipFor(d));
+    /* Role goes in the same text node as the name — measuring glyph widths to
+       place a separate badge guesses wrong on long names. */
+    const tag=d.role==='Tank'?'· T  ':d.role==='Healer'?'· H  ':'';
+    txt(s,L-8,yy+10,tag+d.name,{anchor:'end',size:11,fill:'var(--ink-2)'});
+    txt(s,W-R+8,yy+10,right(d),{size:10.5,fill:'var(--muted)'});
+  });
+  txt(s,L,H-2,'bar length is damage; hover for the detail',{size:10});
+}
+/* pull pickers - "all pulls" plus every pull that reached the mechanic */
+function fillPicker(sel,pulls,label){
+  sel.innerHTML='<option value="">All pulls</option>'+
+    pulls.map(p=>'<option value="'+p+'">'+label(p)+'</option>').join('');
+}
+function share(rows){
+  const tot=rows.reduce((a,r)=>a+r.damage,0)||1;
+  rows.forEach(r=>{r.share=Math.round(1000*r.damage/tot)/10;});
+  return rows.sort((a,b)=>b.damage-a.damage);
+}
+
+/* --- shield leaderboard --- */
+const veilPulls=[...new Set(V.map(c=>c.pull))].sort((a,b)=>a-b);
+const veilSel=document.getElementById('veil-pull');
+fillPicker(veilSel,veilPulls,p=>'Pull '+p+' ('+(VW[p]||0)+' window'+((VW[p]||0)===1?'':'s')+')');
+function drawVeil(){
+  const pull=veilSel.value;
+  let rows,ctx;
+  if(!pull){
+    rows=VP;
+    ctx=VP.length+' raiders across '+V.length+' shield windows';
+  }else{
+    rows=share(VP.filter(d=>d.by_pull[pull]!==undefined)
+      .map(d=>Object.assign({},d,{damage:d.by_pull[pull],windows:VW[pull]||0})));
+    const ch=V.filter(c=>String(c.pull)===pull);
+    ctx='pull '+pull+' &middot; '+ch.length+' window'+(ch.length===1?'':'s')+
+        ' &middot; '+ch.filter(c=>!c.resolved).length+' broken';
+  }
+  document.getElementById('veil-ctx').innerHTML=ctx;
+  leaderboard('c-veil-players',rows,
+    d=>pull?fmtM(d.damage):fmtM(d.per_window)+'/win',
+    d=>'<b>'+d.name+'</b> &middot; '+d.spec+' '+d.class+'<br>'+
+       fmtM(d.damage)+' onto the shield ('+d.share+'%)<br>'+
+       (pull?'pull '+pull:'across '+d.windows+' window'+(d.windows===1?'':'s')+
+        '<br>'+fmtM(d.per_window)+' per window'));
+}
+veilSel.addEventListener('change',drawVeil); drawVeil();
+
+/* --- burn leaderboard --- */
+const burnRows={}; B.forEach(r=>{burnRows[r.pull]=r;});
+const burnPulls=B.map(r=>r.pull);
+const burnSel=document.getElementById('burn-pull');
+fillPicker(burnSel,burnPulls,p=>'Pull '+p+' — handover '+burnRows[p].transition_mmss);
+function drawBurn(){
+  const pull=burnSel.value;
+  let rows,ctx;
+  if(!pull){
+    rows=BP;
+    ctx=B.length+' intermissions, '+577.8+'s of burn window';
+  }else{
+    rows=share(BP.filter(d=>d.by_pull[pull]).map(d=>Object.assign({},d,{
+      damage:d.by_pull[pull].damage,dps:d.by_pull[pull].dps,
+      multiple:d.by_pull[pull].multiple})));
+    const r=burnRows[pull];
+    ctx='pull '+pull+' &middot; handover at '+r.transition_mmss+' ('+r.band+') &middot; '+
+        r.seconds+'s window &middot; '+r.ratio+'x raid burn'+
+        (r.lust_offset===null?' &middot; no haste':' &middot; haste '+r.lust_offset+'s in');
+  }
+  document.getElementById('burn-ctx').innerHTML=ctx;
+  leaderboard('c-burn-players',rows,
+    d=>(d.multiple?d.multiple+'x':'—'),
+    d=>'<b>'+d.name+'</b> &middot; '+d.spec+' '+d.class+'<br>'+
+       fmtM(d.damage)+' into the serpent ('+d.share+'%)<br>'+
+       fmtM(d.dps)+'/s in the window<br>'+
+       'against their own stage one rate: '+d.multiple+'x');
+}
+burnSel.addEventListener('change',drawBurn); drawBurn();
+
+/* souls - gravebound total, with the bomb-selected share solid */
+(function(){
+  const s=document.getElementById('c-souls'),W=900,L=132,R=150,T=8,rh=18;
+  const rows=SO.slice().sort((a,b)=>b.bound-a.bound);
+  const H=T+rows.length*rh+14;
+  s.setAttribute('viewBox','0 0 '+W+' '+H);
+  const max=Math.max(...rows.map(d=>d.bound))||1;
+  const x=v=>L+v/max*(W-L-R);
+  rows.forEach((d,i)=>{
+    const yy=T+i*rh,bh=12;
+    const col=d.class?'var(--cls-'+d.class+')':'var(--muted)';
+    const tipTxt='<b>'+d.name+'</b> &middot; '+d.spec+' '+d.class+'<br>'+
+      'Gravebound '+d.bound+' times, '+d.collected+' souls collected<br>'+
+      'picked for the bomb '+d.selected+' times'+
+      (d.selected?'':' (theirs comes from the frontal)')+
+      (d.deaths?'<br>'+d.deaths+' death'+(d.deaths===1?'':'s')+' to it':'');
+    const r1=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.bound)-L),height:bh,fill:col,opacity:.42,rx:2});
+    hook(r1,tipTxt);
+    if(d.selected){
+      const r2=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.selected)-L),height:bh,fill:col,rx:2});
+      hook(r2,tipTxt);
+    }
+    const tag=d.role==='Tank'?'\u00b7 T  ':d.role==='Healer'?'\u00b7 H  ':'';
+    txt(s,L-8,yy+10,tag+d.name,{anchor:'end',size:11,fill:'var(--ink-2)'});
+    txt(s,W-R+8,yy+10,d.collected+' souls'+(d.deaths?'  \u00b7 '+d.deaths+'\u2020':''),
+        {size:10.5,fill:'var(--muted)'});
+  });
+  txt(s,L,H-2,'solid = left Gravebound by the bomb; faded = by the frontal or the splash',{size:10});
+})();
+
+/* defensives - majors, with the in-window share shaded darker */
+(function(){
+  const s=document.getElementById('c-mit'),W=900,L=132,R=132,T=8,rh=18;
+  const rows=M.slice().sort((a,b)=>b.major-a.major);
+  const H=T+rows.length*rh+14;
+  s.setAttribute('viewBox','0 0 '+W+' '+H);
+  const max=Math.max(...rows.map(d=>d.major))||1;
+  const x=v=>L+v/max*(W-L-R);
+  rows.forEach((d,i)=>{
+    const yy=T+i*rh,bh=12;
+    const col=d.class?'var(--cls-'+d.class+')':'var(--muted)';
+    const tipTxt='<b>'+d.name+'</b> &middot; '+d.spec+' '+d.class+'<br>'+
+      d.major+' major cooldown'+(d.major===1?'':'s')+', '+d.major_pressure+' in a pressure window<br>'+
+      d.external+' externals given &middot; '+d.raidwide+' raid-wide<br>'+
+      d.stone+' healthstones, '+d.potion+' potions'+
+      (d.hp_at_use!==null?'<br>median '+d.hp_at_use+'% health at use':'')+
+      (d.top_spells.length?'<br>'+d.top_spells.map(t=>t[0]+' x'+t[1]).join(', '):'');
+    const r1=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.major)-L),height:bh,fill:col,opacity:.42,rx:2});
+    hook(r1,tipTxt);
+    if(d.major_pressure){
+      const r2=mk(s,'rect',{x:L,y:yy,width:Math.max(2,x(d.major_pressure)-L),height:bh,fill:col,rx:2});
+      hook(r2,tipTxt);
+    }
+    const tag=d.role==='Tank'?'· T  ':d.role==='Healer'?'· H  ':'';
+    txt(s,L-8,yy+10,tag+d.name,{anchor:'end',size:11,fill:'var(--ink-2)'});
+    txt(s,W-R+8,yy+10,d.stone+' HS / '+d.potion+' pot',{size:10.5,fill:'var(--muted)'});
+  });
+  txt(s,L,H-2,'solid = pressed inside a shield window or the intermission',{size:10});
+})();
+bars('mit-hp',M.filter(d=>d.hp_at_use!==null)
+  .sort((a,b)=>a.hp_at_use-b.hp_at_use).slice(0,10)
+  .map(d=>({label:d.name,value:100-d.hp_at_use,text:d.hp_at_use+'%',
+            color:d.hp_at_use<35?'var(--crit)':'var(--s4)'})));
+bars('mit-ext',M.filter(d=>d.external>0).sort((a,b)=>b.external-a.external).slice(0,8)
+  .map(d=>({label:d.name,value:d.external,text:d.external,color:'var(--s3)'})));
+bars('mit-raid',M.filter(d=>d.raidwide>0).sort((a,b)=>b.raidwide-a.raidwide).slice(0,8)
+  .map(d=>({label:d.name,value:d.raidwide,
+            text:(d.raid_spells[0]?d.raid_spells[0][0].split(':').pop().trim().split(' ')[0]+' ':'')+d.raidwide,
+            color:'var(--s1)'})));
+
+/* cause + cc bars */
+(function(){
+  const COL={knockback:'var(--crit)',caught:'var(--s2)',march:'var(--s1)',unexplained:'var(--s4)'};
+  const LAB={knockback:'knockback',caught:'caught by a ghost',march:'Dreadmarch (cast)',unexplained:'unexplained'};
+  const rows=Object.keys(E.buckets).sort((a,b)=>E.buckets[b]-E.buckets[a])
+    .map(k=>({label:LAB[k]||k,value:E.buckets[k],color:COL[k]}));
+  bars('causes',rows);
+  const cc=C.cc_targeted.map(r=>({label:r[0],value:r[1],color:'var(--s1)'}))
+    .concat(C.cc_ground.map(r=>({label:r[0],value:r[1],color:'var(--s3)'})))
+    .sort((a,b)=>b.value-a.value).slice(0,9);
+  bars('cc',cc);
+})();
+</script>
+
+</body>
+</html>
