@@ -168,7 +168,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>The night, pull by pull</h2>
-  <p>Boss health remaining at the wipe. Pulls that lived long enough for a second heart window are the ones that broke past the {{shelf_pct}}% shelf &mdash; everything else died in the first cycle.</p></div>
+  <p>Boss health remaining at the wipe. Pulls that lived long enough for a second heart window are the ones that broke past the {{shelf_pct}}% shelf. Everything else died in the first cycle.</p></div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>one heart window</span><span><i style="background:var(--s2)"></i>two heart windows</span></div>
     <svg id="c-pulls" viewBox="0 0 900 300" role="img" aria-label="Boss health remaining per pull"></svg>
@@ -178,17 +178,17 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>The burn windows</h2>
-  <p>{{expose_name}} exposed the Venomous Heart {{n_windows}} times across the night, always for the full {{window_len}} seconds &mdash; the raid never lost a window early. Everything the raid puts out in those {{window_len}} seconds counts, because the boss stays cleavable: the heart takes double damage, Ula&#39;tek herself takes normal damage, and both are part of the burn. Across the night that split is {{heart_pct}}% heart, {{boss_share_pct}}% boss. First windows landed {{w1_avg}}M on average, second windows {{w2_avg}}M. That {{drop_pct}}% gap is mostly bought, not earned: the lust went out {{lust_lo}} to {{lust_hi}} seconds before the first exposure on every pull that reached one, and nothing is up for the second. A player&#39;s own drop is only worth reading against the raid&#39;s, which is what the table further down does.</p></div>
+  <p>{{expose_name}} exposed the Venomous Heart {{n_windows}} times across the night, always for the full {{window_len}} seconds, so the raid never lost a window early. Everything the raid puts out in those {{window_len}} seconds counts, because the boss stays cleavable: the heart takes double damage, Ula&#39;tek herself takes normal damage, and both are part of the burn. Across the night that split is {{heart_pct}}% heart, {{boss_share_pct}}% boss. First windows landed {{w1_avg}}M on average, second windows {{w2_avg}}M. That {{drop_pct}}% gap is mostly bought, not earned: the lust went out {{lust_lo}} to {{lust_hi}} seconds before the first exposure on every pull that reached one, and nothing is up for the second. A player&#39;s own drop is only worth reading against the raid&#39;s, which is what the table further down does.</p></div>
   <figure>
-    <div class="legend"><span><i style="background:var(--s1)"></i>window 1 &mdash; heart</span><span><i style="background:var(--s1);opacity:.45"></i>window 1 &mdash; Ula&#39;tek</span><span><i style="background:var(--s2)"></i>window 2 &mdash; heart</span><span><i style="background:var(--s2);opacity:.45"></i>window 2 &mdash; Ula&#39;tek</span></span></div>
+    <div class="legend"><span><i style="background:var(--s1)"></i>window 1: heart</span><span><i style="background:var(--s1);opacity:.45"></i>window 1: Ula&#39;tek</span><span><i style="background:var(--s2)"></i>window 2: heart</span><span><i style="background:var(--s2);opacity:.45"></i>window 2: Ula&#39;tek</span></span></div>
     <svg id="c-windows" viewBox="0 0 900 300" role="img" aria-label="Damage to the Venomous Heart per exposure window per pull"></svg>
-    <figcaption>Damage in millions per {{window_len}}-second exposure. The solid part of each bar landed on the heart, the pale part on Ula&#39;tek herself. Adds are not counted in either &mdash; they die to splash and are not the target that matters here.</figcaption>
+    <figcaption>Damage in millions per {{window_len}}-second exposure. The solid part of each bar landed on the heart, the pale part on Ula&#39;tek herself. Adds are not counted in either, since they die to splash and are not the target that matters here.</figcaption>
   </figure>
 </section>
 
 <section>
   <div class="head"><h2>Inside the window</h2>
-  <p>A running total of burn damage &mdash; the heart plus Ula&#39;tek herself &mdash; second by second, window&nbsp;1 then window&nbsp;2 laid end to end. The target switch splits it apart when you want one or the other. Pick a pull and any number of players: the slope is output, and the gap between lines at any second is who is actually ahead. Switch the running total to reset at each window to compare a player&#39;s first burn against their second &mdash; remembering that window 1 carries the lust.</p></div>
+  <p>A running total of burn damage, the heart plus Ula&#39;tek herself, second by second, window&nbsp;1 then window&nbsp;2 laid end to end. The target switch splits it apart when you want one or the other. Pick a pull and any number of players: the slope is output, and the gap between lines at any second is who is actually ahead. Switch the running total to reset at each window to compare a player&#39;s first burn against their second, remembering that window 1 carries the lust.</p></div>
   <div class="controls">
     <label class="ctl"><span class="lab">Pull</span>
       <select id="pull-sel"></select></label>
@@ -212,7 +212,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 </section>
 <section>
   <div class="head"><h2>Who burns the window</h2>
-  <p>Everything a player put out across the {{window_secs}} seconds of exposure &mdash; the solid part of the bar onto the heart at double damage, the rest into Ula'tek herself &mdash; next to their share of the raid's damage across the whole night. The delta is the honest read on burst: positive means they bring more to the window than their ordinary output would suggest.</p></div>
+  <p>Everything a player put out across the {{window_secs}} seconds of exposure, the solid part of the bar onto the heart at double damage and the rest into Ula'tek herself, next to their share of the raid's damage across the whole night. The delta is the honest read on burst: positive means they bring more to the window than their ordinary output would suggest.</p></div>
   <figure>
     <svg id="c-heart" viewBox="0 0 900 520" role="img" aria-label="Damage to the Venomous Heart by player"></svg>
     <figcaption>Bars are total burn damage, heart first then Ula&#39;tek; the number beside each is damage per second of exposure. Heart share across the damage dealers runs from {{heart_best_pct}}% down to {{heart_worst_pct}}%.</figcaption>
@@ -235,11 +235,11 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>Left and right</h2>
-  <p>Ten seconds after the first heart closes, the raid splits: two fixed tens, one to each side of the platform, thousands of units apart in the log's coordinates and unmistakable in the position data. The phase opens at {{split_start_lo}}&ndash;{{split_start_hi}}s on every pull and runs {{split_dur_lo}} to {{split_dur_hi}} seconds, and the boss cannot be touched until about {{boss_back_avg}}s into it &mdash; which is the only deadline that matters for getting back. Each half carries one tank and two healers, and the same {{raiders_word}} names went to the same two sides on all {{split_pulls_word}} pulls that got there. Deaths out there are listed per player: that is the list to read when deciding who needs an external or a cooldown call.</p></div>
+  <p>Ten seconds after the first heart closes, the raid splits: two fixed tens, one to each side of the platform, thousands of units apart in the log's coordinates and unmistakable in the position data. The phase opens at {{split_start_lo}}&ndash;{{split_start_hi}}s on every pull and runs {{split_dur_lo}} to {{split_dur_hi}} seconds, and the boss cannot be touched until about {{boss_back_avg}}s into it, which is the only deadline that matters for getting back. Each half carries one tank and two healers, and the same {{raiders_word}} names went to the same two sides on all {{split_pulls_word}} pulls that got there. Deaths out there are listed per player: that is the list to read when deciding who needs an external or a cooldown call.</p></div>
   <div class="teams" id="split-teams"></div>
   <div class="tiles" id="split-tiles"></div>
   <figure>
-    <div class="legend"><span><i style="background:var(--s1)"></i>west &mdash; {{west_tank}}&#39;s {{split_size_word}}</span><span><i style="background:var(--s2)"></i>east &mdash; {{east_tank}}&#39;s {{split_size_word}}</span></div>
+    <div class="legend"><span><i style="background:var(--s1)"></i>west: {{west_tank}}&#39;s {{split_size_word}}</span><span><i style="background:var(--s2)"></i>east: {{east_tank}}&#39;s {{split_size_word}}</span></div>
     <svg id="c-split-dps" viewBox="0 0 900 280" role="img" aria-label="Damage per second by side during the split phase, per pull"></svg>
     <figcaption>Damage per second inside the phase. East carries {{east_night_share}}% of the night&#39;s damage and {{east_phase_share}}% of the phase&#39;s.</figcaption>
   </figure>
@@ -255,7 +255,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
       <line x1="530" y1="44" x2="530" y2="58" stroke="var(--rule)" stroke-width="1"></line>
       <line x1="596" y1="48" x2="596" y2="58" stroke="var(--rule)" stroke-width="1"></line>
       <text x="300" y="70" text-anchor="middle" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace" font-size="10.5">first one back</text>
-      <text x="392" y="82" text-anchor="middle" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace" font-size="10.5">median &mdash; this is the one judged</text>
+      <text x="392" y="82" text-anchor="middle" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace" font-size="10.5">median: this is the one judged</text>
       <text x="530" y="70" text-anchor="middle" fill="var(--ink-2)" font-family="IBM Plex Mono, monospace" font-size="10.5">last one back</text>
       <text x="604" y="70" fill="var(--crit)" font-family="IBM Plex Mono, monospace" font-size="10.5">boss can be damaged again</text>
     </svg>
@@ -266,12 +266,12 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     <th>Pull</th><th>Phase</th><th>West DPS</th><th>East DPS</th><th>West HPS</th><th>East HPS</th><th>West back (median)</th><th>East back (median)</th><th>Boss back</th><th>Deaths W/E</th></tr></thead><tbody></tbody></table></div>
   <div class="note">
     <p><b>Where the split broke:</b> {{mistake_sentence}} {{crossings_sentence}}</p>
-    <p><b>Sides are read from position, not assignment:</b> every cast event carries the caster&#39;s coordinates, so each player&#39;s median x while the two clusters are apart says which side they stood on. West and east are the log&#39;s axis, not the screen &mdash; west is whichever side {{west_tank}} tanks.</p>
+    <p><b>Sides are read from position, not assignment:</b> every cast event carries the caster&#39;s coordinates, so each player&#39;s median x while the two clusters are apart says which side they stood on. West and east are the log&#39;s axis, not the screen: west is whichever side {{west_tank}} tanks.</p>
   </div>
 </section>
 <section>
   <div class="head"><h2>Damage taken, second by second</h2>
-  <p>Incoming damage on the raid across a whole pull &mdash; tanks excluded, since their intake is the job and would bury everyone else &mdash; drawn on a fixed {{maxdur}}-second axis &mdash; the length of the longest attempt &mdash; so every pull is read against the same clock. Drag the two handles to a stretch of the fight and everything below recalculates for that window: what the raid ate, how much of it was mitigated, and every cooldown, stone and potion spent inside it.</p></div>
+  <p>Incoming damage on the raid across a whole pull, tanks excluded since their intake is the job and would bury everyone else. The axis is fixed at {{maxdur}} seconds, the length of the longest attempt, so every pull is read against the same clock. Drag the two handles to a stretch of the fight and everything below recalculates for that window: what the raid ate, how much of it was mitigated, and every cooldown, stone and potion spent inside it.</p></div>
   <div class="controls">
     <label class="ctl"><span class="lab">Pull</span><select id="dt-pull"></select></label>
     <div class="ctl grow"><span class="lab">Window <em id="dt-range"></em>
@@ -288,7 +288,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <div class="tiles" id="dt-tiles"></div>
   <div class="tblwrap"><table id="t-dtps"><thead><tr>
     <th>Player</th><th>Damage taken</th><th>Reduced</th><th>Absorbed</th><th>Majors</th><th>Minor</th><th>Externals</th><th>Stones</th><th>Potions</th><th>Deaths</th></tr></thead><tbody></tbody></table></div>
-  <figcaption id="dt-note">{{tank_names}} are left out of this section entirely, chart and table alike; the {{n_nontank}} non-tanks are what you see. Damage taken is health actually lost. Every hit in the log carries what it was worth before mitigation, and the difference splits two ways: <b>reduced</b> &mdash; armour, versatility, Stagger, class passives and any damage-reduction cooldown that happened to be up &mdash; and <b>absorbed</b>, meaning shields, from healers or the player&#39;s own. The log does not separate passive reduction from a pressed cooldown, so read these as "how much of the swing never reached them", not as a defensive-usage score: for the {{n_nontank}} non-tanks across the night it is {{raid_reduced}}% reduced and {{raid_absorbed}}% absorbed, and most of that 24% is passive. The curve is a seven-second centred average so the shape reads &mdash; the tooltip gives the raw second. Per-player figures bucket in five seconds, which is why the handles move in fives; the chart itself is per second. Rows are fixed &mdash; damage dealers first, then healers, alphabetically &mdash; so a name stays in the same place as you move the window.</figcaption>
+  <figcaption id="dt-note">{{tank_names}} are left out of this section entirely, chart and table alike; the {{n_nontank}} non-tanks are what you see. Damage taken is health actually lost. Every hit in the log carries what it was worth before mitigation, and the difference splits two ways. <b>Reduced</b> is armour, versatility, Stagger, class passives and any damage-reduction cooldown that happened to be up; <b>absorbed</b> is shields, from healers or the player&#39;s own. The log does not separate passive reduction from a pressed cooldown, so read these as "how much of the swing never reached them", not as a defensive-usage score: for the {{n_nontank}} non-tanks across the night it is {{raid_reduced}}% reduced and {{raid_absorbed}}% absorbed, and most of that 24% is passive. The curve is a seven-second centred average so the shape reads; the tooltip gives the raw second. Per-player figures bucket in five seconds, which is why the handles move in fives; the chart itself is per second. Rows are fixed, damage dealers first and then healers, alphabetically, so a name stays in the same place as you move the window.</figcaption>
 </section>
 <section>
   <div class="head"><h2>Defensives in the heavy seconds</h2>
@@ -299,28 +299,28 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     <figcaption>Share of the {{n_spans}} heavy spans in which the player used at least one major personal cooldown. Labels give the raw count of majors used in heavy spans, out of everything they pressed all night.</figcaption>
   </figure>
   <div class="note">
-    <p><b>Two bars that don&#39;t mean what they look like.</b> The {{brew_spec}} bar sits low because that spec mitigates with a short cooldown rather than a saved one &mdash; {{brew_count}} casts of {{brew_spell}}, which is not a major by this count. The {{blood_spec}} bar is the opposite: {{blood_majors}} majors is a rotation, not {{blood_majors}} saves. Between those two the bar means what it says.</p>
+    <p><b>Two bars that don&#39;t mean what they look like.</b> The {{brew_spec}} bar sits low because that spec mitigates with a short cooldown rather than a saved one: {{brew_count}} casts of {{brew_spell}}, which is not a major by this count. The {{blood_spec}} bar is the opposite, where {{blood_majors}} majors is a rotation rather than {{blood_majors}} saves.</p>
   </div>
 
   <div class="head" style="border:0;padding-top:8px"><h3>Healthstones &amp; health potions</h3>
-  <p>{{stones}} healthstones and {{potions}} health potions went down across {{pulls}} pulls &mdash; and they went down late rather than early: {{hp_under40}} of the {{consum_total}} at under 40% health, {{hp_under20}} of those under 20%, {{hp_over80}} above 80%. Average {{hp_avg}}%, median {{hp_median}}%. {{never_hs_word_cap}} of the roster used no healthstone at all; the chart marks them. The potion count is every health potion on the shared cooldown: {{potion_breakdown}}; the stones are {{stone_breakdown}}.</p></div>
+  <p>{{stones}} healthstones and {{potions}} health potions went down across {{pulls}} pulls, and they went down late rather than early: {{hp_under40}} of the {{consum_total}} at under 40% health, {{hp_under20}} of those under 20%, {{hp_over80}} above 80%. Average {{hp_avg}}%, median {{hp_median}}%. {{never_hs_word_cap}} of the roster used no healthstone at all; the chart marks them. The potion count is every health potion on the shared cooldown: {{potion_breakdown}}; the stones are {{stone_breakdown}}.</p></div>
   <figure>
-    <div class="legend"><span><i style="background:var(--s1)"></i>healthstones</span><span><i style="background:var(--s2)"></i>health potions</span><span><i style="background:var(--muted)"></i>average health when used</span><span><i style="background:var(--crit)"></i>under 25% &mdash; cutting it fine</span></div>
+    <div class="legend"><span><i style="background:var(--s1)"></i>healthstones</span><span><i style="background:var(--s2)"></i>health potions</span><span><i style="background:var(--muted)"></i>average health when used</span><span><i style="background:var(--crit)"></i>under 25%, cutting it fine</span></div>
     <svg id="c-consum" viewBox="0 0 900 520" role="img" aria-label="Healthstone and health potion use per player"></svg>
     <figcaption>Bars count uses across the night; the marker on the right is the average health the player was sitting at when they pressed it, measured before the heal landed.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-mit"><thead><tr>
     <th>Player</th><th>Spec</th><th>Majors</th><th>In heavy</th><th>Coverage</th><th>Minor / rotational</th><th>Externals given</th><th>Stones</th><th>Potions</th><th>HP at use</th><th>Early deaths</th><th>&hellip;with nothing pressed</th></tr></thead><tbody></tbody></table></div>
   <div class="note">
-    <p><b>Early deaths</b> are the {{early_deaths}} deaths that landed more than 15 seconds before the pull's last death &mdash; someone dying alone rather than in the wipe. {{early_no_def}} of them had no major defensive in the ten seconds before, and {{deaths_no_consum}} deaths happened in pulls where that player never used a stone or a potion.</p>
-    <p><b>Heavy spans</b> are computed, not hand-picked: raid damage taken binned per second, and every run of three or more seconds at twice the pull's median rate or above. Necrotic Vapors, Blight Vein and Acidic Expulsion dominate them. <b>Majors</b> are personal cooldowns ({{major_list}}). <b>Minor</b> covers the spammables &mdash; {{minor_list}}. <b>Stones and potions</b> are counted from the cast, not the heal, so an overheal still counts as a use. Health at use is the value before the heal landed: WCL stamps the health on both the cast and the heal event as the figure <i>after</i> healing (casts that read 100% health while reporting real, non-overhealed healing give it away), so the effective heal is subtracted back off. <b>Externals</b> are the ones cast on somebody else: {{external_list}}.</p>
+    <p><b>Early deaths</b> are the {{early_deaths}} deaths that landed more than 15 seconds before the pull's last death, meaning someone dying alone rather than in the wipe. {{early_no_def}} of them had no major defensive in the ten seconds before, and {{deaths_no_consum}} deaths happened in pulls where that player never used a stone or a potion.</p>
+    <p><b>Heavy spans</b> are computed, not hand-picked: raid damage taken binned per second, and every run of three or more seconds at twice the pull's median rate or above. Necrotic Vapors, Blight Vein and Acidic Expulsion dominate them. <b>Majors</b> are personal cooldowns ({{major_list}}). <b>Minor</b> covers the spammables: {{minor_list}}. <b>Stones and potions</b> are counted from the cast, not the heal, so an overheal still counts as a use. Health at use is the value before the heal landed: WCL stamps the health on both the cast and the heal event as the figure <i>after</i> healing (casts that read 100% health while reporting real, non-overhealed healing give it away), so the effective heal is subtracted back off. <b>Externals</b> are the ones cast on somebody else: {{external_list}}.</p>
   </div>
 </section>
 <section>
   <div class="head"><h3>How this was counted</h3></div>
   <div class="note">
-    <p>Burn damage is every damage event inside an exposure window landing on either the Venomous Heart or Ula&#39;tek herself, absorbs included, with pet and guardian damage credited to the owner. The heart takes 100% increased damage, so a hit parked there is worth two of the same hit on the boss &mdash; the &ldquo;on heart&rdquo; column is how much of a player&#39;s burn went to the target that pays double. Exposure windows were rebuilt by clustering those events and breaking at gaps over five seconds; all {{n_windows}} came out at {{window_len}} seconds, against {{expose_casts}} {{expose_name}} casts minus the {{no_window_pulls_word}} pulls that died before the first exposure.</p>
-    <p>Wave hits are damage events from {{wave_name}} (spell {{wave_dmg_ids}}), grouped per player when they land within two seconds of each other, so one wave passing through a player counts once. Wave casts count the boss's {{wave_name}} casts. A wave death is a death whose killing blow is the wave itself &mdash; damage taken and then dying to something else a second later is not counted here.</p>
+    <p>Burn damage is every damage event inside an exposure window landing on either the Venomous Heart or Ula&#39;tek herself, absorbs included, with pet and guardian damage credited to the owner. The heart takes 100% increased damage, so a hit parked there is worth two of the same hit on the boss. The &ldquo;on heart&rdquo; column is how much of a player&#39;s burn went to the target that pays double. Exposure windows were rebuilt by clustering those events and breaking at gaps over five seconds; all {{n_windows}} came out at {{window_len}} seconds, against {{expose_casts}} {{expose_name}} casts minus the {{no_window_pulls_word}} pulls that died before the first exposure.</p>
+    <p>Wave hits are damage events from {{wave_name}} (spell {{wave_dmg_ids}}), grouped per player when they land within two seconds of each other, so one wave passing through a player counts once. Wave casts count the boss's {{wave_name}} casts. A wave death is a death whose killing blow is the wave itself. Damage taken and then dying to something else a second later is not counted here.</p>
     <p>Viper counts are distinct Blightscale Viper instances that took damage in a pull, a proxy for eggs hatched wrong; on this night they track the early pulls more than the deep ones.</p>
   </div>
 </section>
@@ -461,7 +461,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
 
   const sel=document.getElementById('pull-sel');
   pulls.forEach(p=>{const o=document.createElement('option');o.value=p;
-    o.textContent=`Pull ${p} \u2014 ${fightsBy[p].boss_pct.toFixed(1)}% left, ${WB[p].length} window${WB[p].length>1?'s':''}`;
+    o.textContent=`Pull ${p}, ${fightsBy[p].boss_pct.toFixed(1)}% left, ${WB[p].length} window${WB[p].length>1?'s':''}`;
     sel.appendChild(o);});
   /* opens with every damage dealer drawn: the shape of the pack is the point,
      and a name can be clicked out of it */
@@ -613,7 +613,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     document.getElementById('raid-ratio').innerHTML = two
       ? `Raid as a whole this pull: ${fmtM(raidW1)} then ${fmtM(raidW2)}, so the raid\u2019s second window came to `
         + `<b>${Math.round(raidRatio)}%</b> of its first. \u201cW2 vs W1\u201d is the same sum for one player; `
-        + `\u201cvs raid\u201d is the gap between the two in percentage points \u2014 `
+        + `\u201cvs raid\u201d is the gap between the two in percentage points: `
         + `+10&nbsp;pp means that player\u2019s second window held up ten points better than the raid\u2019s did, `
         + `0 means they fell off exactly as much as everyone else.`
       : 'One window only, so there is nothing to compare against.';
@@ -632,7 +632,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     const d=X.sides[s];
     return `<div class="team">
       <div class="team-head"><span class="dot" style="background:${COL[s]}"></span>
-        ${s==='west'?'West':'East'} <span class="muted">&mdash; ${d.members.length} players</span></div>
+        ${s==='west'?'West':'East'} <span class="muted">(${d.members.length} players)</span></div>
       <ul>${d.members.map(p=>`<li><span class="role">${ROLE[X.roles[p]]}</span> ${p}
         <span class="muted">${X.spec[p]} ${X.cls[p]}</span>
         ${X.iso_by_player[p]?`<span class="muted" title="deaths in the split phase, outside the closing wipe">&middot; died ${X.iso_by_player[p]}\u00d7 out there</span>`:''}</li>`).join('')}</ul>
@@ -732,7 +732,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   const sel=document.getElementById('dt-pull');
   const pulls=Object.keys(X.pulls).map(Number).sort((a,b)=>a-b);
   pulls.forEach(p=>{const o=document.createElement('option');o.value=p;
-    o.textContent=`Pull ${p} \u2014 ${X.pulls[p].dur}s, ${X.pulls[p].boss_pct.toFixed(1)}% left`;
+    o.textContent=`Pull ${p}, ${X.pulls[p].dur}s, ${X.pulls[p].boss_pct.toFixed(1)}% left`;
     sel.appendChild(o);});
   let pull={{deep_pull}}, from=0, to=X.maxdur;
   sel.value=pull;
@@ -807,7 +807,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     const tk=sum('tk'), inc=sum('inc');
     document.getElementById('dt-tiles').innerHTML=[
       [fmtK(tk).replace('M','<small>M</small>').replace('k','<small>k</small>'),'damage taken in window'],
-      [(inc?Math.round(100*sum('rd')/inc):0)+'<small>%</small>','reduced &mdash; armour, versatility, cooldowns'],
+      [(inc?Math.round(100*sum('rd')/inc):0)+'<small>%</small>','reduced: armour, versatility, cooldowns'],
       [(inc?Math.round(100*sum('ab')/inc):0)+'<small>%</small>','absorbed by shields'],
       [sum('maj'),'major cooldowns'],[sum('min'),'minor / rotational'],[sum('ext'),'externals'],
       [sum('hs')+'<small> / </small>'+sum('pot'),'stones / potions'],[sum('death'),'deaths']]
