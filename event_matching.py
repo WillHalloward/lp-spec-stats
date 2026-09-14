@@ -29,7 +29,7 @@ _DIFFICULTY_PATTERNS = [
     ("Mythic", re.compile(r"\bmythic\b", re.IGNORECASE)),
     ("Heroic", re.compile(r"\bheroic\b|\bhc\b", re.IGNORECASE)),
     ("Normal", re.compile(r"\bnormal\b", re.IGNORECASE)),
-    ("LFR",    re.compile(r"\blfr\b", re.IGNORECASE)),
+    ("LFR", re.compile(r"\blfr\b", re.IGNORECASE)),
 ]
 
 
@@ -78,13 +78,13 @@ def _jaccard(a: set[str], b: set[str]) -> float:
 # Score weights — tuned so roster overlap dominates and difficulty acts as a
 # strong tiebreaker. Threshold below leaves room for fuzzy matches but rejects
 # everything that's "just close in time".
-W_OVERLAP = 10.0          # multiplied by jaccard (0..1)
-W_DIFFICULTY = 5.0        # bonus when log difficulty matches event difficulty
-W_LEADER_CHAR = 3.0       # the CANDIDATE event's leader has their main in the roster
-W_TIME = 1.0              # 1.0 at delta=0, decays with delta
+W_OVERLAP = 10.0  # multiplied by jaccard (0..1)
+W_DIFFICULTY = 5.0  # bonus when log difficulty matches event difficulty
+W_LEADER_CHAR = 3.0  # the CANDIDATE event's leader has their main in the roster
+W_TIME = 1.0  # 1.0 at delta=0, decays with delta
 W_ROSTER_SIZE_BAD = -5.0  # penalty when sizes are wildly different
 
-MIN_SCORE = 3.0           # below this → leave unmatched
+MIN_SCORE = 3.0  # below this → leave unmatched
 
 
 def _time_score(start_unix_sec: int, ev_unix_sec: int) -> float:
@@ -147,11 +147,7 @@ def find_matching_event(
         overlap = _jaccard(roster_names, signup_names)
 
         ev_diff = detect_difficulty_from_title(cand.get("title"))
-        diff_bonus = (
-            W_DIFFICULTY
-            if (wcl_difficulty and ev_diff and wcl_difficulty == ev_diff)
-            else 0.0
-        )
+        diff_bonus = W_DIFFICULTY if (wcl_difficulty and ev_diff and wcl_difficulty == ev_diff) else 0.0
 
         cand_leader_id = str(cand_data.get("leaderid") or "")
         leader_char_match = bool(cand_leader_id) and cand_leader_id in roster_leader_ids
@@ -164,17 +160,23 @@ def find_matching_event(
 
         score = W_OVERLAP * overlap + diff_bonus + leader_bonus + time_bonus + size_penalty
 
-        scored.append((score, cand, {
-            "raid_id": cand["raid_id"],
-            "overlap": round(overlap, 3),
-            "diff_match": ev_diff == wcl_difficulty if (ev_diff and wcl_difficulty) else None,
-            "ev_diff": ev_diff,
-            "wcl_diff": wcl_difficulty,
-            "leader_char_match": leader_char_match,
-            "size_diff": size_diff,
-            "delta_min": (start_unix_sec - cand["unixtime"]) // 60,
-            "score": round(score, 2),
-        }))
+        scored.append(
+            (
+                score,
+                cand,
+                {
+                    "raid_id": cand["raid_id"],
+                    "overlap": round(overlap, 3),
+                    "diff_match": ev_diff == wcl_difficulty if (ev_diff and wcl_difficulty) else None,
+                    "ev_diff": ev_diff,
+                    "wcl_diff": wcl_difficulty,
+                    "leader_char_match": leader_char_match,
+                    "size_diff": size_diff,
+                    "delta_min": (start_unix_sec - cand["unixtime"]) // 60,
+                    "score": round(score, 2),
+                },
+            )
+        )
 
     scored.sort(key=lambda x: x[0], reverse=True)
     best_score, best_cand, best_break = scored[0]

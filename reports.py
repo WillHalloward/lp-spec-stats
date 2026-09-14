@@ -59,7 +59,7 @@ def index_page() -> str:
     rows = load_index()
     cards = "".join(_card(r) for r in rows) or (
         '<p class="empty">No reports yet. Drop an HTML file in <code>reports/</code> '
-        'and add a row to <code>reports/index.json</code>.</p>'
+        "and add a row to <code>reports/index.json</code>.</p>"
     )
     return f"""<!doctype html>
 <html lang="en">

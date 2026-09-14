@@ -28,9 +28,18 @@ ABSENCE_ROLES = {"Absence", "Tentative", "Bench", "Late"}
 GENERIC_CLASSES = {"Dps", "Tanks", "Healer", "Tank", "Melee", "Ranged"}
 
 CLASS_COLORS = {
-    "DK": "#C41E3A", "DH": "#A330C9", "Druid": "#FF7C0A", "Evoker": "#33937F",
-    "Hunter": "#AAD372", "Mage": "#3FC7EB", "Monk": "#00FF98", "Paladin": "#F48CBA",
-    "Priest": "#FFFFFF", "Rogue": "#FFF468", "Shaman": "#0070DD", "Warlock": "#8788EE",
+    "DK": "#C41E3A",
+    "DH": "#A330C9",
+    "Druid": "#FF7C0A",
+    "Evoker": "#33937F",
+    "Hunter": "#AAD372",
+    "Mage": "#3FC7EB",
+    "Monk": "#00FF98",
+    "Paladin": "#F48CBA",
+    "Priest": "#FFFFFF",
+    "Rogue": "#FFF468",
+    "Shaman": "#0070DD",
+    "Warlock": "#8788EE",
     "Warrior": "#C69B6D",
 }
 
@@ -62,9 +71,21 @@ DIFFICULTY_COLORS = {
 }
 
 RAID_KEYWORDS = [
-    "Voidspire", "Dreamrift", "Crown of the Cosmos", "MoQD",
-    "MFO", "Ansurek", "Gallywix",
-    "Sargeras", "Hellfire", "Legion", "Draenor", "Orgrimmar", "Midnight", "ToV", "EN",
+    "Voidspire",
+    "Dreamrift",
+    "Crown of the Cosmos",
+    "MoQD",
+    "MFO",
+    "Ansurek",
+    "Gallywix",
+    "Sargeras",
+    "Hellfire",
+    "Legion",
+    "Draenor",
+    "Orgrimmar",
+    "Midnight",
+    "ToV",
+    "EN",
 ]
 
 
@@ -75,15 +96,16 @@ class Event:
     unixtime: int
     leader_id: str
     leader_name: str
-    category: str        # Raid | M+ | Achievement | Mount
-    difficulty: str      # Mythic | Heroic | Normal | LFR | Other
-    raid_name: str       # extracted raid keyword or ""
-    series_key: str      # leader_id + category/raid_name/difficulty bucket
-    series_label: str    # human-readable
+    category: str  # Raid | M+ | Achievement | Mount
+    difficulty: str  # Mythic | Heroic | Normal | LFR | Other
+    raid_name: str  # extracted raid keyword or ""
+    series_key: str  # leader_id + category/raid_name/difficulty bucket
+    series_label: str  # human-readable
     signups: list
 
 
 # ---- normalization ----
+
 
 def detect_category(title: str) -> str:
     t = title.lower()
@@ -141,6 +163,7 @@ def _load_raw_events() -> list[dict]:
     """Return all event payloads, preferring Postgres if DATABASE_URL is set."""
     if os.environ.get("DATABASE_URL"):
         import db
+
         with db.session() as conn:
             return db.load_all_events(conn)
     return [json.load(open(f)) for f in sorted(glob.glob(str(CACHE_DIR / "*.json")))]
@@ -170,24 +193,27 @@ def load_events() -> list[Event]:
         series_key = f"{leader_id}::{category}"
         series_label = f"{leader} — {category}"
 
-        events.append(Event(
-            raid_id=str(d["raidid"]),
-            title=title,
-            unixtime=int(d["unixtime"]),
-            leader_id=leader_id,
-            leader_name=leader,
-            category=category,
-            difficulty=difficulty,
-            raid_name=raid_name,
-            series_key=series_key,
-            series_label=series_label,
-            signups=d.get("signups", []),
-        ))
+        events.append(
+            Event(
+                raid_id=str(d["raidid"]),
+                title=title,
+                unixtime=int(d["unixtime"]),
+                leader_id=leader_id,
+                leader_name=leader,
+                category=category,
+                difficulty=difficulty,
+                raid_name=raid_name,
+                series_key=series_key,
+                series_label=series_label,
+                signups=d.get("signups", []),
+            )
+        )
     events.sort(key=lambda e: e.unixtime)
     return events
 
 
 # ---- stats ----
+
 
 def classify_signup(s: dict) -> str:
     """Return 'attending', 'absence', or 'generic'."""
@@ -209,27 +235,41 @@ def attending_signups(events: list[Event]):
 
 # ---- charts ----
 
+
 def _apply_theme(fig: go.Figure) -> go.Figure:
     """Apply shared theme defaults: fonts, paper bg, gridlines, tooltips."""
     fig.update_layout(
         paper_bgcolor=THEME["surface"],
         plot_bgcolor=THEME["surface"],
         font=dict(family="Inter, system-ui, sans-serif", color=THEME["text"], size=13),
-        title=dict(font=dict(family="Inter, system-ui, sans-serif", size=15,
-                              color=THEME["text"]), x=0.02, y=0.97, xanchor="left"),
+        title=dict(
+            font=dict(family="Inter, system-ui, sans-serif", size=15, color=THEME["text"]),
+            x=0.02,
+            y=0.97,
+            xanchor="left",
+        ),
         margin=dict(t=60, b=50, l=70, r=40),
         hoverlabel=dict(
             bgcolor=THEME["surface_2"],
             bordercolor=THEME["gold"],
             font=dict(family="JetBrains Mono, monospace", color=THEME["text"], size=12),
         ),
-        legend=dict(bgcolor="rgba(0,0,0,0)", bordercolor=THEME["border_soft"],
-                    borderwidth=0, font=dict(size=12)),
+        legend=dict(
+            bgcolor="rgba(0,0,0,0)", bordercolor=THEME["border_soft"], borderwidth=0, font=dict(size=12)
+        ),
     )
-    fig.update_xaxes(gridcolor=THEME["border_soft"], zerolinecolor=THEME["border_soft"],
-                      linecolor=THEME["border"], tickfont=dict(size=11, color=THEME["text_muted"]))
-    fig.update_yaxes(gridcolor=THEME["border_soft"], zerolinecolor=THEME["border_soft"],
-                      linecolor=THEME["border"], tickfont=dict(size=11, color=THEME["text_muted"]))
+    fig.update_xaxes(
+        gridcolor=THEME["border_soft"],
+        zerolinecolor=THEME["border_soft"],
+        linecolor=THEME["border"],
+        tickfont=dict(size=11, color=THEME["text_muted"]),
+    )
+    fig.update_yaxes(
+        gridcolor=THEME["border_soft"],
+        zerolinecolor=THEME["border_soft"],
+        linecolor=THEME["border"],
+        tickfont=dict(size=11, color=THEME["text_muted"]),
+    )
     return fig
 
 
@@ -240,9 +280,16 @@ def chart_class_distribution(events):
     classes = [c for c, _ in counts.most_common()]
     values = [counts[c] for c in classes]
     colors = [CLASS_COLORS.get(c, "#888") for c in classes]
-    fig = go.Figure(go.Bar(x=classes, y=values, marker_color=colors, text=values,
-                            textposition="outside",
-                            textfont=dict(family="JetBrains Mono, monospace", color=THEME["text"])))
+    fig = go.Figure(
+        go.Bar(
+            x=classes,
+            y=values,
+            marker_color=colors,
+            text=values,
+            textposition="outside",
+            textfont=dict(family="JetBrains Mono, monospace", color=THEME["text"]),
+        )
+    )
     fig.update_layout(title="Signups by class", xaxis_title=None, yaxis_title="Signups")
     return _apply_theme(fig)
 
@@ -300,21 +347,29 @@ def chart_spec_distribution(events):
         ys = [l for l, _, _ in rows]
         xs = [n for _, n, _ in rows]
         roles = [r for _, _, r in rows]
-        fig.add_trace(go.Bar(
-            name=cls, y=ys, x=xs, orientation="h",
-            marker=dict(color=CLASS_COLORS.get(cls, "#888"), opacity=[1] * len(xs)),
-            text=xs, textposition="outside",
-            textfont=dict(family="JetBrains Mono, monospace", color=THEME["text"]),
-            hovertemplate=f"<b>{cls}</b> · %{{y}}<br>%{{x}} signups<extra></extra>",
-        ))
+        fig.add_trace(
+            go.Bar(
+                name=cls,
+                y=ys,
+                x=xs,
+                orientation="h",
+                marker=dict(color=CLASS_COLORS.get(cls, "#888"), opacity=[1] * len(xs)),
+                text=xs,
+                textposition="outside",
+                textfont=dict(family="JetBrains Mono, monospace", color=THEME["text"]),
+                hovertemplate=f"<b>{cls}</b> · %{{y}}<br>%{{x}} signups<extra></extra>",
+            )
+        )
         trace_meta.append({"cls": cls, "roles": roles})
 
     fig.update_layout(
         height=max(500, 24 * len(y_order)),
         xaxis_title="Signups",
         yaxis=dict(
-            categoryorder="array", categoryarray=y_order,
-            automargin=True, ticksuffix="   ",
+            categoryorder="array",
+            categoryarray=y_order,
+            automargin=True,
+            ticksuffix="   ",
             tickfont=dict(size=12, color=THEME["text"]),
         ),
         margin=dict(t=20, b=50, l=220, r=80),
@@ -326,8 +381,7 @@ def chart_spec_distribution(events):
     inner = fig.to_html(include_plotlyjs=False, full_html=False, div_id=chart_id)
 
     role_chips = "".join(
-        f'<button class="cf-chip role-chip" data-role="{r}">{r}</button>'
-        for r in ROLE_ORDER
+        f'<button class="cf-chip role-chip" data-role="{r}">{r}</button>' for r in ROLE_ORDER
     )
     class_chips = "".join(
         f'<button class="cf-chip class-chip" data-class="{cls}" '
@@ -392,7 +446,7 @@ def chart_spec_distribution(events):
         f'<div class="custom-chart-head">'
         f'<div class="custom-chart-title">Signups by class + spec</div>'
         f'<div class="custom-chart-sub">Hover a chip to preview · click to add/remove from filter (multi-select).</div>'
-        f'</div>'
+        f"</div>"
         f'<div class="cf-filters">'
         f'<div class="cf-group"><div class="cf-label">Role</div>'
         f'<div class="cf-row">{role_chips}'
@@ -400,10 +454,10 @@ def chart_spec_distribution(events):
         f'<div class="cf-group"><div class="cf-label">Class</div>'
         f'<div class="cf-row">{class_chips}'
         f'<button class="cf-chip cf-reset" data-reset="class">Reset</button></div></div>'
-        f'</div>'
-        f'{inner}'
-        f'<script>{js}</script>'
-        f'</div>'
+        f"</div>"
+        f"{inner}"
+        f"<script>{js}</script>"
+        f"</div>"
     )
 
 
@@ -438,13 +492,19 @@ def chart_class_consistency(events):
         f"Unique characters: {n_chars}<br>Total signups: {total}<br>Top character: {top} events"
         for cls, mean, median, n_chars, total, top in rows
     ]
-    fig = go.Figure(go.Bar(
-        y=classes[::-1], x=means[::-1], orientation="h",
-        marker_color=colors[::-1],
-        text=[f"{m:.1f}" for m in means[::-1]], textposition="outside",
-        textfont=dict(family="JetBrains Mono, monospace", color=THEME["text"]),
-        hovertext=hover[::-1], hoverinfo="text",
-    ))
+    fig = go.Figure(
+        go.Bar(
+            y=classes[::-1],
+            x=means[::-1],
+            orientation="h",
+            marker_color=colors[::-1],
+            text=[f"{m:.1f}" for m in means[::-1]],
+            textposition="outside",
+            textfont=dict(family="JetBrains Mono, monospace", color=THEME["text"]),
+            hovertext=hover[::-1],
+            hoverinfo="text",
+        )
+    )
     fig.update_layout(
         title=f"Player commitment by class — avg events per unique character",
         xaxis_title="Average events attended per unique character",
@@ -460,8 +520,7 @@ def chart_role_balance(events):
     Ideal for 20-player mythic: 2 tanks (10%), 4.5 healers (22.5%), 13.5 DPS (67.5%).
     """
     role_map = {"Tanks": "Tank", "Healers": "Healer", "Melee": "Melee DPS", "Ranged": "Ranged DPS"}
-    role_colors = {"Tank": "#3b82f6", "Healer": "#10b981",
-                    "Melee DPS": "#ef4444", "Ranged DPS": "#a855f7"}
+    role_colors = {"Tank": "#3b82f6", "Healer": "#10b981", "Melee DPS": "#ef4444", "Ranged DPS": "#a855f7"}
     counts = Counter()
     for _, s in attending_signups(events):
         role = role_map.get(s.get("role", ""))
@@ -473,30 +532,43 @@ def chart_role_balance(events):
     fig = go.Figure()
     for role in order:
         pct = 100 * counts.get(role, 0) / total
-        fig.add_trace(go.Bar(
-            name=role, x=[pct], y=["Actual"], orientation="h",
-            marker_color=role_colors[role],
-            text=[f"{role}<br>{pct:.1f}% ({counts.get(role, 0)})"],
-            textposition="inside",
-            textfont=dict(family="Inter, sans-serif", color="white", size=12),
-            insidetextanchor="middle",
-            hovertemplate=f"{role}: %{{x:.1f}}% (%{{customdata}})<extra></extra>",
-            customdata=[counts.get(role, 0)],
-        ))
+        fig.add_trace(
+            go.Bar(
+                name=role,
+                x=[pct],
+                y=["Actual"],
+                orientation="h",
+                marker_color=role_colors[role],
+                text=[f"{role}<br>{pct:.1f}% ({counts.get(role, 0)})"],
+                textposition="inside",
+                textfont=dict(family="Inter, sans-serif", color="white", size=12),
+                insidetextanchor="middle",
+                hovertemplate=f"{role}: %{{x:.1f}}% (%{{customdata}})<extra></extra>",
+                customdata=[counts.get(role, 0)],
+            )
+        )
 
     # Ideal mythic comp: 2 / 4.5 / 13.5 over 20 → 10% / 22.5% / 67.5% (DPS split 50/50 melee/ranged for the bar)
     ideal = {"Tank": 10.0, "Healer": 22.5, "Melee DPS": 33.75, "Ranged DPS": 33.75}
     for role in order:
-        fig.add_trace(go.Bar(
-            name=f"{role} (ideal)", x=[ideal[role]], y=["Ideal mythic"], orientation="h",
-            marker=dict(color=role_colors[role], pattern=dict(shape="/", fgcolor=THEME["surface"],
-                                                                 fgopacity=0.35, size=4)),
-            text=[f"{ideal[role]:.1f}%"], textposition="inside",
-            textfont=dict(family="Inter, sans-serif", color="white", size=11),
-            insidetextanchor="middle",
-            hovertemplate=f"{role} ideal: %{{x:.1f}}%<extra></extra>",
-            showlegend=False,
-        ))
+        fig.add_trace(
+            go.Bar(
+                name=f"{role} (ideal)",
+                x=[ideal[role]],
+                y=["Ideal mythic"],
+                orientation="h",
+                marker=dict(
+                    color=role_colors[role],
+                    pattern=dict(shape="/", fgcolor=THEME["surface"], fgopacity=0.35, size=4),
+                ),
+                text=[f"{ideal[role]:.1f}%"],
+                textposition="inside",
+                textfont=dict(family="Inter, sans-serif", color="white", size=11),
+                insidetextanchor="middle",
+                hovertemplate=f"{role} ideal: %{{x:.1f}}%<extra></extra>",
+                showlegend=False,
+            )
+        )
 
     fig.update_layout(
         title="Role composition · actual vs ideal mythic",
@@ -521,13 +593,24 @@ def chart_top_characters(events, top_n=30):
     top = counts.most_common(top_n)
     names = [n for n, _ in top][::-1]
     values = [c for _, c in top][::-1]
-    fig = go.Figure(go.Bar(y=names, x=values, orientation="h", text=values, textposition="outside",
-                            textfont=dict(family="JetBrains Mono, monospace", color=THEME["text"]),
-                            marker_color=THEME["gold"]))
-    fig.update_layout(title=f"Top {top_n} most consistent characters", height=max(400, 20 * top_n),
-                      xaxis_title="Events signed up to",
-                      margin=dict(t=60, b=50, l=200, r=80),
-                      yaxis=dict(automargin=True, ticksuffix="   ", tickfont=dict(color=THEME["text"])))
+    fig = go.Figure(
+        go.Bar(
+            y=names,
+            x=values,
+            orientation="h",
+            text=values,
+            textposition="outside",
+            textfont=dict(family="JetBrains Mono, monospace", color=THEME["text"]),
+            marker_color=THEME["gold"],
+        )
+    )
+    fig.update_layout(
+        title=f"Top {top_n} most consistent characters",
+        height=max(400, 20 * top_n),
+        xaxis_title="Events signed up to",
+        margin=dict(t=60, b=50, l=200, r=80),
+        yaxis=dict(automargin=True, ticksuffix="   ", tickfont=dict(color=THEME["text"])),
+    )
     return _apply_theme(fig)
 
 
@@ -545,18 +628,27 @@ def chart_top_players(events, top_n=30):
     for uid, c in top:
         most_used = pretty[uid].most_common(1)[0][0]
         alt = len(pretty[uid])
-        label = most_used if alt == 1 else f"{most_used} (+{alt-1} alts)"
+        label = most_used if alt == 1 else f"{most_used} (+{alt - 1} alts)"
         labels.append(label)
         values.append(c)
-    fig = go.Figure(go.Bar(y=labels[::-1], x=values[::-1], orientation="h", text=values[::-1],
-                            textposition="outside",
-                            textfont=dict(family="JetBrains Mono, monospace", color=THEME["text"]),
-                            marker_color=THEME["blue"]))
-    fig.update_layout(title=f"Top {top_n} most consistent players (unique Discord IDs)",
-                      height=max(400, 20 * top_n),
-                      xaxis_title="Events signed up to",
-                      margin=dict(t=60, b=50, l=200, r=80),
-                      yaxis=dict(automargin=True, ticksuffix="   ", tickfont=dict(color=THEME["text"])))
+    fig = go.Figure(
+        go.Bar(
+            y=labels[::-1],
+            x=values[::-1],
+            orientation="h",
+            text=values[::-1],
+            textposition="outside",
+            textfont=dict(family="JetBrains Mono, monospace", color=THEME["text"]),
+            marker_color=THEME["blue"],
+        )
+    )
+    fig.update_layout(
+        title=f"Top {top_n} most consistent players (unique Discord IDs)",
+        height=max(400, 20 * top_n),
+        xaxis_title="Events signed up to",
+        margin=dict(t=60, b=50, l=200, r=80),
+        yaxis=dict(automargin=True, ticksuffix="   ", tickfont=dict(color=THEME["text"])),
+    )
     return _apply_theme(fig)
 
 
@@ -580,9 +672,13 @@ def chart_signups_over_time(events):
         if sum(ys) == 0:
             continue
         fig.add_trace(go.Bar(name=d, x=weeks, y=ys, marker_color=DIFFICULTY_COLORS.get(d, "#888")))
-    fig.update_layout(barmode="stack", title="Weekly attending signups, by difficulty",
-                      xaxis_title=None, yaxis_title="Signups",
-                      bargap=0.25)
+    fig.update_layout(
+        barmode="stack",
+        title="Weekly attending signups, by difficulty",
+        xaxis_title=None,
+        yaxis_title="Signups",
+        bargap=0.25,
+    )
     return _apply_theme(fig)
 
 
@@ -604,13 +700,17 @@ def chart_difficulty_progression(events):
         if sum(ys) == 0:
             continue
         fig.add_trace(go.Bar(name=d, x=weeks, y=ys, marker_color=DIFFICULTY_COLORS[d]))
-    fig.update_layout(barmode="stack", title="Raid count per week by difficulty",
-                      xaxis_title=None, yaxis_title="Raids", bargap=0.25)
+    fig.update_layout(
+        barmode="stack",
+        title="Raid count per week by difficulty",
+        xaxis_title=None,
+        yaxis_title="Raids",
+        bargap=0.25,
+    )
     return _apply_theme(fig)
 
 
-def _sparkline_svg(values: list[int], width: int = 140, height: int = 28,
-                    color: str = "#e0a526") -> str:
+def _sparkline_svg(values: list[int], width: int = 140, height: int = 28, color: str = "#e0a526") -> str:
     if not values:
         return ""
     n = len(values)
@@ -618,8 +718,10 @@ def _sparkline_svg(values: list[int], width: int = 140, height: int = 28,
     pad = 3
     if n == 1:
         y = pad + (height - 2 * pad) * (1 - values[0] / mx)
-        return (f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}">'
-                f'<circle cx="{width//2}" cy="{y:.1f}" r="2" fill="{color}"/></svg>')
+        return (
+            f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}">'
+            f'<circle cx="{width // 2}" cy="{y:.1f}" r="2" fill="{color}"/></svg>'
+        )
     inner_w = width - 2 * pad
     inner_h = height - 2 * pad
     pts = []
@@ -629,13 +731,16 @@ def _sparkline_svg(values: list[int], width: int = 140, height: int = 28,
         pts.append(f"{x:.1f},{y:.1f}")
     poly = " ".join(pts)
     last_x = pad + inner_w
-    area = (f"M {pts[0]} L " + " L ".join(pts[1:])
-            + f" L {last_x:.1f},{height - pad:.1f} L {pad},{height - pad:.1f} Z")
+    area = (
+        f"M {pts[0]} L "
+        + " L ".join(pts[1:])
+        + f" L {last_x:.1f},{height - pad:.1f} L {pad},{height - pad:.1f} Z"
+    )
     return (
         f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" aria-hidden="true">'
         f'<path d="{area}" fill="{color}" fill-opacity="0.18"/>'
         f'<polyline points="{poly}" fill="none" stroke="{color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>'
-        f'</svg>'
+        f"</svg>"
     )
 
 
@@ -660,8 +765,11 @@ def chart_series_breakdown(events):
     items = sorted(by_series.items(), key=lambda kv: -kv[1]["events"])
 
     category_color = {
-        "Raid": THEME["gold"], "Achievement": "#f0d068", "M+": "#10b981",
-        "Mount": "#ec4899", "Other": "#737d95",
+        "Raid": THEME["gold"],
+        "Achievement": "#f0d068",
+        "M+": "#10b981",
+        "Mount": "#ec4899",
+        "Other": "#737d95",
     }
 
     rows = []
@@ -678,17 +786,17 @@ def chart_series_breakdown(events):
         else:
             leader = label
         rows.append(
-            f'<tr>'
+            f"<tr>"
             f'<td><div class="leader-cell">'
             f'<span class="leader-dot" style="background:{category_color.get(category, THEME["gold"])}"></span>'
             f'<span class="leader-name">{leader}</span>'
-            f'</div></td>'
+            f"</div></td>"
             f'<td><span class="chip">{category}</span></td>'
             f'<td class="num">{n_events}</td>'
             f'<td class="num">{n_signups}</td>'
             f'<td class="num strong">{avg:.1f}</td>'
             f'<td class="spark-cell">{spark}</td>'
-            f'</tr>'
+            f"</tr>"
         )
 
     return (
@@ -696,28 +804,40 @@ def chart_series_breakdown(events):
         f'<div class="custom-chart-head">'
         f'<div class="custom-chart-title">Raid series breakdown</div>'
         f'<div class="custom-chart-sub">Sorted by events held. Sparkline = weekly attending signups across the season.</div>'
-        f'</div>'
+        f"</div>"
         f'<table class="series-table">'
-        f'<thead><tr>'
+        f"<thead><tr>"
         f'<th>Leader</th><th>Type</th><th class="num">Events</th>'
         f'<th class="num">Signups</th><th class="num">Avg / event</th>'
         f'<th class="spark-cell">Weekly trend</th>'
-        f'</tr></thead>'
-        f'<tbody>{"".join(rows)}</tbody>'
-        f'</table>'
-        f'</div>'
+        f"</tr></thead>"
+        f"<tbody>{''.join(rows)}</tbody>"
+        f"</table>"
+        f"</div>"
     )
 
 
 # ---- render ----
 
 SECTIONS = [
-    ("trends", "Trends", "Signups and raids over time.",
-        [chart_signups_over_time, chart_difficulty_progression]),
-    ("composition", "Composition", "Who shows up, in what role, with what spec.",
-        [chart_class_distribution, chart_class_consistency, chart_role_balance, chart_spec_distribution]),
-    ("roster", "Roster & series", "Recurring leaders, characters, and players.",
-        [chart_series_breakdown, chart_top_characters, chart_top_players]),
+    (
+        "trends",
+        "Trends",
+        "Signups and raids over time.",
+        [chart_signups_over_time, chart_difficulty_progression],
+    ),
+    (
+        "composition",
+        "Composition",
+        "Who shows up, in what role, with what spec.",
+        [chart_class_distribution, chart_class_consistency, chart_role_balance, chart_spec_distribution],
+    ),
+    (
+        "roster",
+        "Roster & series",
+        "Recurring leaders, characters, and players.",
+        [chart_series_breakdown, chart_top_characters, chart_top_players],
+    ),
 ]
 
 
@@ -732,10 +852,12 @@ def render_html_string(events: list[Event]) -> str:
     last_event = datetime.fromtimestamp(events[-1].unixtime, timezone.utc).strftime("%b %d, %Y")
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     total_signups = sum(1 for _ in attending_signups(events))
-    unique_players = len({s.get("userid") for e in events for s in e.signups
-                           if classify_signup(s) == "attending"})
-    unique_chars = len({s.get("name") for e in events for s in e.signups
-                         if classify_signup(s) == "attending"})
+    unique_players = len(
+        {s.get("userid") for e in events for s in e.signups if classify_signup(s) == "attending"}
+    )
+    unique_chars = len(
+        {s.get("name") for e in events for s in e.signups if classify_signup(s) == "attending"}
+    )
 
     css = (
         ":root {"
@@ -964,33 +1086,33 @@ def render_html_string(events: list[Event]) -> str:
 
     head = (
         f"<!doctype html>"
-        f"<html lang=\"en\"><head>"
-        f"<meta charset=\"utf-8\">"
-        f"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+        f'<html lang="en"><head>'
+        f'<meta charset="utf-8">'
+        f'<meta name="viewport" content="width=device-width, initial-scale=1">'
         f"<title>Low Pressure — Raid stats</title>"
-        f"<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">"
-        f"<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>"
-        f"<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?"
+        f'<link rel="preconnect" href="https://fonts.googleapis.com">'
+        f'<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+        f'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
         f"family=Cinzel:wght@500;600&"
         f"family=Inter:wght@400;500;600&"
-        f"family=JetBrains+Mono:wght@500;600&display=swap\">"
+        f'family=JetBrains+Mono:wght@500;600&display=swap">'
         f"<style>{css}</style>"
         f"</head><body>"
-        f"<div class=\"wrap\">"
+        f'<div class="wrap">'
         f"<header>"
         f"<h1>Low Pressure</h1>"
-        f"<span class=\"underline\"></span>"
-        f"<div class=\"sub\"><b>{len(events)}</b> raids · <b>{first_event}</b> to <b>{last_event}</b></div>"
+        f'<span class="underline"></span>'
+        f'<div class="sub"><b>{len(events)}</b> raids · <b>{first_event}</b> to <b>{last_event}</b></div>'
         f"</header>"
-        f"<div class=\"summary\">"
-        f"<div class=\"stat primary\"><div class=\"row\"><div class=\"icon\">{ICON_SWORDS}</div>"
-        f"<div><div class=\"label\">Events</div><div class=\"value\">{len(events)}</div></div></div></div>"
-        f"<div class=\"stat\"><div class=\"row\"><div class=\"icon\">{ICON_USERS}</div>"
-        f"<div><div class=\"label\">Attending signups</div><div class=\"value\">{total_signups}</div></div></div></div>"
-        f"<div class=\"stat\"><div class=\"row\"><div class=\"icon\">{ICON_USER_CHECK}</div>"
-        f"<div><div class=\"label\">Unique characters</div><div class=\"value\">{unique_chars}</div></div></div></div>"
-        f"<div class=\"stat\"><div class=\"row\"><div class=\"icon\">{ICON_AWARD}</div>"
-        f"<div><div class=\"label\">Unique players</div><div class=\"value\">{unique_players}</div></div></div></div>"
+        f'<div class="summary">'
+        f'<div class="stat primary"><div class="row"><div class="icon">{ICON_SWORDS}</div>'
+        f'<div><div class="label">Events</div><div class="value">{len(events)}</div></div></div></div>'
+        f'<div class="stat"><div class="row"><div class="icon">{ICON_USERS}</div>'
+        f'<div><div class="label">Attending signups</div><div class="value">{total_signups}</div></div></div></div>'
+        f'<div class="stat"><div class="row"><div class="icon">{ICON_USER_CHECK}</div>'
+        f'<div><div class="label">Unique characters</div><div class="value">{unique_chars}</div></div></div></div>'
+        f'<div class="stat"><div class="row"><div class="icon">{ICON_AWARD}</div>'
+        f'<div><div class="label">Unique players</div><div class="value">{unique_players}</div></div></div></div>'
         f"</div>"
     )
 
@@ -998,19 +1120,19 @@ def render_html_string(events: list[Event]) -> str:
     first_chart = True
     for section_id, title, subtitle, chart_fns in SECTIONS:
         body_parts.append(
-            f"<section id=\"{section_id}\">"
-            f"<div class=\"section-head\"><h2>{title}</h2><div class=\"section-sub\">{subtitle}</div></div>"
+            f'<section id="{section_id}">'
+            f'<div class="section-head"><h2>{title}</h2><div class="section-sub">{subtitle}</div></div>'
         )
         for fn in chart_fns:
             result = fn(events)
             if isinstance(result, str):
                 # Custom HTML chart (spec grid, series table)
-                body_parts.append(f"<div class=\"chart\">{result}</div>")
+                body_parts.append(f'<div class="chart">{result}</div>')
             else:
                 include_js = "cdn" if first_chart else False
                 first_chart = False
                 body_parts.append(
-                    f"<div class=\"chart\">{result.to_html(include_plotlyjs=include_js, full_html=False)}</div>"
+                    f'<div class="chart">{result.to_html(include_plotlyjs=include_js, full_html=False)}</div>'
                 )
         body_parts.append("</section>")
 
@@ -1018,7 +1140,7 @@ def render_html_string(events: list[Event]) -> str:
         f"<footer>"
         f"Archived every 15 minutes from raid-helper.xyz · "
         f"Page generated {generated} · "
-        f"<a href=\"/health\">status</a>"
+        f'<a href="/health">status</a>'
         f"</footer>"
         f"</div></body></html>"
     )

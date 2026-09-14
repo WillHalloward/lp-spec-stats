@@ -42,25 +42,34 @@ def standalone(inner: str, code: str) -> str:
     """Wrap the page body in a document the site can serve directly."""
     cut = inner.index('<div class="wrap">')
     head, body = inner[:cut], inner[cut:]
-    return ('<!doctype html>\n<html lang="en" data-theme="dark">\n<head>\n'
-            '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-            '<link rel="icon" type="image/svg+xml" href="/favicon.svg">\n'
-            + head
-            + '<style>img{max-width:100%}[hidden]{display:none!important}</style>\n'
-            + NAV_CSS + '</head>\n<body>\n' + NAV.format(code=code) + body + '\n</body>\n</html>\n')
+    return (
+        '<!doctype html>\n<html lang="en" data-theme="dark">\n<head>\n'
+        '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        '<link rel="icon" type="image/svg+xml" href="/favicon.svg">\n'
+        + head
+        + "<style>img{max-width:100%}[hidden]{display:none!important}</style>\n"
+        + NAV_CSS
+        + "</head>\n<body>\n"
+        + NAV.format(code=code)
+        + body
+        + "\n</body>\n</html>\n"
+    )
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--report", required=True, help="Warcraft Logs report code")
     ap.add_argument("--date", help="night's date, YYYY-MM-DD (default: the report's own start date)")
-    ap.add_argument("--night", default="raid night",
-                    help='phrase for the intro, e.g. "Ragz Raiders progression night"')
+    ap.add_argument(
+        "--night", default="raid night", help='phrase for the intro, e.g. "Ragz Raiders progression night"'
+    )
     ap.add_argument("--slug", help="file name under reports/ (default: <boss>-<difficulty>-prog-<date>)")
     ap.add_argument("--encounter", type=int, help="encounter id, if the report holds more than one boss")
     ap.add_argument("--difficulty", type=int, help="3 normal, 4 heroic, 5 mythic")
     ap.add_argument("--out", type=Path, help="write the HTML here instead of publishing")
-    ap.add_argument("--publish", action="store_true", help="write into reports/ and update reports/index.json")
+    ap.add_argument(
+        "--publish", action="store_true", help="write into reports/ and update reports/index.json"
+    )
     args = ap.parse_args()
 
     a = Analysis(args.report, args.encounter, args.difficulty)
@@ -80,14 +89,19 @@ def main() -> None:
         path.write_text(doc, encoding="utf-8")
         index_path = REPORTS / "index.json"
         rows = json.loads(index_path.read_text(encoding="utf-8")) if index_path.exists() else []
-        row = {"slug": slug,
-               "title": f"{tok['boss']} {tok['difficulty']} — the prog night in numbers",
-               "date": date, "kind": "prog night",
-               "summary": (f"{tok['pulls']} pulls at {tok['difficulty'].lower()} {tok['boss']}: "
-                           "the orb rotation and what it costs, the flat absorb behind the "
-                           "fifteen-second shield, the ghosts that decide how much of the serpent "
-                           "comes back, and the falls that were half the night's deaths."),
-               "source": f"https://www.warcraftlogs.com/reports/{args.report}"}
+        row = {
+            "slug": slug,
+            "title": f"{tok['boss']} {tok['difficulty']} — the prog night in numbers",
+            "date": date,
+            "kind": "prog night",
+            "summary": (
+                f"{tok['pulls']} pulls at {tok['difficulty'].lower()} {tok['boss']}: "
+                "the orb rotation and what it costs, the flat absorb behind the "
+                "fifteen-second shield, the ghosts that decide how much of the serpent "
+                "comes back, and the falls that were half the night's deaths."
+            ),
+            "source": f"https://www.warcraftlogs.com/reports/{args.report}",
+        }
         rows = [r for r in rows if r.get("slug") != slug]
         rows.append(row)
         rows.sort(key=lambda r: r.get("date", ""), reverse=True)

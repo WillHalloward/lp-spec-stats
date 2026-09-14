@@ -26,12 +26,12 @@ import wcl
 
 # (character_name, server_slug, region). Slugs are lowercased server names.
 LEADER_CHARACTERS: list[tuple[str, str, str]] = [
-    ("Piian",       "silvermoon",  "EU"),  # Piian's main
-    ("Ragz",        "arathor",     "EU"),  # Ragz's main
-    ("Gryphandrus", "arathor",     "EU"),  # Gryph's main
-    ("Mêlódý",      "frostwolf",   "EU"),  # Melody's main
-    ("Karviainen",  "arathor",     "EU"),  # Rezn0r's main
-    ("Tarp",        "blackmoore",  "EU"),  # In every Ragz raid we have
+    ("Piian", "silvermoon", "EU"),  # Piian's main
+    ("Ragz", "arathor", "EU"),  # Ragz's main
+    ("Gryphandrus", "arathor", "EU"),  # Gryph's main
+    ("Mêlódý", "frostwolf", "EU"),  # Melody's main
+    ("Karviainen", "arathor", "EU"),  # Rezn0r's main
+    ("Tarp", "blackmoore", "EU"),  # In every Ragz raid we have
 ]
 
 

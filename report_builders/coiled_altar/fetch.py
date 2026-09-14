@@ -28,6 +28,7 @@ class Fetcher(_BaseFetcher):
         Returned as {"defs": {encounterID: [{id, name, isIntermission}]},
                      "fights": {fightID: [{id, startTime}]}}.
         """
+
         def build():
             q = """
             query($c:String!){reportData{report(code:$c){
@@ -40,6 +41,7 @@ class Fetcher(_BaseFetcher):
                 "defs": {p["encounterID"]: p["phases"] for p in (r["phases"] or [])},
                 "fights": {x["id"]: (x["phaseTransitions"] or []) for x in r["fights"]},
             }
+
         return self.cached("phases", build)
 
     def enemy_buffs(self, fight_id: int) -> list[dict]:
@@ -52,8 +54,9 @@ class Fetcher(_BaseFetcher):
     def player_casts(self, fight_id: int) -> list[dict]:
         """With resources, so a healthstone cast carries the caster's hit points
         and health at the moment of use can be recovered."""
-        return self.events(f"player_casts_r-{fight_id}", fight_id, "Casts",
-                           hostility="Friendlies", resources=True)
+        return self.events(
+            f"player_casts_r-{fight_id}", fight_id, "Casts", hostility="Friendlies", resources=True
+        )
 
     def player_buffs(self, fight_id: int) -> list[dict]:
         return self.events(f"player_buffs-{fight_id}", fight_id, "Buffs", hostility="Friendlies")
@@ -63,8 +66,9 @@ class Fetcher(_BaseFetcher):
 
     def taken(self, fight_id: int) -> list[dict]:
         """Damage taken by the raid, with resources so we get hit points and position."""
-        return self.events(f"taken-{fight_id}", fight_id, "DamageTaken",
-                           hostility="Friendlies", resources=True)
+        return self.events(
+            f"taken-{fight_id}", fight_id, "DamageTaken", hostility="Friendlies", resources=True
+        )
 
     def done(self, fight_id: int) -> list[dict]:
         """Damage the raid dealt, for the shield break and the burn window.
@@ -72,8 +76,9 @@ class Fetcher(_BaseFetcher):
         With resources: on these events `resourceActor` is 2, so `hitPoints` and
         `maxHitPoints` belong to the *target*, which is how boss health is read.
         """
-        return self.events(f"done_r-{fight_id}", fight_id, "DamageDone",
-                           hostility="Friendlies", resources=True)
+        return self.events(
+            f"done_r-{fight_id}", fight_id, "DamageDone", hostility="Friendlies", resources=True
+        )
 
     def deaths(self, fight_id: int) -> list[dict]:
         return self.events(f"deaths-{fight_id}", fight_id, "Deaths", hostility="Friendlies")

@@ -179,7 +179,7 @@ query ReportFights($code: String!) {
 def fetch_report_fights(client: WclClient, code: str) -> dict:
     """Return {report_start_ms, fights:[...]}. Fight times are relative to report start."""
     data = client.query(REPORT_FIGHTS_QUERY, {"code": code})
-    report = ((data.get("reportData") or {}).get("report") or {})
+    report = (data.get("reportData") or {}).get("report") or {}
     return {
         "report_start_ms": report.get("startTime"),
         "fights": report.get("fights") or [],

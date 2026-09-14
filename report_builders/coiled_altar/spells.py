@@ -68,21 +68,47 @@ GHOST_IMMUNE = "Unassailable"
 # damages its own. Support effects that legitimately cross the raid and are
 # not a break attempt.
 NOT_A_BREAK = {
-    "Blessing of Sacrifice", "Refraction", "Anti-Magic Zone", "Fel Armor",
-    "Set Fire to the Pain", "Light of the Martyr", "Spirit Link Totem",
-    "Leech", "Vampiric Embrace", "Pain Suppression",
+    "Blessing of Sacrifice",
+    "Refraction",
+    "Anti-Magic Zone",
+    "Fel Armor",
+    "Set Fire to the Pain",
+    "Light of the Martyr",
+    "Spirit Link Totem",
+    "Leech",
+    "Vampiric Embrace",
+    "Pain Suppression",
 }
 # Hard crowd control aimed at a mind-controlled ally, and the ground-targeted
 # AoE stops used the same way (those log against Environment, not a player).
 CC_TARGETED = {
-    "Death Grip", "Hammer of Justice", "Chains of Ice", "Storm Bolt",
-    "Holy Word: Chastise", "Repentance", "Imprison", "Fel Eruption",
-    "Asphyxiate", "Strangulate", "Grapple Weapon", "Mighty Bash",
+    "Death Grip",
+    "Hammer of Justice",
+    "Chains of Ice",
+    "Storm Bolt",
+    "Holy Word: Chastise",
+    "Repentance",
+    "Imprison",
+    "Fel Eruption",
+    "Asphyxiate",
+    "Strangulate",
+    "Grapple Weapon",
+    "Mighty Bash",
 }
 CC_GROUND = {
-    "Ring of Peace", "Leg Sweep", "Shadowfury", "Blinding Light", "Shockwave",
-    "Capacitor Totem", "Thunderstorm", "Typhoon", "Ursol's Vortex",
-    "Sigil of Chains", "Gorefiend's Grasp", "Incapacitating Roar", "War Stomp",
+    "Ring of Peace",
+    "Leg Sweep",
+    "Shadowfury",
+    "Blinding Light",
+    "Shockwave",
+    "Capacitor Totem",
+    "Thunderstorm",
+    "Typhoon",
+    "Ursol's Vortex",
+    "Sigil of Chains",
+    "Gorefiend's Grasp",
+    "Incapacitating Roar",
+    "War Stomp",
 }
 
 # --- the intermission burn window ----------------------------------------
@@ -102,20 +128,35 @@ RECLAIM = "Reclaim Essence"
 GHOST_BLAST_MIN_TARGETS = 8
 MERGED = "Soulbound"
 
-LUST = {"Bloodlust", "Heroism", "Time Warp", "Fury of the Aspects", "Primal Rage",
-        "Drums of Fury", "Drums of the Mountain", "Drums of the Maelstrom",
-        "Drums of Deathly Ferocity", "Feral Hide Drums", "Drums", "Ancient Hysteria"}
+LUST = {
+    "Bloodlust",
+    "Heroism",
+    "Time Warp",
+    "Fury of the Aspects",
+    "Primal Rage",
+    "Drums of Fury",
+    "Drums of the Mountain",
+    "Drums of the Maelstrom",
+    "Drums of Deathly Ferocity",
+    "Feral Hide Drums",
+    "Drums",
+    "Ancient Hysteria",
+}
 
 # --- everything else that kills people ------------------------------------
-RAID_AURA = "Dreadful Presence"      # stage two, ramps until the phase ends
-INT_AURA = "Spirit Erasure"          # intermission survival tax
+RAID_AURA = "Dreadful Presence"  # stage two, ramps until the phase ends
+INT_AURA = "Spirit Erasure"  # intermission survival tax
 TANK_STACK = "Gravebound"
 
 # Defensive tiers, healthstones and potions are class-generic rather than
 # encounter-specific, so they are shared with the Ula'tek builder instead of
 # being kept in two places that can drift apart.
 from report_builders.ulatek.spells import (  # noqa: E402,F401
-    MAJOR, MINOR, EXTERNAL, HEALTHSTONES, HEALTH_POTIONS,
+    MAJOR,
+    MINOR,
+    EXTERNAL,
+    HEALTHSTONES,
+    HEALTH_POTIONS,
 )
 
 # A few buttons are a defensive for one spec and a damage cooldown for another.
@@ -132,9 +173,19 @@ NOT_DEFENSIVE_FOR_SPEC = {
 # Environment rather than a player, which is the giveaway. Split out here rather
 # than in the shared set, so the other report's numbers do not move.
 RAID_WIDE = {
-    "Aura Mastery", "Spirit Link Totem", "Darkness", "Anti-Magic Zone", "Zephyr",
-    "Barrier of Faith", "Stone Bulwark Totem", "Rallying Cry", "Devotion Aura",
-    "Power Word: Barrier", "Salvation", "Vampiric Embrace", "Revival",
+    "Aura Mastery",
+    "Spirit Link Totem",
+    "Darkness",
+    "Anti-Magic Zone",
+    "Zephyr",
+    "Barrier of Faith",
+    "Stone Bulwark Totem",
+    "Rallying Cry",
+    "Devotion Aura",
+    "Power Word: Barrier",
+    "Salvation",
+    "Vampiric Embrace",
+    "Revival",
 }
 
 # Tanks press mitigation on cooldown as part of their rotation, which buries the

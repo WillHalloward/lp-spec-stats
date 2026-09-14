@@ -28,6 +28,7 @@ def _config() -> dict:
         "request_delay_sec": float(os.environ.get("ARCHIVE_REQUEST_DELAY_SEC", "0.5")),
     }
 
+
 HEADERS = {
     "User-Agent": "lp-spec-stats archiver",
     "Accept": "application/json",
@@ -104,7 +105,7 @@ def _run_raid_helper_archive(cfg: dict, conn) -> None:
                 refreshed += 1
             else:
                 fetched += 1
-            print(f"  {action}: {raid_id}  {ev.get('displayTitle','')[:80]}", flush=True)
+            print(f"  {action}: {raid_id}  {ev.get('displayTitle', '')[:80]}", flush=True)
             time.sleep(cfg["request_delay_sec"])
         except Exception as exc:
             print(f"  failed: {raid_id}: {exc}", flush=True)

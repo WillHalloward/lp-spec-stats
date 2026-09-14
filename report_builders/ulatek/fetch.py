@@ -41,6 +41,7 @@ class Fetcher:
 
     def meta(self) -> dict:
         """Fights, actors and the report's ability names."""
+
         def build():
             q = """
             query($c:String!){reportData{report(code:$c){
@@ -54,6 +55,7 @@ class Fetcher:
               }
             }}}"""
             return self._q(q, {"c": self.code})["reportData"]["report"]
+
         return self.cached("meta", build)
 
     def player_details(self, fight_ids: list[int]) -> dict:
@@ -61,12 +63,24 @@ class Fetcher:
             q = """query($c:String!,$f:[Int]!){reportData{report(code:$c){
                      playerDetails(fightIDs:$f)}}}"""
             return self._q(q, {"c": self.code, "f": fight_ids})["reportData"]["report"]["playerDetails"]
+
         return self.cached("player_details", build)
 
-    def events(self, key: str, fight_id: int, data_type: str, *, start: float | None = None,
-               end: float = 1e11, ability_id: float | None = None, target_id: int | None = None,
-               hostility: str | None = None, resources: bool = False) -> list[dict]:
+    def events(
+        self,
+        key: str,
+        fight_id: int,
+        data_type: str,
+        *,
+        start: float | None = None,
+        end: float = 1e11,
+        ability_id: float | None = None,
+        target_id: int | None = None,
+        hostility: str | None = None,
+        resources: bool = False,
+    ) -> list[dict]:
         """One paged events query, cached under `key`."""
+
         def build():
             q = """
             query($c:String!,$f:[Int]!,$t:EventDataType!,$st:Float!,$en:Float!,
@@ -78,18 +92,31 @@ class Fetcher:
             out: list[dict] = []
             st = float(start) if start is not None else 0.0
             while True:
-                r = self._q(q, {"c": self.code, "f": [fight_id], "t": data_type, "st": st, "en": float(end),
-                                "ab": ability_id, "tid": target_id, "h": hostility, "res": resources}
-                            )["reportData"]["report"]["events"]
+                r = self._q(
+                    q,
+                    {
+                        "c": self.code,
+                        "f": [fight_id],
+                        "t": data_type,
+                        "st": st,
+                        "en": float(end),
+                        "ab": ability_id,
+                        "tid": target_id,
+                        "h": hostility,
+                        "res": resources,
+                    },
+                )["reportData"]["report"]["events"]
                 out += r["data"]
                 if r.get("nextPageTimestamp"):
                     st = r["nextPageTimestamp"]
                 else:
                     return out
+
         return self.cached(key, build)
 
-    def events_all_fights(self, key: str, fight_ids: list[int], data_type: str,
-                          *, ability_id: float | None = None) -> list[dict]:
+    def events_all_fights(
+        self, key: str, fight_ids: list[int], data_type: str, *, ability_id: float | None = None
+    ) -> list[dict]:
         def build():
             q = """
             query($c:String!,$f:[Int]!,$t:EventDataType!,$st:Float!,$ab:Float){
@@ -100,21 +127,26 @@ class Fetcher:
             out: list[dict] = []
             st = 0.0
             while True:
-                r = self._q(q, {"c": self.code, "f": fight_ids, "t": data_type, "st": st, "ab": ability_id}
-                            )["reportData"]["report"]["events"]
+                r = self._q(q, {"c": self.code, "f": fight_ids, "t": data_type, "st": st, "ab": ability_id})[
+                    "reportData"
+                ]["report"]["events"]
                 out += r["data"]
                 if r.get("nextPageTimestamp"):
                     st = r["nextPageTimestamp"]
                 else:
                     return out
+
         return self.cached(key, build)
 
-    def table(self, key: str, fight_id: int, data_type: str, *, start: float | None = None,
-              end: float | None = None) -> dict:
+    def table(
+        self, key: str, fight_id: int, data_type: str, *, start: float | None = None, end: float | None = None
+    ) -> dict:
         def build():
             q = """
             query($c:String!,$f:[Int]!,$t:TableDataType!,$st:Float,$en:Float){
               reportData{report(code:$c){table(dataType:$t,fightIDs:$f,startTime:$st,endTime:$en)}}}"""
-            return self._q(q, {"c": self.code, "f": [fight_id], "t": data_type,
-                               "st": start, "en": end})["reportData"]["report"]["table"]["data"]
+            return self._q(q, {"c": self.code, "f": [fight_id], "t": data_type, "st": start, "en": end})[
+                "reportData"
+            ]["report"]["table"]["data"]
+
         return self.cached(key, build)

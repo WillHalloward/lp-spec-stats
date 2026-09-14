@@ -65,18 +65,15 @@ def main() -> None:
                 break
             pd = next(iter(pd.values()))
             if isinstance(pd, str):
-                try: pd = json.loads(pd)
-                except json.JSONDecodeError: break
+                try:
+                    pd = json.loads(pd)
+                except json.JSONDecodeError:
+                    break
         with conn.cursor() as cur:
-            cur.execute("UPDATE wcl_reports SET player_details = %s WHERE code = %s",
-                         (json.dumps(pd), code))
+            cur.execute("UPDATE wcl_reports SET player_details = %s WHERE code = %s", (json.dumps(pd), code))
         conn.commit()
         filled += 1
-        n = (
-            len(pd.get("tanks") or []) +
-            len(pd.get("healers") or []) +
-            len(pd.get("dps") or [])
-        )
+        n = len(pd.get("tanks") or []) + len(pd.get("healers") or []) + len(pd.get("dps") or [])
         print(f"  {code}: {n} players", flush=True)
         time.sleep(REQUEST_DELAY)
 

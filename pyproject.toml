@@ -11,3 +11,9 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
 ]
+
+[tool.ruff]
+# 110 rather than the default 88: this codebase was written to about that width
+# (p99 of the existing lines is 105), and the GraphQL query strings and chart
+# payloads read worse broken up. Pinned so `ruff format` is idempotent here.
+line-length = 110

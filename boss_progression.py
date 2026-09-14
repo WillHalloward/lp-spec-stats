@@ -29,10 +29,14 @@ from wcl_synthesis import (
 
 
 DIFFICULTY_NAME = {
-    1: "LFR", 17: "LFR",
-    3: "Normal", 14: "Normal",
-    4: "Heroic", 15: "Heroic",
-    5: "Mythic", 16: "Mythic",
+    1: "LFR",
+    17: "LFR",
+    3: "Normal",
+    14: "Normal",
+    4: "Heroic",
+    15: "Heroic",
+    5: "Mythic",
+    16: "Mythic",
 }
 
 # MIN_ATTEMPTS (imported above) gates which encounters count as LP raid
@@ -88,9 +92,9 @@ def _dedupe_reports(rows: list[dict]) -> list[dict]:
     from bisect import bisect_left
     from collections import defaultdict
 
-    TOLERANCE_MS = 5000            # matched fights must agree on the offset within ±5s
-    MAX_SKEW_MS = 10 * 60 * 1000   # bridge uploader clocks up to 10 minutes apart
-    DURATION_TOL_MS = 2000         # same physical pull ⇒ near-identical duration
+    TOLERANCE_MS = 5000  # matched fights must agree on the offset within ±5s
+    MAX_SKEW_MS = 10 * 60 * 1000  # bridge uploader clocks up to 10 minutes apart
+    DURATION_TOL_MS = 2000  # same physical pull ⇒ near-identical duration
 
     def _fight_times(r: dict) -> dict[int, list[tuple[int, int, bool]]]:
         """encounterID -> list of (abs start ms, duration ms, kill), sorted by start."""
@@ -228,26 +232,29 @@ def aggregate(conn: psycopg.Connection) -> dict[str, Any]:
                 continue  # reset / mispull, not a real attempt
             name = f.get("name") or f"Encounter {eid}"
             key = (eid, diff)
-            stat = bosses.setdefault(key, {
-                "encounterID": eid,
-                "name": name,
-                "difficulty": diff,
-                # WCL zone the encounter belongs to — lets the frontend build
-                # raid groups for encounters it has no manual mapping for.
-                "zone": r["zone_name"],
-                "kills": 0,
-                "wipes": 0,
-                "first_kill_ms": None,
-                "first_kill_code": None,
-                "latest_kill_ms": None,
-                "total_duration_ms": 0,
-                # Lowest boss HP % reached on a wipe (None = no wipes recorded
-                # with fightPercentage data yet). WCL's fightPercentage is the
-                # boss HP remaining when the pull ended, so lower = closer to kill.
-                "best_pull_pct": None,
-                "best_pull_code": None,
-                "best_pull_fight_id": None,
-            })
+            stat = bosses.setdefault(
+                key,
+                {
+                    "encounterID": eid,
+                    "name": name,
+                    "difficulty": diff,
+                    # WCL zone the encounter belongs to — lets the frontend build
+                    # raid groups for encounters it has no manual mapping for.
+                    "zone": r["zone_name"],
+                    "kills": 0,
+                    "wipes": 0,
+                    "first_kill_ms": None,
+                    "first_kill_code": None,
+                    "latest_kill_ms": None,
+                    "total_duration_ms": 0,
+                    # Lowest boss HP % reached on a wipe (None = no wipes recorded
+                    # with fightPercentage data yet). WCL's fightPercentage is the
+                    # boss HP remaining when the pull ended, so lower = closer to kill.
+                    "best_pull_pct": None,
+                    "best_pull_code": None,
+                    "best_pull_fight_id": None,
+                },
+            )
             stat["total_duration_ms"] += duration
             if f.get("kill"):
                 stat["kills"] += 1
@@ -261,7 +268,9 @@ def aggregate(conn: psycopg.Connection) -> dict[str, Any]:
                 # fightPercentage is already a 0..100 boss-HP-remaining value
                 # (verified empirically against WCL's report UI). Keep it as-is.
                 pct = f.get("fightPercentage")
-                if isinstance(pct, (int, float)) and (stat["best_pull_pct"] is None or pct < stat["best_pull_pct"]):
+                if isinstance(pct, (int, float)) and (
+                    stat["best_pull_pct"] is None or pct < stat["best_pull_pct"]
+                ):
                     stat["best_pull_pct"] = float(pct)
                     stat["best_pull_code"] = r["code"]
                     stat["best_pull_fight_id"] = f.get("id")
@@ -280,9 +289,7 @@ def aggregate(conn: psycopg.Connection) -> dict[str, Any]:
     }
 
 
-def attempts_for_boss(
-    conn: psycopg.Connection, encounter_id: int, difficulty: str
-) -> list[dict]:
+def attempts_for_boss(conn: psycopg.Connection, encounter_id: int, difficulty: str) -> list[dict]:
     """Every attempt (kill or wipe) on one (encounterID, difficulty), oldest first.
 
     Returns dicts with: ts_ms, kill (bool), fight_pct (float | None, 0..100),
@@ -323,8 +330,7 @@ def attempts_for_boss(
     if raid_ids_to_lookup:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT raid_id, data->>'leadername' AS leadername "
-                "FROM events WHERE raid_id = ANY(%s)",
+                "SELECT raid_id, data->>'leadername' AS leadername FROM events WHERE raid_id = ANY(%s)",
                 (list(raid_ids_to_lookup),),
             )
             for ev in cur.fetchall():
@@ -335,9 +341,7 @@ def attempts_for_boss(
         if r["raid_id"] and r["raid_id"] in event_leaders:
             leader_by_code[r["code"]] = event_leaders[r["raid_id"]]
         else:
-            name, _lid, confident = _match_leader(
-                r.get("title"), r.get("owner_name"), r.get("roster") or []
-            )
+            name, _lid, confident = _match_leader(r.get("title"), r.get("owner_name"), r.get("roster") or [])
             leader_by_code[r["code"]] = name if confident else None
 
     out: list[dict] = []
@@ -358,21 +362,23 @@ def attempts_for_boss(
             raw_pct = f.get("fightPercentage")
             # Already 0..100 — see comment in aggregate() above.
             pct = float(raw_pct) if isinstance(raw_pct, (int, float)) else None
-            out.append({
-                "ts_ms": f_start,
-                "kill": bool(f.get("kill")),
-                "fight_pct": pct,
-                "duration_ms": max(0, f_end - f_start),
-                "report_code": r["code"],
-                "fight_id": f.get("id"),
-                "series_leader": leader,
-                "last_phase": f.get("lastPhase"),
-                # Frontend joins this against the events array to render the
-                # series label (leader name). May be null for unmatched reports;
-                # in that case the frontend falls back to `wcl:<report_code>`
-                # to find the corresponding gap-fill event.
-                "raid_id": r["raid_id"],
-            })
+            out.append(
+                {
+                    "ts_ms": f_start,
+                    "kill": bool(f.get("kill")),
+                    "fight_pct": pct,
+                    "duration_ms": max(0, f_end - f_start),
+                    "report_code": r["code"],
+                    "fight_id": f.get("id"),
+                    "series_leader": leader,
+                    "last_phase": f.get("lastPhase"),
+                    # Frontend joins this against the events array to render the
+                    # series label (leader name). May be null for unmatched reports;
+                    # in that case the frontend falls back to `wcl:<report_code>`
+                    # to find the corresponding gap-fill event.
+                    "raid_id": r["raid_id"],
+                }
+            )
     out.sort(key=lambda a: a["ts_ms"])
     return out
 

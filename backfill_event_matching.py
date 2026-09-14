@@ -41,10 +41,10 @@ def _admin_pinned_codes(conn) -> set[str]:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--apply", action="store_true",
-                    help="Persist changes; without this, dry-runs and prints diffs.")
-    ap.add_argument("--limit", type=int, default=None,
-                    help="Process only N reports (handy for spot-checks).")
+    ap.add_argument(
+        "--apply", action="store_true", help="Persist changes; without this, dry-runs and prints diffs."
+    )
+    ap.add_argument("--limit", type=int, default=None, help="Process only N reports (handy for spot-checks).")
     args = ap.parse_args()
 
     conn = db.connect()
@@ -109,18 +109,20 @@ def main() -> None:
             if old_overlap is not None and old_overlap == 0.0:
                 # Confirmed wrong match — record this as an unlink.
                 unlinked_zero_overlap += 1
-                changes.append({
-                    "code": code,
-                    "start": datetime.fromtimestamp(r["start_time_ms"] // 1000, timezone.utc).isoformat(),
-                    "title": (r["title"] or "")[:60],
-                    "old_raid_id": old,
-                    "new_raid_id": None,
-                    "score": None,
-                    "overlap": 0.0,
-                    "delta_min": None,
-                    "diff_match": None,
-                    "reason": "zero-overlap with old link",
-                })
+                changes.append(
+                    {
+                        "code": code,
+                        "start": datetime.fromtimestamp(r["start_time_ms"] // 1000, timezone.utc).isoformat(),
+                        "title": (r["title"] or "")[:60],
+                        "old_raid_id": old,
+                        "new_raid_id": None,
+                        "score": None,
+                        "overlap": 0.0,
+                        "delta_min": None,
+                        "diff_match": None,
+                        "reason": "zero-overlap with old link",
+                    }
+                )
                 continue
             score_too_low_keep_existing += 1
             continue
@@ -132,17 +134,19 @@ def main() -> None:
         else:
             rematched += 1
 
-        changes.append({
-            "code": code,
-            "start": datetime.fromtimestamp(r["start_time_ms"] // 1000, timezone.utc).isoformat(),
-            "title": (r["title"] or "")[:60],
-            "old_raid_id": old,
-            "new_raid_id": new,
-            "score": info.get("chosen", {}).get("score"),
-            "overlap": info.get("chosen", {}).get("overlap"),
-            "delta_min": info.get("chosen", {}).get("delta_min"),
-            "diff_match": info.get("chosen", {}).get("diff_match"),
-        })
+        changes.append(
+            {
+                "code": code,
+                "start": datetime.fromtimestamp(r["start_time_ms"] // 1000, timezone.utc).isoformat(),
+                "title": (r["title"] or "")[:60],
+                "old_raid_id": old,
+                "new_raid_id": new,
+                "score": info.get("chosen", {}).get("score"),
+                "overlap": info.get("chosen", {}).get("overlap"),
+                "delta_min": info.get("chosen", {}).get("delta_min"),
+                "diff_match": info.get("chosen", {}).get("diff_match"),
+            }
+        )
 
     print()
     print(f"unchanged                 : {unchanged}")

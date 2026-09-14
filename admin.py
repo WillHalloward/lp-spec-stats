@@ -70,11 +70,14 @@ def list_events(authorization: str | None = Header(None)) -> JSONResponse:
 
 
 @router.post("/events/{raid_id}")
-def upsert_event(raid_id: str, body: EventOverrideBody, authorization: str | None = Header(None)) -> JSONResponse:
+def upsert_event(
+    raid_id: str, body: EventOverrideBody, authorization: str | None = Header(None)
+) -> JSONResponse:
     _require_token(authorization)
     with db.session() as conn:
         db.upsert_event_override(
-            conn, raid_id,
+            conn,
+            raid_id,
             difficulty=body.difficulty or None,
             series_suffix=body.series_suffix or None,
             excluded=body.excluded,
@@ -118,7 +121,8 @@ def upsert_wcl(code: str, body: WclOverrideBody, authorization: str | None = Hea
     _require_token(authorization)
     with db.session() as conn:
         db.upsert_wcl_override(
-            conn, code,
+            conn,
+            code,
             excluded=body.excluded,
             forced_raid_id=body.forced_raid_id or None,
             notes=body.notes,

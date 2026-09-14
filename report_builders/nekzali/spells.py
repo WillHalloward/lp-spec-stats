@@ -30,8 +30,15 @@ INVOKE = "Invoke"
 # --- adds -------------------------------------------------------------------
 RESTLESS_AMANI = "Restless Amani"
 
-LUST = ("Bloodlust", "Heroism", "Time Warp", "Fury of the Aspects",
-        "Primal Rage", "Ancient Hysteria", "Drums of Rage")
+LUST = (
+    "Bloodlust",
+    "Heroism",
+    "Time Warp",
+    "Fury of the Aspects",
+    "Primal Rage",
+    "Ancient Hysteria",
+    "Drums of Rage",
+)
 
 # Soul Exhaustion's duration, seconds. Read off the log when it can be, this is
 # the fallback for a pull where nobody's debuff runs its full course.

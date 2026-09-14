@@ -29,8 +29,9 @@ def _amount(e: dict) -> float:
 
 
 class Analysis:
-    def __init__(self, code: str, encounter_id: int | None = None,
-                 difficulty: int | None = None, cache_root=None) -> None:
+    def __init__(
+        self, code: str, encounter_id: int | None = None, difficulty: int | None = None, cache_root=None
+    ) -> None:
         self.code = code
         self.f = Fetcher(code, cache_root)
         self.meta = self.f.meta()
@@ -39,8 +40,7 @@ class Analysis:
         ph = self.f.phases()
         # JSON object keys come back as strings once this is served from the
         # disk cache, which silently empties every phase lookup on a re-run.
-        self._ph = {"defs": ph["defs"],
-                    "fights": {int(k): v for k, v in ph["fights"].items()}}
+        self._ph = {"defs": ph["defs"], "fights": {int(k): v for k, v in ph["fights"].items()}}
 
         want = encounter_id or S.ENCOUNTER_ID
         fights = [x for x in self.meta["fights"] if x["encounterID"] == want]
@@ -113,8 +113,11 @@ class Analysis:
                     spec = max(specs, key=lambda s: s.get("count", 0)).get("spec", "")
                 elif specs:
                     spec = specs[0]
-                out[p.get("name", "")] = {"class": p.get("type", ""), "spec": spec,
-                                          "role": {"tanks": "Tank", "healers": "Healer"}.get(group, "DPS")}
+                out[p.get("name", "")] = {
+                    "class": p.get("type", ""),
+                    "spec": spec,
+                    "role": {"tanks": "Tank", "healers": "Healer"}.get(group, "DPS"),
+                }
         self._roster = out
         return out
 
@@ -131,9 +134,14 @@ class Analysis:
         rows = []
         for name, amount in totals.most_common():
             info = roster.get(name, {})
-            row = {"name": name, "class": info.get("class", ""), "spec": info.get("spec", ""),
-                   "role": info.get("role", ""), "damage": amount,
-                   "share": round(100 * amount / grand, 1)}
+            row = {
+                "name": name,
+                "class": info.get("class", ""),
+                "spec": info.get("spec", ""),
+                "role": info.get("role", ""),
+                "damage": amount,
+                "share": round(100 * amount / grand, 1),
+            }
             if extra:
                 row.update(extra(name, amount))
             rows.append(row)
@@ -211,14 +219,16 @@ class Analysis:
         rows = []
         for x in self.fights:
             bounds = self.phase_bounds(x["id"])
-            rows.append({
-                "pull": x["id"],
-                "kill": bool(x["kill"]),
-                "best": round(x["fightPercentage"], 2),
-                "duration": round((x["endTime"] - x["startTime"]) / 1000, 1),
-                "reached": max(bounds, key=lambda k: bounds[k][0]) if bounds else "P1",
-                "phases": {k: round((e - s) / 1000, 1) for k, (s, e) in bounds.items()},
-            })
+            rows.append(
+                {
+                    "pull": x["id"],
+                    "kill": bool(x["kill"]),
+                    "best": round(x["fightPercentage"], 2),
+                    "duration": round((x["endTime"] - x["startTime"]) / 1000, 1),
+                    "reached": max(bounds, key=lambda k: bounds[k][0]) if bounds else "P1",
+                    "phases": {k: round((e - s) / 1000, 1) for k, (s, e) in bounds.items()},
+                }
+            )
         return rows
 
     # ---- 2. orbs ----
@@ -256,17 +266,29 @@ class Analysis:
                 elif e["type"] == "removedebuff" and tid in open_at:
                     carry_secs.append((e["timestamp"] - open_at.pop(tid)) / 1000)
 
-            bursts = [e for e in deb if self.ability(e) == S.ORB_BURST
-                      and e["type"] in ("applydebuff", "applydebuffstack")]
-            frontals = sorted(e["timestamp"] for e in casts
-                              if self.ability(e) in S.CLEAVE and e["type"] == "cast")
+            bursts = [
+                e
+                for e in deb
+                if self.ability(e) == S.ORB_BURST and e["type"] in ("applydebuff", "applydebuffstack")
+            ]
+            frontals = sorted(
+                e["timestamp"] for e in casts if self.ability(e) in S.CLEAVE and e["type"] == "cast"
+            )
             for ts in frontals:
                 # Stacks land on the cast itself; take the peak inside a short window.
-                peak = max((e.get("stack") or 1) for e in bursts
-                           if 0 <= e["timestamp"] - ts <= 1500) if any(
-                    0 <= e["timestamp"] - ts <= 1500 for e in bursts) else 0
-                cleaves.append({"pull": fid, "t": round(self.rel(fid, ts), 1),
-                                "phase": self.phase_at(fid, ts), "orbs": peak})
+                peak = (
+                    max((e.get("stack") or 1) for e in bursts if 0 <= e["timestamp"] - ts <= 1500)
+                    if any(0 <= e["timestamp"] - ts <= 1500 for e in bursts)
+                    else 0
+                )
+                cleaves.append(
+                    {
+                        "pull": fid,
+                        "t": round(self.rel(fid, ts), 1),
+                        "phase": self.phase_at(fid, ts),
+                        "orbs": peak,
+                    }
+                )
 
             for e in self.f.taken(fid):
                 a = self.ability(e)
@@ -285,11 +307,13 @@ class Analysis:
         return {
             "cleaves": cleaves,
             "carriers": [
-                {"name": n,
-                 "p1": carries.get("P1", Counter())[n],
-                 "p3": carries.get("P3", Counter())[n],
-                 "total": t,
-                 "share": round(100 * t / picked, 1) if picked else 0}
+                {
+                    "name": n,
+                    "p1": carries.get("P1", Counter())[n],
+                    "p3": carries.get("P3", Counter())[n],
+                    "total": t,
+                    "share": round(100 * t / picked, 1) if picked else 0,
+                }
                 for n, t in per_carrier.most_common()
             ],
             "picked": picked,
@@ -323,12 +347,15 @@ class Analysis:
             taken = self.stream("taken", fid)
             deaths = [d for d in self.stream("deaths", fid) if self.is_player(d.get("targetID"))]
 
-            starts = sorted({e["timestamp"] for e in buffs
-                             if self.ability(e) == S.VEIL and e["type"] == "applybuff"})
-            ends = sorted({e["timestamp"] for e in buffs
-                           if self.ability(e) == S.VEIL and e["type"] == "removebuff"})
-            resolved_at = [e["timestamp"] for e in casts
-                           if self.ability(e) == S.NIGHTFALL and e["type"] == "cast"]
+            starts = sorted(
+                {e["timestamp"] for e in buffs if self.ability(e) == S.VEIL and e["type"] == "applybuff"}
+            )
+            ends = sorted(
+                {e["timestamp"] for e in buffs if self.ability(e) == S.VEIL and e["type"] == "removebuff"}
+            )
+            resolved_at = [
+                e["timestamp"] for e in casts if self.ability(e) == S.NIGHTFALL and e["type"] == "cast"
+            ]
 
             for s in starts:
                 end = min((t for t in ends if t >= s), default=None)
@@ -352,33 +379,44 @@ class Analysis:
                 for who in seen:
                     appearances[who] += 1
                 windows_by_pull[fid] += 1
-                cost = sum(_amount(e) for e in taken
-                           if self.ability(e) == S.NIGHTFALL
-                           and s <= e["timestamp"] <= s + 20000)
+                cost = sum(
+                    _amount(e)
+                    for e in taken
+                    if self.ability(e) == S.NIGHTFALL and s <= e["timestamp"] <= s + 20000
+                )
                 # Attribute by killing blow rather than by "died near the
                 # channel". Plenty of other things kill people in that window.
-                died = sum(1 for d in deaths
-                           if (d.get("killingAbilityGameID") or 0) in nightfall_ids
-                           and s <= d["timestamp"] <= s + 20000)
+                died = sum(
+                    1
+                    for d in deaths
+                    if (d.get("killingAbilityGameID") or 0) in nightfall_ids
+                    and s <= d["timestamp"] <= s + 20000
+                )
                 if not resolved and absorbed:
                     shield_values.append(absorbed)
-                channels.append({
-                    "pull": fid, "t": round(self.rel(fid, s), 1),
-                    "phase": self.phase_at(fid, s),
-                    "break_seconds": round((window_end - s) / 1000, 1),
-                    "resolved": resolved,
-                    "absorbed": absorbed,
-                    "raid_damage": cost,
-                    "deaths": died,
-                })
+                channels.append(
+                    {
+                        "pull": fid,
+                        "t": round(self.rel(fid, s), 1),
+                        "phase": self.phase_at(fid, s),
+                        "break_seconds": round((window_end - s) / 1000, 1),
+                        "resolved": resolved,
+                        "absorbed": absorbed,
+                        "raid_damage": cost,
+                        "deaths": died,
+                    }
+                )
         broken = [c for c in channels if not c["resolved"]]
         resolved = [c for c in channels if c["resolved"]]
         times = sorted(c["break_seconds"] for c in broken)
-        players = self._rank(per_player, lambda n, a: {
-            "windows": appearances[n],
-            "per_window": round(a / appearances[n]) if appearances[n] else 0,
-            "by_pull": {str(p): round(c[n]) for p, c in by_pull.items() if c[n]},
-        })
+        players = self._rank(
+            per_player,
+            lambda n, a: {
+                "windows": appearances[n],
+                "per_window": round(a / appearances[n]) if appearances[n] else 0,
+                "by_pull": {str(p): round(c[n]) for p, c in by_pull.items() if c[n]},
+            },
+        )
         return {
             "channels": channels,
             "players": players,
@@ -443,18 +481,29 @@ class Analysis:
             def rate(target: str, span) -> float:
                 s, e = span
                 secs = max((e - s) / 1000, 1)
-                return sum(_amount(ev) for ev in done
-                           if self.name(ev.get("targetID")) == target
-                           and s <= ev["timestamp"] <= e) / secs
+                return (
+                    sum(
+                        _amount(ev)
+                        for ev in done
+                        if self.name(ev.get("targetID")) == target and s <= ev["timestamp"] <= e
+                    )
+                    / secs
+                )
 
             base = rate(S.SERPENT, bounds["P1"])
             during = rate(S.SERPENT, bounds["INT"])
             s, e2 = bounds["INT"]
             e = e2
-            usurper = sum(_amount(ev) for ev in done
-                          if self.name(ev.get("targetID")) == S.USURPER and s <= ev["timestamp"] <= e)
-            serpent = sum(_amount(ev) for ev in done
-                          if self.name(ev.get("targetID")) == S.SERPENT and s <= ev["timestamp"] <= e)
+            usurper = sum(
+                _amount(ev)
+                for ev in done
+                if self.name(ev.get("targetID")) == S.USURPER and s <= ev["timestamp"] <= e
+            )
+            serpent = sum(
+                _amount(ev)
+                for ev in done
+                if self.name(ev.get("targetID")) == S.SERPENT and s <= ev["timestamp"] <= e
+            )
 
             lust_at = None
             for ev in self.f.player_casts(fid):
@@ -473,45 +522,54 @@ class Analysis:
                     continue
                 volley[round(ev["timestamp"] / 100)] += 1
                 blast_damage += _amount(ev)
-            blocked = sum(1 for _, n in volley.items()
-                          if n >= S.GHOST_BLAST_MIN_TARGETS)
-            reclaims = [e for e in self.stream("enemy_heals", fid)
-                        if self.ability(e) == S.RECLAIM
-                        and self.name(e.get("targetID")) == S.SERPENT
-                        and s - 2000 <= e["timestamp"] <= e2 + 2000]
+            blocked = sum(1 for _, n in volley.items() if n >= S.GHOST_BLAST_MIN_TARGETS)
+            reclaims = [
+                e
+                for e in self.stream("enemy_heals", fid)
+                if self.ability(e) == S.RECLAIM
+                and self.name(e.get("targetID")) == S.SERPENT
+                and s - 2000 <= e["timestamp"] <= e2 + 2000
+            ]
             transition = (s - x["startTime"]) / 1000
             p2s, p2e = bounds["P2"]
-            gate = sum(_amount(ev) for ev in done
-                       if self.name(ev.get("targetID")) == S.USURPER
-                       and p2s <= ev["timestamp"] <= p2e)
+            gate = sum(
+                _amount(ev)
+                for ev in done
+                if self.name(ev.get("targetID")) == S.USURPER and p2s <= ev["timestamp"] <= p2e
+            )
             p2_secs = max((p2e - p2s) / 1000, 1)
-            rows.append({
-                "pull": fid, "kill": bool(x["kill"]), "best": round(x["fightPercentage"], 2),
-                "base_dps": base, "burn_dps": during,
-                "ratio": round(during / base, 2) if base else 0,
-                "shielded_share": round(usurper / serpent, 4) if serpent else 0,
-                "lust_offset": lust_at,
-                "seconds": round((e - s) / 1000, 1),
-                # When stage two handed over. The gate is a damage threshold, so
-                # this time is a choice: push with cooldowns and cross early, or
-                # hold damage and cross late with the cooldowns still banked.
-                "transition": round(transition, 1),
-                "transition_mmss": f"{int(transition // 60)}:{int(transition % 60):02d}",
-                "band": "early" if transition < self.EARLY_TRANSITION_SEC else "late",
-                "p2_seconds": round(p2_secs, 1),
-                # The handover threshold, and the rate the raid met it at.
-                "gate_damage": round(gate),
-                "p2_dps": round(gate / p2_secs),
-                # What the burn window actually achieved: the serpent's health
-                # when the intermission handed over to stage three.
-                "serpent_hp_end": self.boss_health_at(fid, S.SERPENT, e),
-                "serpent_hp_start": self.boss_health_at(fid, S.SERPENT, s),
-                "reclaims": len(reclaims),
-                "reclaimed": sum(ev.get("amount") or 0 for ev in reclaims),
-                "blocked": blocked,
-                "ghosts": blocked + len(reclaims),
-                "blast_damage": blast_damage,
-            })
+            rows.append(
+                {
+                    "pull": fid,
+                    "kill": bool(x["kill"]),
+                    "best": round(x["fightPercentage"], 2),
+                    "base_dps": base,
+                    "burn_dps": during,
+                    "ratio": round(during / base, 2) if base else 0,
+                    "shielded_share": round(usurper / serpent, 4) if serpent else 0,
+                    "lust_offset": lust_at,
+                    "seconds": round((e - s) / 1000, 1),
+                    # When stage two handed over. The gate is a damage threshold, so
+                    # this time is a choice: push with cooldowns and cross early, or
+                    # hold damage and cross late with the cooldowns still banked.
+                    "transition": round(transition, 1),
+                    "transition_mmss": f"{int(transition // 60)}:{int(transition % 60):02d}",
+                    "band": "early" if transition < self.EARLY_TRANSITION_SEC else "late",
+                    "p2_seconds": round(p2_secs, 1),
+                    # The handover threshold, and the rate the raid met it at.
+                    "gate_damage": round(gate),
+                    "p2_dps": round(gate / p2_secs),
+                    # What the burn window actually achieved: the serpent's health
+                    # when the intermission handed over to stage three.
+                    "serpent_hp_end": self.boss_health_at(fid, S.SERPENT, e),
+                    "serpent_hp_start": self.boss_health_at(fid, S.SERPENT, s),
+                    "reclaims": len(reclaims),
+                    "reclaimed": sum(ev.get("amount") or 0 for ev in reclaims),
+                    "blocked": blocked,
+                    "ghosts": blocked + len(reclaims),
+                    "blast_damage": blast_damage,
+                }
+            )
 
         # How long the serpent actually heals, and for how much. Measured from
         # the heal events themselves rather than the buff, which lingers past
@@ -519,12 +577,16 @@ class Analysis:
         heal_rate, heal_seconds, heal_total = 0.0, 0.0, 0.0
         if self.kill:
             fid = self.kill["id"]
-            heals = [e for e in self.stream("enemy_heals", fid)
-                     if self.ability(e) == S.REGEN and e["type"] == "heal"]
+            heals = [
+                e
+                for e in self.stream("enemy_heals", fid)
+                if self.ability(e) == S.REGEN and e["type"] == "heal"
+            ]
             if heals:
                 heal_rate = statistics.median(e.get("amount") or 0 for e in heals)
-                heal_seconds = round((max(e["timestamp"] for e in heals)
-                                      - min(e["timestamp"] for e in heals)) / 1000, 1)
+                heal_seconds = round(
+                    (max(e["timestamp"] for e in heals) - min(e["timestamp"] for e in heals)) / 1000, 1
+                )
                 heal_total = sum(e.get("amount") or 0 for e in heals)
 
         ratios = [r["ratio"] for r in rows if r["ratio"]]
@@ -540,12 +602,17 @@ class Analysis:
                 isec, psec = pull_seconds.get(fid, (0, 0))
                 pdps = counter[name] / isec if isec else 0
                 pbase = by_pull_p1[fid][name] / psec if psec else 0
-                per_pull[str(fid)] = {"damage": round(counter[name]),
-                                      "dps": round(pdps),
-                                      "multiple": round(pdps / pbase, 2) if pbase else 0}
-            return {"dps": burn_dps, "base_dps": base_dps,
-                    "multiple": round(burn_dps / base_dps, 2) if base_dps else 0,
-                    "by_pull": per_pull}
+                per_pull[str(fid)] = {
+                    "damage": round(counter[name]),
+                    "dps": round(pdps),
+                    "multiple": round(pdps / pbase, 2) if pbase else 0,
+                }
+            return {
+                "dps": burn_dps,
+                "base_dps": base_dps,
+                "multiple": round(burn_dps / base_dps, 2) if base_dps else 0,
+                "by_pull": per_pull,
+            }
 
         bands = {b: [r for r in rows if r["band"] == b] for b in ("early", "late")}
         return {
@@ -553,15 +620,18 @@ class Analysis:
             "players": self._rank(per_player, _burn_extra),
             "int_seconds": round(int_seconds, 1),
             "split_at": self.EARLY_TRANSITION_SEC,
-            "bands": {b: {
-                "pulls": [r["pull"] for r in g],
-                "count": len(g),
-                "median_transition": (statistics.median(r["transition"] for r in g) if g else 0),
-                "median_ratio": (statistics.median(r["ratio"] for r in g) if g else 0),
-                "median_p2_dps": (statistics.median(r["p2_dps"] for r in g) if g else 0),
-                "best": (min((r["best"] for r in g), default=0)),
-                "kills": sum(1 for r in g if r["kill"]),
-            } for b, g in bands.items()},
+            "bands": {
+                b: {
+                    "pulls": [r["pull"] for r in g],
+                    "count": len(g),
+                    "median_transition": (statistics.median(r["transition"] for r in g) if g else 0),
+                    "median_ratio": (statistics.median(r["ratio"] for r in g) if g else 0),
+                    "median_p2_dps": (statistics.median(r["p2_dps"] for r in g) if g else 0),
+                    "best": (min((r["best"] for r in g), default=0)),
+                    "kills": sum(1 for r in g if r["kill"]),
+                }
+                for b, g in bands.items()
+            },
             # The serpent fights stage one on one health pool and comes back
             # in the intermission on a much larger one.
             "pool_one": self._max_hp(S.SERPENT, "P1"),
@@ -570,16 +640,28 @@ class Analysis:
             # damage threshold rather than a clock.
             "gate_damage": (statistics.median(r["gate_damage"] for r in rows) if rows else 0),
             "blocked_total": sum(r["blocked"] for r in rows),
-            "ghosts_median": (statistics.median([r["ghosts"] for r in rows if r["ghosts"] > 20])
-                              if any(r["ghosts"] > 20 for r in rows) else 0),
-            "blast_each": (statistics.median([r["blast_damage"] / r["blocked"]
-                                              for r in rows if r["blocked"]]) if rows else 0),
+            "ghosts_median": (
+                statistics.median([r["ghosts"] for r in rows if r["ghosts"] > 20])
+                if any(r["ghosts"] > 20 for r in rows)
+                else 0
+            ),
+            "blast_each": (
+                statistics.median([r["blast_damage"] / r["blocked"] for r in rows if r["blocked"]])
+                if rows
+                else 0
+            ),
             "reclaim_total": sum(r["reclaims"] for r in rows),
             "reclaim_healed": sum(r["reclaimed"] for r in rows),
-            "reclaim_each": (statistics.median([r["reclaimed"] / r["reclaims"]
-                                                for r in rows if r["reclaims"]]) if rows else 0),
-            "gate_spread": (round(max(r["gate_damage"] for r in rows)
-                                  / min(r["gate_damage"] for r in rows), 3) if rows else 0),
+            "reclaim_each": (
+                statistics.median([r["reclaimed"] / r["reclaims"] for r in rows if r["reclaims"]])
+                if rows
+                else 0
+            ),
+            "gate_spread": (
+                round(max(r["gate_damage"] for r in rows) / min(r["gate_damage"] for r in rows), 3)
+                if rows
+                else 0
+            ),
             "median_ratio": round(statistics.median(ratios), 2) if ratios else 0,
             "best": max(rows, key=lambda r: r["ratio"]) if rows else None,
             "heal_rate": heal_rate,
@@ -643,12 +725,14 @@ class Analysis:
             int_start = bounds["INT"][0] if "INT" in bounds else None
             deb = sorted(self.stream("debuffs", fid), key=lambda e: e["timestamp"])
             sources = self.march_sources(fid)
-            deaths = sorted((d for d in self.stream("deaths", fid)
-                             if self.is_player(d.get("targetID"))),
-                            key=lambda d: d["timestamp"])
+            deaths = sorted(
+                (d for d in self.stream("deaths", fid) if self.is_player(d.get("targetID"))),
+                key=lambda d: d["timestamp"],
+            )
             # Raid size for this pull, from whoever actually took a hit in it.
-            present = {e.get("targetID") for e in self.stream("taken", fid)
-                       if self.is_player(e.get("targetID"))}
+            present = {
+                e.get("targetID") for e in self.stream("taken", fid) if self.is_player(e.get("targetID"))
+            }
             size = max(len(present), 1)
 
             for i, d in enumerate(deaths):
@@ -658,8 +742,7 @@ class Analysis:
                     continue
                 ts = d["timestamp"]
                 already = sum(1 for e in deaths if e["timestamp"] < ts)
-                dying = (not x["kill"]
-                         and (x["endTime"] - ts) / 1000 <= self.COLLAPSE_TAIL_SEC)
+                dying = not x["kill"] and (x["endTime"] - ts) / 1000 <= self.COLLAPSE_TAIL_SEC
                 lost = already >= self.RESET_DEAD_SHARE * size or dying
                 control = self._control_at(deb, tid, ts, sources)
                 offset = (ts - int_start) / 1000 if int_start else None
@@ -684,9 +767,15 @@ class Analysis:
                 buckets[cause] += 1
                 per_pull[fid] += 1
                 victims[self.name(tid)] += 1
-                rows.append({"pull": fid, "t": round(self.rel(fid, ts), 1),
-                             "who": self.name(tid), "phase": self.phase_at(fid, ts),
-                             "cause": cause})
+                rows.append(
+                    {
+                        "pull": fid,
+                        "t": round(self.rel(fid, ts), 1),
+                        "who": self.name(tid),
+                        "phase": self.phase_at(fid, ts),
+                        "cause": cause,
+                    }
+                )
 
         falls = sum(buckets.values())
         counted = total_deaths - reset_falls
@@ -717,8 +806,11 @@ class Analysis:
         if key in self._memo:
             return self._memo[key]
         deb = self.stream("debuffs", fid)
-        casts = [e["timestamp"] for e in self.stream("enemy_casts", fid)
-                 if self.ability(e) == S.MARCH and e["type"] == "cast"]
+        casts = [
+            e["timestamp"]
+            for e in self.stream("enemy_casts", fid)
+            if self.ability(e) == S.MARCH and e["type"] == "cast"
+        ]
         released: dict[int, list[int]] = defaultdict(list)
         for e in deb:
             if self.ability(e) == S.FIXATE and e["type"] == "removedebuff":
@@ -737,8 +829,7 @@ class Analysis:
         self._memo[key] = out
         return out
 
-    def _control_at(self, deb: list[dict], tid: int, ts: float,
-                    sources: dict | None = None) -> set[str]:
+    def _control_at(self, deb: list[dict], tid: int, ts: float, sources: dict | None = None) -> set[str]:
         """Which mind control was on this player when they died.
 
         A control counts if it was active at the moment of death, or dropped
@@ -822,9 +913,13 @@ class Analysis:
             for e in casts:
                 if self.ability(e) == S.MARCH and e["type"] == "cast":
                     march_casts += 1
-                    hit = sum(1 for d in deb if self.ability(d) == S.MARCH
-                              and d["type"] == "applydebuff"
-                              and 0 <= d["timestamp"] - e["timestamp"] <= 2000)
+                    hit = sum(
+                        1
+                        for d in deb
+                        if self.ability(d) == S.MARCH
+                        and d["type"] == "applydebuff"
+                        and 0 <= d["timestamp"] - e["timestamp"] <= 2000
+                    )
                     if hit:
                         march_targets[hit] += 1
 
@@ -841,12 +936,14 @@ class Analysis:
             # Fixations arrive either in a spawn wave (many at once) or singly
             # between waves. The off-wave ones are the ghost picking a new
             # target, so they are counted apart and tested against deaths.
-            app_ev = sorted((e for e in deb if self.ability(e) == S.FIXATE
-                             and e["type"] == "applydebuff"),
-                            key=lambda e: e["timestamp"])
+            app_ev = sorted(
+                (e for e in deb if self.ability(e) == S.FIXATE and e["type"] == "applydebuff"),
+                key=lambda e: e["timestamp"],
+            )
             fixate_apps += len(app_ev)
-            deaths = sorted((d["timestamp"] for d in self.stream("deaths", fid)
-                             if self.is_player(d.get("targetID"))))
+            deaths = sorted(
+                (d["timestamp"] for d in self.stream("deaths", fid) if self.is_player(d.get("targetID")))
+            )
             clusters: list[list[dict]] = []
             cluster: list[dict] = []
             for e in app_ev:
@@ -880,8 +977,11 @@ class Analysis:
                 if e["type"] != "cast":
                     continue
                 a = self.ability(e)
-                if a in S.CC_TARGETED and self.is_player(e.get("targetID")) \
-                        and e.get("targetID") != e.get("sourceID"):
+                if (
+                    a in S.CC_TARGETED
+                    and self.is_player(e.get("targetID"))
+                    and e.get("targetID") != e.get("sourceID")
+                ):
                     cc_targeted[a] += 1
                 elif a in S.CC_GROUND:
                     cc_ground[a] += 1
@@ -889,10 +989,12 @@ class Analysis:
             # Two ghosts emerge from each possessed player when Dreadmarch ends,
             # so a catch feeds the next one. Removals that expire together are
             # one batch (a Malacrass cast drops off as a group).
-            rem = sorted(e["timestamp"] for e in deb
-                         if self.ability(e) == S.MARCH and e["type"] == "removedebuff")
-            fixes = sorted(e["timestamp"] for e in deb
-                           if self.ability(e) == S.FIXATE and e["type"] == "applydebuff")
+            rem = sorted(
+                e["timestamp"] for e in deb if self.ability(e) == S.MARCH and e["type"] == "removedebuff"
+            )
+            fixes = sorted(
+                e["timestamp"] for e in deb if self.ability(e) == S.FIXATE and e["type"] == "applydebuff"
+            )
             batch: list[int] = []
             for t in rem:
                 if batch and t - batch[-1] <= 1500:
@@ -945,13 +1047,13 @@ class Analysis:
             break_attempts.extend(acc.values())
 
             # Did being caught by a ghost kill them?
-            pdeaths = [d for d in self.stream("deaths", fid)
-                       if self.is_player(d.get("targetID"))]
+            pdeaths = [d for d in self.stream("deaths", fid) if self.is_player(d.get("targetID"))]
             for (tid, applied), origin in sources.items():
                 if origin != "touch":
                     continue
-                after = [d for d in pdeaths if d.get("targetID") == tid
-                         and 0 <= d["timestamp"] - applied <= 30000]
+                after = [
+                    d for d in pdeaths if d.get("targetID") == tid and 0 <= d["timestamp"] - applied <= 30000
+                ]
                 if after:
                     caught_died += 1
                     if (after[0].get("killingAbilityGameID") or 0) == 0:
@@ -980,8 +1082,7 @@ class Analysis:
             "spawn_ratio": round(statistics.median(spawn_ratio), 1) if spawn_ratio else 0,
             "spawn_lag": round(statistics.median(spawn_lag), 1) if spawn_lag else 0,
             "possessions_measured": len(break_attempts),
-            "breaks_completed": sum(1 for v in break_attempts
-                                    if v >= S.MARCH_ABSORB * 0.98),
+            "breaks_completed": sum(1 for v in break_attempts if v >= S.MARCH_ABSORB * 0.98),
             "break_median": (statistics.median(break_attempts) if break_attempts else 0),
             "shield_breakers": breakers_shield.most_common(12),
             "march_per_cast": (min(typical), max(typical)) if typical else (0, 0),
@@ -999,10 +1100,12 @@ class Analysis:
             # evidence in the log that the ghost re-picks when its target dies.
             "offwave_after_death": (
                 round(100 * fixate_after_death["offwave"] / fixate_kind["offwave"])
-                if fixate_kind["offwave"] else 0),
+                if fixate_kind["offwave"]
+                else 0
+            ),
             "wave_after_death": (
-                round(100 * fixate_after_death["wave"] / fixate_kind["wave"])
-                if fixate_kind["wave"] else 0),
+                round(100 * fixate_after_death["wave"] / fixate_kind["wave"]) if fixate_kind["wave"] else 0
+            ),
             "cc_targeted": cc_targeted.most_common(),
             "cc_ground": cc_ground.most_common(),
             "cc_targeted_total": sum(cc_targeted.values()),
@@ -1065,34 +1168,52 @@ class Analysis:
                     blasted[self.name(e.get("targetID"))] += 1
                     blast_share.append(share)
                 elif n == S.TANK_STACK:
-                    (failure_share if share >= self.FAILURE_HIT_SHARE
-                     else pickup_share).append(share)
+                    (failure_share if share >= self.FAILURE_HIT_SHARE else pickup_share).append(share)
 
             for d in self.stream("deaths", fid):
                 if (d.get("killingAbilityGameID") or 0) not in gb_ids:
                     continue
                 tid, ts = d.get("targetID"), d["timestamp"]
-                hit = [e for e in taken if self.ability(e) == S.TANK_STACK
-                       and e.get("targetID") == tid and 0 <= ts - e["timestamp"] <= 1500]
+                hit = [
+                    e
+                    for e in taken
+                    if self.ability(e) == S.TANK_STACK
+                    and e.get("targetID") == tid
+                    and 0 <= ts - e["timestamp"] <= 1500
+                ]
                 share = None
                 if hit and hit[-1].get("maxHitPoints"):
                     share = 100.0 * (hit[-1].get("amount") or 0) / hit[-1]["maxHitPoints"]
-                deaths.append({
-                    "pull": fid, "t": round(self.rel(fid, ts), 1),
-                    "who": self.name(tid), "share": round(share, 1) if share else None,
-                    "mode": ("left a soul" if share and share >= self.FAILURE_HIT_SHARE
-                             else "collecting while low"),
-                })
+                deaths.append(
+                    {
+                        "pull": fid,
+                        "t": round(self.rel(fid, ts), 1),
+                        "who": self.name(tid),
+                        "share": round(share, 1) if share else None,
+                        "mode": (
+                            "left a soul"
+                            if share and share >= self.FAILURE_HIT_SHARE
+                            else "collecting while low"
+                        ),
+                    }
+                )
 
         roster = self.roster()
         rows = []
         for who, n in bound.most_common():
             info = roster.get(who, {})
-            rows.append({"name": who, "class": info.get("class", ""),
-                         "spec": info.get("spec", ""), "role": info.get("role", ""),
-                         "selected": selected[who], "bound": n,
-                         "collected": collected[who],
-                         "deaths": sum(1 for d in deaths if d["who"] == who)})
+            rows.append(
+                {
+                    "name": who,
+                    "class": info.get("class", ""),
+                    "spec": info.get("spec", ""),
+                    "role": info.get("role", ""),
+                    "selected": selected[who],
+                    "bound": n,
+                    "collected": collected[who],
+                    "deaths": sum(1 for d in deaths if d["who"] == who),
+                }
+            )
         return {
             "rows": rows,
             "gloom_casts": gloom_casts,
@@ -1118,8 +1239,7 @@ class Analysis:
         spans: list[tuple[int, int]] = []
         for e in self.stream("enemy_buffs", fid):
             if self.ability(e) == S.VEIL and e["type"] == "applybuff":
-                spans.append((e["timestamp"],
-                              e["timestamp"] + int(S.NIGHTFALL_WINDOW_SEC * 1000)))
+                spans.append((e["timestamp"], e["timestamp"] + int(S.NIGHTFALL_WINDOW_SEC * 1000)))
         bounds = self.phase_bounds(fid)
         if "INT" in bounds:
             spans.append(bounds["INT"])
@@ -1170,11 +1290,23 @@ class Analysis:
         """Who pressed what, and whether they pressed it when it mattered."""
         heals = self._consumable_heals()
         roster = self.roster()
-        per: dict[str, dict] = defaultdict(lambda: {
-            "major": 0, "major_pressure": 0, "minor": 0, "external": 0,
-            "raidwide": 0, "stone": 0, "potion": 0, "hp_at_use": [],
-            "spells": Counter(), "raid_spells": Counter(),
-            "taken": 0.0, "deaths": 0, "pulls_with_consumable": set()})
+        per: dict[str, dict] = defaultdict(
+            lambda: {
+                "major": 0,
+                "major_pressure": 0,
+                "minor": 0,
+                "external": 0,
+                "raidwide": 0,
+                "stone": 0,
+                "potion": 0,
+                "hp_at_use": [],
+                "spells": Counter(),
+                "raid_spells": Counter(),
+                "taken": 0.0,
+                "deaths": 0,
+                "pulls_with_consumable": set(),
+            }
+        )
         spell_use: Counter = Counter()
         windows = 0
 
@@ -1215,9 +1347,11 @@ class Analysis:
                 elif kind in ("stone", "potion"):
                     v["pulls_with_consumable"].add(fid)
                     if e.get("maxHitPoints"):
-                        near = [(abs(t - e["timestamp"]), amt)
-                                for t, amt in heals.get((fid, e.get("sourceID")), [])
-                                if abs(t - e["timestamp"]) <= 1500]
+                        near = [
+                            (abs(t - e["timestamp"]), amt)
+                            for t, amt in heals.get((fid, e.get("sourceID")), [])
+                            if abs(t - e["timestamp"]) <= 1500
+                        ]
                         healed = min(near)[1] if near else 0
                         before = max(0, (e.get("hitPoints") or 0) - healed)
                         v["hp_at_use"].append(100 * before / e["maxHitPoints"])
@@ -1235,20 +1369,28 @@ class Analysis:
         for name, v in per.items():
             info = roster.get(name, {})
             hp = sorted(v["hp_at_use"])
-            rows.append({
-                "name": name, "class": info.get("class", ""), "spec": info.get("spec", ""),
-                "role": info.get("role", ""),
-                "major": v["major"], "major_pressure": v["major_pressure"],
-                "minor": v["minor"], "external": v["external"],
-                "raidwide": v["raidwide"],
-                "raid_spells": v["raid_spells"].most_common(3),
-                "stone": v["stone"], "potion": v["potion"],
-                "consumables": v["stone"] + v["potion"],
-                "pulls_with_consumable": len(v["pulls_with_consumable"]),
-                "hp_at_use": round(statistics.median(hp), 1) if hp else None,
-                "taken": v["taken"], "deaths": v["deaths"],
-                "top_spells": v["spells"].most_common(3),
-            })
+            rows.append(
+                {
+                    "name": name,
+                    "class": info.get("class", ""),
+                    "spec": info.get("spec", ""),
+                    "role": info.get("role", ""),
+                    "major": v["major"],
+                    "major_pressure": v["major_pressure"],
+                    "minor": v["minor"],
+                    "external": v["external"],
+                    "raidwide": v["raidwide"],
+                    "raid_spells": v["raid_spells"].most_common(3),
+                    "stone": v["stone"],
+                    "potion": v["potion"],
+                    "consumables": v["stone"] + v["potion"],
+                    "pulls_with_consumable": len(v["pulls_with_consumable"]),
+                    "hp_at_use": round(statistics.median(hp), 1) if hp else None,
+                    "taken": v["taken"],
+                    "deaths": v["deaths"],
+                    "top_spells": v["spells"].most_common(3),
+                }
+            )
         rows.sort(key=lambda r: -(r["major"] + r["external"]))
         return {
             "rows": rows,
@@ -1262,8 +1404,9 @@ class Analysis:
             "potions": sum(r["potion"] for r in rows),
             "never_consumed": [r["name"] for r in rows if r["consumables"] == 0],
             "skipped_roles": sorted(S.MITIGATION_SKIP_ROLES),
-            "skipped": sorted(n for n, i in self.roster().items()
-                              if i.get("role") in S.MITIGATION_SKIP_ROLES),
+            "skipped": sorted(
+                n for n, i in self.roster().items() if i.get("role") in S.MITIGATION_SKIP_ROLES
+            ),
         }
 
     # ---- assemble ----
@@ -1286,13 +1429,23 @@ class Analysis:
             "veil_windows": veil["windows_by_pull"],
             "burn": burn["rows"],
             "burn_players": burn["players"],
-            "edge": {"buckets": edge["buckets"], "rows": edge["rows"],
-                     "per_pull": edge["per_pull"]},
-            "control": {"cc_targeted": mc["cc_targeted"], "cc_ground": mc["cc_ground"],
-                        "breakers": mc["breakers"]},
+            "edge": {"buckets": edge["buckets"], "rows": edge["rows"], "per_pull": edge["per_pull"]},
+            "control": {
+                "cc_targeted": mc["cc_targeted"],
+                "cc_ground": mc["cc_ground"],
+                "breakers": mc["breakers"],
+            },
             "mitigation": mit["rows"],
             "souls": souls["rows"],
         }
-        return {"progress": progress, "orbs": orbs, "veil": veil, "burn": burn,
-                "edge": edge, "control": mc, "mitigation": mit, "souls": souls,
-                "payloads": payloads}
+        return {
+            "progress": progress,
+            "orbs": orbs,
+            "veil": veil,
+            "burn": burn,
+            "edge": edge,
+            "control": mc,
+            "mitigation": mit,
+            "souls": souls,
+            "payloads": payloads,
+        }

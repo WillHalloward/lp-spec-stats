@@ -17,8 +17,21 @@ from . import spells as S
 
 TEMPLATE = Path(__file__).parent / "template.html"
 
-_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
-          "nine", "ten", "eleven", "twelve"]
+_WORDS = [
+    "zero",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "eleven",
+    "twelve",
+]
 
 
 def word(n: int) -> str:
@@ -78,12 +91,10 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "best_wipe": f"{best_wipes[0]['best']:g}%" if best_wipes else "—",
         "best_wipe_pull": best_wipes[0]["pull"] if best_wipes else 0,
         "near_misses": names(f"{p['best']:g}%" for p in best_wipes),
-
         # --- stage timings (they barely move, which is the point) ---
         "p1_seconds": _median_phase(progress, "P1"),
         "p2_seconds": _median_phase(progress, "P2"),
         "int_seconds": _median_phase(progress, "INT"),
-
         # --- orbs ---
         "orb_carry": f"{orbs['carry_seconds']:g}",
         "orbs_picked": f"{orbs['picked']:,}",
@@ -99,7 +110,6 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "orb_top_count": orbs["carriers"][0]["total"] if orbs["carriers"] else 0,
         "orb_pulse_damage": millions(orbs["pulse_damage"]),
         "orb_burst_damage": millions(orbs["burst_damage"]),
-
         # --- the veil gate ---
         "veil_total": veil["total"],
         "veil_broken": veil["broken"],
@@ -113,7 +123,6 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "veil_total_damage": millions(sum(p["damage"] for p in veil["players"])),
         "veil_top3": names(p["name"] for p in veil["players"][:3]),
         "veil_top3_share": f"{sum(p['share'] for p in veil['players'][:3]):.0f}%",
-
         # --- the burn window ---
         "burn_ratio": f"{burn['median_ratio']:g}",
         "burn_best": f"{burn['best']['ratio']:g}" if burn["best"] else "—",
@@ -146,8 +155,9 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "blast_each": millions(burn["blast_each"]),
         "reclaim_each": millions(burn["reclaim_each"]),
         "reclaim_healed": millions(burn["reclaim_healed"]),
-        "reclaim_pct": (f"{100 * burn['reclaim_each'] / burn['pool_three']:.0f}%"
-                        if burn["pool_three"] else "—"),
+        "reclaim_pct": (
+            f"{100 * burn['reclaim_each'] / burn['pool_three']:.0f}%" if burn["pool_three"] else "—"
+        ),
         "best_hp_end": _hp_extreme(burn["rows"], min),
         "worst_hp_end": _hp_extreme(burn["rows"], max),
         "burn_top_player": burn["players"][0]["name"] if burn["players"] else "—",
@@ -155,7 +165,6 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "burn_amp_player": _amp(burn["players"])["name"],
         "burn_amp_multiple": f"{_amp(burn['players'])['multiple']:g}",
         "burn_healer_multiple": _healer_multiple(burn["players"]),
-
         # --- the edge ---
         "falls": edge["falls"],
         "deaths_total": edge["total_deaths"],
@@ -170,7 +179,6 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "control_grace": f"{a.CONTROL_GRACE_MS / 1000:g}",
         "worst_fall_pull": edge["worst_pull"][0],
         "worst_fall_count": edge["worst_pull"][1],
-
         # --- mind control ---
         "march_casts": mc["march_casts"],
         "march_from_cast": mc["march_from_cast"],
@@ -183,8 +191,11 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "march_windows": mc["march_from_cast"] + mc["caught_by_ghost"],
         "breaks_done": mc["breaks_completed"],
         "possessions": mc["possessions_measured"],
-        "breaks_pct": (f"{100 * mc['breaks_completed'] / mc['possessions_measured']:.0f}%"
-                       if mc["possessions_measured"] else "—"),
+        "breaks_pct": (
+            f"{100 * mc['breaks_completed'] / mc['possessions_measured']:.0f}%"
+            if mc["possessions_measured"]
+            else "—"
+        ),
         "break_median": f"{mc['break_median']:,.0f}",
         "shield_top": names(n for n, _ in mc["shield_breakers"][:3]),
         "fall_caught": edge["buckets"].get("caught", 0),
@@ -205,7 +216,6 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "cc_targeted": mc["cc_targeted_total"],
         "cc_ground": mc["cc_ground_total"],
         "controlled": mc["ever_controlled"],
-
         # --- defensives ---
         "mit_windows": mit["windows"],
         "mit_majors": f"{mit['majors']:,}",
@@ -216,7 +226,6 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "mit_potions": mit["potions"],
         "mit_hp": _median_hp(mit["rows"]),
         "mit_skipped": names(mit["skipped"]),
-
         # --- gloombomb and the souls ---
         "gloom_casts": souls["gloom_casts"],
         "gloom_per_cast": word(int(round(souls["gloom_per_cast"]))),

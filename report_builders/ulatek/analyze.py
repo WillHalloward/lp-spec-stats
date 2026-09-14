@@ -12,13 +12,13 @@ from collections import Counter, defaultdict
 from . import spells
 from .fetch import Fetcher
 
-BIN = 20           # seconds of an exposure window, one bucket each
-DTPS_BUCKET = 5    # seconds per bucket in the damage-taken table
-HEAVY_FACTOR = 2   # a heavy second is this many times the pull's median rate
+BIN = 20  # seconds of an exposure window, one bucket each
+DTPS_BUCKET = 5  # seconds per bucket in the damage-taken table
+HEAVY_FACTOR = 2  # a heavy second is this many times the pull's median rate
 HEAVY_MIN_LEN = 3  # seconds; shorter spikes are noise
-SPLIT_GAP = 5000   # coordinate units between the two halves during the split
-CENTRE = 3000      # inside this of the middle counts as "back"
-EARLY_DEATH = 15_000   # ms before the pull's last death for a death to be "isolated"
+SPLIT_GAP = 5000  # coordinate units between the two halves during the split
+CENTRE = 3000  # inside this of the middle counts as "back"
+EARLY_DEATH = 15_000  # ms before the pull's last death for a death to be "isolated"
 
 
 def _amount(e: dict) -> float:
@@ -26,8 +26,9 @@ def _amount(e: dict) -> float:
 
 
 class Analysis:
-    def __init__(self, code: str, encounter_id: int | None = None, difficulty: int | None = None,
-                 cache_root=None) -> None:
+    def __init__(
+        self, code: str, encounter_id: int | None = None, difficulty: int | None = None, cache_root=None
+    ) -> None:
         self.f = Fetcher(code, cache_root)
         self.code = code
         self.meta = self.f.meta()
@@ -64,8 +65,9 @@ class Analysis:
             for p in (pd or {}).get(key, []) or []:
                 self.role[p["name"]] = role
                 self.spec[p["name"]] = (p.get("specs") or [{}])[0].get("spec", "")
-        self.players = {a["name"]: a for a in self.actors.values()
-                        if a["type"] == "Player" and a["name"] in self.role}
+        self.players = {
+            a["name"]: a for a in self.actors.values() if a["type"] == "Player" and a["name"] in self.role
+        }
         self.tanks = sorted(p for p in self.players if self.role[p] == "tank")
 
     # ---- small helpers ----
@@ -83,8 +85,11 @@ class Analysis:
         return ids[0] if ids else None
 
     def _npcs(self, name: str, game_id: int) -> list[int]:
-        out = [a["id"] for a in self.actors.values()
-               if a["type"] != "Player" and (a.get("gameID") == game_id or a["name"] == name)]
+        out = [
+            a["id"]
+            for a in self.actors.values()
+            if a["type"] != "Player" and (a.get("gameID") == game_id or a["name"] == name)
+        ]
         return sorted(out)
 
     def ids_named(self, name: str) -> set[int]:
@@ -137,8 +142,9 @@ class Analysis:
         out = []
         for i, (a, b) in enumerate(self.windows(fid)):
             for tid in self.boss_ids:
-                out += self.f.events(f"boss_{fid}_{i}_{tid}", fid, "DamageDone",
-                                     start=a, end=b + 1, target_id=tid)
+                out += self.f.events(
+                    f"boss_{fid}_{i}_{tid}", fid, "DamageDone", start=a, end=b + 1, target_id=tid
+                )
         return out
 
     # ---- burn windows: the heart and the boss beside it ----
@@ -151,8 +157,10 @@ class Analysis:
             wins = self.windows(fid)
             per = [defaultdict(lambda: {"h": [0.0] * BIN, "b": [0.0] * BIN}) for _ in wins]
             wsum = [{"h": 0.0, "b": 0.0} for _ in wins]
-            for key, short, evs in (("heart", "h", self.heart_events(fid)),
-                                    ("boss", "b", self.boss_in_windows(fid))):
+            for key, short, evs in (
+                ("heart", "h", self.heart_events(fid)),
+                ("boss", "b", self.boss_in_windows(fid)),
+            ):
                 for e in evs:
                     p = self.name(e.get("sourceID"))
                     if not p:
@@ -166,24 +174,48 @@ class Analysis:
                             slot["heart" if short == "h" else "boss"] += _amount(e)
                             break
             if wins:
-                bins[self.pull_no[fid]] = [{p: {"h": [round(x) for x in v["h"]], "b": [round(x) for x in v["b"]]}
-                              for p, v in w.items()} for w in per]
+                bins[self.pull_no[fid]] = [
+                    {
+                        p: {"h": [round(x) for x in v["h"]], "b": [round(x) for x in v["b"]]}
+                        for p, v in w.items()
+                    }
+                    for w in per
+                ]
             for i, (a, b) in enumerate(wins):
                 window_secs += (b - a) / 1000
-                windows_out.append({"fight": self.pull_no[fid], "idx": i + 1, "dur": round((b - a) / 1000, 1),
-                                    "dmg": round(wsum[i]["h"] + wsum[i]["b"]),
-                                    "heart": round(wsum[i]["h"]), "boss": round(wsum[i]["b"])})
+                windows_out.append(
+                    {
+                        "fight": self.pull_no[fid],
+                        "idx": i + 1,
+                        "dur": round((b - a) / 1000, 1),
+                        "dmg": round(wsum[i]["h"] + wsum[i]["b"]),
+                        "heart": round(wsum[i]["h"]),
+                        "boss": round(wsum[i]["b"]),
+                    }
+                )
             heart_tot += sum(w["h"] for w in wsum)
             boss_tot += sum(w["b"] for w in wsum)
-            fights_out.append({"pull": self.pull_no[fid], "n_windows": len(wins),
-                               "window_dmg": [round(w["h"] + w["b"]) for w in wsum],
-                               "window_heart": [round(w["h"]) for w in wsum],
-                               "window_boss": [round(w["b"]) for w in wsum],
-                               "window_dur": [round((b - a) / 1000, 1) for a, b in wins],
-                               "heart_total": round(sum(w["h"] for w in wsum)),
-                               "burn_total": round(sum(w["h"] + w["b"] for w in wsum))})
-        return {"players": players, "bins": bins, "fights": fights_out, "windows": windows_out,
-                "heart": heart_tot, "boss": boss_tot, "secs": window_secs}
+            fights_out.append(
+                {
+                    "pull": self.pull_no[fid],
+                    "n_windows": len(wins),
+                    "window_dmg": [round(w["h"] + w["b"]) for w in wsum],
+                    "window_heart": [round(w["h"]) for w in wsum],
+                    "window_boss": [round(w["b"]) for w in wsum],
+                    "window_dur": [round((b - a) / 1000, 1) for a, b in wins],
+                    "heart_total": round(sum(w["h"] for w in wsum)),
+                    "burn_total": round(sum(w["h"] + w["b"] for w in wsum)),
+                }
+            )
+        return {
+            "players": players,
+            "bins": bins,
+            "fights": fights_out,
+            "windows": windows_out,
+            "heart": heart_tot,
+            "boss": boss_tot,
+            "secs": window_secs,
+        }
 
     # ---- caustic waves ----
 
@@ -200,7 +232,7 @@ class Analysis:
             for p, evs in hits.items():
                 evs.sort(key=lambda x: x["timestamp"])
                 groups = []
-                for e in evs:                       # one wave sweeping a player = one hit
+                for e in evs:  # one wave sweeping a player = one hit
                     if groups and e["timestamp"] - groups[-1][-1]["timestamp"] <= 2000:
                         groups[-1].append(e)
                     else:
@@ -213,9 +245,12 @@ class Analysis:
                     tank += len(groups)
                 else:
                     nontank += len(groups)
-            casts = sum(1 for e in self.enemy_casts(fid)
-                        if e.get("abilityGameID") in dmg_ids
-                        or self.ability.get(e.get("abilityGameID")) == spells.WAVE)
+            casts = sum(
+                1
+                for e in self.enemy_casts(fid)
+                if e.get("abilityGameID") in dmg_ids
+                or self.ability.get(e.get("abilityGameID")) == spells.WAVE
+            )
             for d in self.deaths(fid):
                 if self.ability.get(d.get("killingAbilityGameID")) == spells.WAVE:
                     p = self.player_of(d.get("targetID"))
@@ -250,9 +285,12 @@ class Analysis:
                         cur = [s, s]
                         spans.append(cur)
             spans = [sp for sp in spans if sp[1] - sp[0] >= HEAVY_MIN_LEN - 1]
-            out[fid] = {"dur": dur, "spans": [tuple(sp) for sp in spans],
-                        "total": sum(per_second),
-                        "heavy_total": sum(sum(per_second[a:b + 1]) for a, b in spans)}
+            out[fid] = {
+                "dur": dur,
+                "spans": [tuple(sp) for sp in spans],
+                "total": sum(per_second),
+                "heavy_total": sum(sum(per_second[a : b + 1]) for a, b in spans),
+            }
         return out
 
     # ---- defensives and consumables ----
@@ -284,19 +322,36 @@ class Analysis:
                 if e.get("type") != "heal":
                     continue
                 out.setdefault((e["fight"], e.get("targetID")), []).append(
-                    (e["timestamp"], e.get("amount", 0)))
+                    (e["timestamp"], e.get("amount", 0))
+                )
         return out
 
     def mitigation(self) -> dict:
         heavy = self.heavy()
         heals = self.consumable_heals()
         total_spans = sum(len(v["spans"]) for v in heavy.values())
-        per = defaultdict(lambda: {"maj": 0, "maj_heavy": 0, "minor": 0, "minor_heavy": 0, "ext": 0,
-                                   "ext_heavy": 0, "hs": 0, "pot": 0, "cov": set(), "hp": [],
-                                   "minor_spells": Counter(),
-                                   "taken": 0.0, "taken_heavy": 0.0, "spells": Counter(),
-                                   "deaths": 0, "early": 0, "early_no_def": 0,
-                                   "pulls_consum": set()})
+        per = defaultdict(
+            lambda: {
+                "maj": 0,
+                "maj_heavy": 0,
+                "minor": 0,
+                "minor_heavy": 0,
+                "ext": 0,
+                "ext_heavy": 0,
+                "hs": 0,
+                "pot": 0,
+                "cov": set(),
+                "hp": [],
+                "minor_spells": Counter(),
+                "taken": 0.0,
+                "taken_heavy": 0.0,
+                "spells": Counter(),
+                "deaths": 0,
+                "early": 0,
+                "early_no_def": 0,
+                "pulls_consum": set(),
+            }
+        )
         stones = Counter()
         for fid in self.ids:
             spans = heavy[fid]["spans"]
@@ -339,9 +394,11 @@ class Analysis:
                     stones[name] += 1
                     v["pulls_consum"].add(fid)
                     if e.get("maxHitPoints"):
-                        near = [(abs(t - e["timestamp"]), amt)
-                                for t, amt in heals.get((fid, e.get("sourceID")), [])
-                                if abs(t - e["timestamp"]) <= 1500]
+                        near = [
+                            (abs(t - e["timestamp"]), amt)
+                            for t, amt in heals.get((fid, e.get("sourceID")), [])
+                            if abs(t - e["timestamp"]) <= 1500
+                        ]
                         healed = min(near)[1] if near else 0
                         before = max(0, e["hitPoints"] - healed)
                         v["hp"].append(100 * before / e["maxHitPoints"])
@@ -399,20 +456,34 @@ class Analysis:
                 k = self.kind_of(e.get("abilityGameID"))
                 p = self.player_of(e.get("sourceID"))
                 if k and p in idx:
-                    ev.append([idx[p], int(self.rel(fid, e["timestamp"])), k,
-                               self.ability.get(e["abilityGameID"], "")])
+                    ev.append(
+                        [
+                            idx[p],
+                            int(self.rel(fid, e["timestamp"])),
+                            k,
+                            self.ability.get(e["abilityGameID"], ""),
+                        ]
+                    )
             for d in self.deaths(fid):
                 p = self.player_of(d.get("targetID"))
                 if p in idx:
                     ev.append([idx[p], int(self.rel(fid, d["timestamp"])), "death", ""])
-            pulls[self.pull_no[fid]] = {"dur": dur, "boss_pct": self.fight[fid]["bossPercentage"],
-                          "raid": [round(v / 1000) for v in raid],
-                          "taken": [[round(v / 1000) for v in r] for r in taken],
-                          "absorb": [[round(v / 1000) for v in r] for r in absorb],
-                          "reduced": [[round(v / 1000) for v in r] for r in reduced],
-                          "ev": ev}
-        return {"players": non_tanks, "tanks": self.tanks, "bucket": DTPS_BUCKET,
-                "maxdur": maxdur, "pulls": pulls}
+            pulls[self.pull_no[fid]] = {
+                "dur": dur,
+                "boss_pct": self.fight[fid]["bossPercentage"],
+                "raid": [round(v / 1000) for v in raid],
+                "taken": [[round(v / 1000) for v in r] for r in taken],
+                "absorb": [[round(v / 1000) for v in r] for r in absorb],
+                "reduced": [[round(v / 1000) for v in r] for r in reduced],
+                "ev": ev,
+            }
+        return {
+            "players": non_tanks,
+            "tanks": self.tanks,
+            "bucket": DTPS_BUCKET,
+            "maxdur": maxdur,
+            "pulls": pulls,
+        }
 
     # ---- the split phase ----
 
@@ -440,8 +511,7 @@ class Analysis:
                 gap = max(s[i + 1] - s[i] for i in range(len(s) - 1))
                 if gap > SPLIT_GAP and s[0] < -CENTRE and s[-1] > CENTRE:
                     split_buckets.append(b)
-            phases[fid] = ((min(split_buckets) * 5, max(split_buckets) * 5 + 5)
-                           if split_buckets else None)
+            phases[fid] = (min(split_buckets) * 5, max(split_buckets) * 5 + 5) if split_buckets else None
 
         votes = defaultdict(Counter)
         per_pull = {}
@@ -468,8 +538,18 @@ class Analysis:
             end_ms = self.fight[fid]["startTime"] + win[1] * 1000
             dmg = self.f.table(f"split_dmg_{fid}", fid, "DamageDone", start=start_ms, end=end_ms)
             heal = self.f.table(f"split_heal_{fid}", fid, "Healing", start=start_ms, end=end_ms)
-            agg = {s: {"dmg": 0.0, "heal": 0.0, "taken": 0.0, "absorb": 0.0, "reduced": 0.0,
-                       "deaths": 0, "iso": 0} for s in ("west", "east")}
+            agg = {
+                s: {
+                    "dmg": 0.0,
+                    "heal": 0.0,
+                    "taken": 0.0,
+                    "absorb": 0.0,
+                    "reduced": 0.0,
+                    "deaths": 0,
+                    "iso": 0,
+                }
+                for s in ("west", "east")
+            }
             for e in dmg.get("entries", []):
                 s = team.get(e["name"])
                 if s:
@@ -501,8 +581,14 @@ class Analysis:
             # afterwards is the moment being back actually starts to matter
             boss_again = None
             for tid in self.boss_ids:
-                evs = self.f.events(f"bossafter_{fid}_{tid}", fid, "DamageDone",
-                                    start=start_ms, end=self.fight[fid]["endTime"], target_id=tid)
+                evs = self.f.events(
+                    f"bossafter_{fid}_{tid}",
+                    fid,
+                    "DamageDone",
+                    start=start_ms,
+                    end=self.fight[fid]["endTime"],
+                    target_id=tid,
+                )
                 for e in evs:
                     t = self.rel(fid, e["timestamp"])
                     if t > win[1] - 5 and (boss_again is None or t < boss_again):
@@ -519,16 +605,28 @@ class Analysis:
                 back = [t for t, x in pts if t > max(far) and abs(x) < CENTRE]
                 if back:
                     ret.setdefault(team.get(p), []).append(min(back))
-            side_ret = {s: {"first": min(v), "median": statistics.median(v), "last": max(v)}
-                        for s, v in ret.items() if s and len(v) >= 4}
+            side_ret = {
+                s: {"first": min(v), "median": statistics.median(v), "last": max(v)}
+                for s, v in ret.items()
+                if s and len(v) >= 4
+            }
             stood = {p: ("west" if statistics.median(xs) < 0 else "east") for p, xs in v["x"].items()}
             for p, side in stood.items():
                 if team.get(p) and side != team[p]:
                     wrong.append({"pull": fid, "player": p, "went": side, "samples": len(v["x"][p])})
-            rows.append({"pull": fid, "window": win, "dur": win[1] - win[0], "agg": agg,
-                         "ret": side_ret, "iso_players": dict(iso_players),
-                         "boss_again": boss_again, "stood": stood,
-                         "sizes": {s: sum(1 for x in stood.values() if x == s) for s in ("west", "east")}})
+            rows.append(
+                {
+                    "pull": fid,
+                    "window": win,
+                    "dur": win[1] - win[0],
+                    "agg": agg,
+                    "ret": side_ret,
+                    "iso_players": dict(iso_players),
+                    "boss_again": boss_again,
+                    "stood": stood,
+                    "sizes": {s: sum(1 for x in stood.values() if x == s) for s in ("west", "east")},
+                }
+            )
         moves, oneoffs = [], []
         for p in team:
             seq = [(r["pull"], r["stood"].get(p)) for r in rows if r["stood"].get(p)]
@@ -543,8 +641,11 @@ class Analysis:
             for i, (side, pulls) in enumerate(runs):
                 if len(pulls) == 1 and 0 < i < len(runs) - 1 and runs[i - 1][0] == runs[i + 1][0]:
                     oneoffs.append({"player": p, "pull": pulls[0], "went": side})
-            kept = [r for i, r in enumerate(runs)
-                    if not (len(r[1]) == 1 and 0 < i < len(runs) - 1 and runs[i - 1][0] == runs[i + 1][0])]
+            kept = [
+                r
+                for i, r in enumerate(runs)
+                if not (len(r[1]) == 1 and 0 < i < len(runs) - 1 and runs[i - 1][0] == runs[i + 1][0])
+            ]
             merged: list[list] = []
             for side, pulls in kept:
                 if merged and merged[-1][0] == side:
@@ -552,10 +653,23 @@ class Analysis:
                 else:
                     merged.append([side, list(pulls)])
             for i in range(1, len(merged)):
-                moves.append({"player": p, "from": merged[i - 1][0], "to": merged[i][0],
-                              "at": merged[i][1][0], "pulls": len(merged[i][1])})
-        return {"team": team, "rows": rows, "wrong": wrong, "moves": moves, "oneoffs": oneoffs,
-                "phases": {k: v for k, v in phases.items()}}
+                moves.append(
+                    {
+                        "player": p,
+                        "from": merged[i - 1][0],
+                        "to": merged[i][0],
+                        "at": merged[i][1][0],
+                        "pulls": len(merged[i][1]),
+                    }
+                )
+        return {
+            "team": team,
+            "rows": rows,
+            "wrong": wrong,
+            "moves": moves,
+            "oneoffs": oneoffs,
+            "phases": {k: v for k, v in phases.items()},
+        }
 
     # ---- everything the page needs ----
 
@@ -579,66 +693,116 @@ class Analysis:
             b = burn["players"].get(p, {"heart": 0.0, "boss": 0.0})
             w = waves["per_player"].get(p)
             total = b["heart"] + b["boss"]
-            players.append({
-                "player": p, "class": self.players[p]["subType"], "spec": self.spec.get(p, ""),
-                "role": self.role.get(p, "dps"),
-                "burn_dmg": round(total), "heart_dmg": round(b["heart"]), "boss_dmg": round(b["boss"]),
-                "heart_pct": round(100 * b["heart"] / total, 1) if total else None,
-                "burn_share": round(100 * total / burn_tot, 2) if burn_tot else 0,
-                "burn_dps": round(total / burn["secs"]) if burn["secs"] else 0,
-                "overall_dmg": round(overall.get(p, 0)),
-                "overall_share": round(100 * overall.get(p, 0) / overall_tot, 2) if overall_tot else 0,
-                "delta": round(100 * total / burn_tot - 100 * overall.get(p, 0) / overall_tot, 2)
-                         if burn_tot and overall_tot else 0,
-                "wave_hits": w["hits"] if w else 0, "wave_pulls": len(w["pulls"]) if w else 0,
-                "wave_dmg": round(w["taken"]) if w else 0, "wave_raw": round(w["raw"]) if w else 0,
-            })
+            players.append(
+                {
+                    "player": p,
+                    "class": self.players[p]["subType"],
+                    "spec": self.spec.get(p, ""),
+                    "role": self.role.get(p, "dps"),
+                    "burn_dmg": round(total),
+                    "heart_dmg": round(b["heart"]),
+                    "boss_dmg": round(b["boss"]),
+                    "heart_pct": round(100 * b["heart"] / total, 1) if total else None,
+                    "burn_share": round(100 * total / burn_tot, 2) if burn_tot else 0,
+                    "burn_dps": round(total / burn["secs"]) if burn["secs"] else 0,
+                    "overall_dmg": round(overall.get(p, 0)),
+                    "overall_share": round(100 * overall.get(p, 0) / overall_tot, 2) if overall_tot else 0,
+                    "delta": round(100 * total / burn_tot - 100 * overall.get(p, 0) / overall_tot, 2)
+                    if burn_tot and overall_tot
+                    else 0,
+                    "wave_hits": w["hits"] if w else 0,
+                    "wave_pulls": len(w["pulls"]) if w else 0,
+                    "wave_dmg": round(w["taken"]) if w else 0,
+                    "wave_raw": round(w["raw"]) if w else 0,
+                }
+            )
 
         fights = []
         by_no = {n: fid for fid, n in self.pull_no.items()}
         for f in burn["fights"]:
             fid = by_no[f["pull"]]
             wp = waves["per_pull"][fid]
-            fights.append({**f, "dur": round((self.fight[fid]["endTime"] - self.fight[fid]["startTime"]) / 1000),
-                           "boss_pct": self.fight[fid]["bossPercentage"],
-                           "kill": self.fight[fid]["kill"],
-                           "wave_casts": wp["casts"], "wave_hits_tank": wp["tank"],
-                           "wave_hits_nontank": wp["nontank"], "vipers": wp["vipers"],
-                           "deaths": len(self.deaths(fid))})
+            fights.append(
+                {
+                    **f,
+                    "dur": round((self.fight[fid]["endTime"] - self.fight[fid]["startTime"]) / 1000),
+                    "boss_pct": self.fight[fid]["bossPercentage"],
+                    "kill": self.fight[fid]["kill"],
+                    "wave_casts": wp["casts"],
+                    "wave_hits_tank": wp["tank"],
+                    "wave_hits_nontank": wp["nontank"],
+                    "vipers": wp["vipers"],
+                    "deaths": len(self.deaths(fid)),
+                }
+            )
 
         mit_players = []
         for p in sorted(self.players):
             v = mit["per"][p]
-            mit_players.append({
-                "player": p, "class": self.players[p]["subType"], "spec": self.spec.get(p, ""),
-                "role": self.role.get(p, "dps"),
-                "maj": v["maj"], "maj_heavy": v["maj_heavy"], "minor": v["minor"],
-                "minor_heavy": v["minor_heavy"], "ext": v["ext"], "ext_heavy": v["ext_heavy"],
-                "coverage": round(100 * len(v["cov"]) / mit["total_spans"], 1) if mit["total_spans"] else 0,
-                "hs": v["hs"], "pot": v["pot"], "consum": v["hs"] + v["pot"],
-                "hp_at_use": round(statistics.mean(v["hp"]), 1) if v["hp"] else None,
-                "taken": round(v["taken"]), "taken_heavy": round(v["taken_heavy"]),
-                "deaths": v["deaths"], "early_deaths": v["early"], "early_no_def": v["early_no_def"],
-                "top_spells": v["spells"].most_common(4),
-                "top_minor": v["minor_spells"].most_common(1),
-            })
+            mit_players.append(
+                {
+                    "player": p,
+                    "class": self.players[p]["subType"],
+                    "spec": self.spec.get(p, ""),
+                    "role": self.role.get(p, "dps"),
+                    "maj": v["maj"],
+                    "maj_heavy": v["maj_heavy"],
+                    "minor": v["minor"],
+                    "minor_heavy": v["minor_heavy"],
+                    "ext": v["ext"],
+                    "ext_heavy": v["ext_heavy"],
+                    "coverage": round(100 * len(v["cov"]) / mit["total_spans"], 1)
+                    if mit["total_spans"]
+                    else 0,
+                    "hs": v["hs"],
+                    "pot": v["pot"],
+                    "consum": v["hs"] + v["pot"],
+                    "hp_at_use": round(statistics.mean(v["hp"]), 1) if v["hp"] else None,
+                    "taken": round(v["taken"]),
+                    "taken_heavy": round(v["taken_heavy"]),
+                    "deaths": v["deaths"],
+                    "early_deaths": v["early"],
+                    "early_no_def": v["early_no_def"],
+                    "top_spells": v["spells"].most_common(4),
+                    "top_minor": v["minor_spells"].most_common(1),
+                }
+            )
 
         split_payload = self._split_payload(split, overall)
 
         data = {
-            "meta": {"report": self.code, "pulls": len(self.ids),
-                     "best_pct": min(f["boss_pct"] for f in fights) if fights else None,
-                     "window_secs": round(burn["secs"]), "n_windows": len(burn["windows"]),
-                     "total_burn": round(burn_tot), "total_heart": round(burn["heart"]),
-                     "total_boss": round(burn["boss"])},
-            "players": players, "fights": fights, "windows": burn["windows"],
+            "meta": {
+                "report": self.code,
+                "pulls": len(self.ids),
+                "best_pct": min(f["boss_pct"] for f in fights) if fights else None,
+                "window_secs": round(burn["secs"]),
+                "n_windows": len(burn["windows"]),
+                "total_burn": round(burn_tot),
+                "total_heart": round(burn["heart"]),
+                "total_boss": round(burn["boss"]),
+            },
+            "players": players,
+            "fights": fights,
+            "windows": burn["windows"],
             "wave_deaths": waves["deaths"],
         }
-        return {"payloads": {"data": data, "bins": burn["bins"],
-                             "mit": {"players": mit_players, "total_spans": mit["total_spans"]},
-                             "dtps": dtps, "split": split_payload},
-                "raw": {"burn": burn, "waves": waves, "mit": mit, "heavy": heavy,
-                        "split": split, "overall": dict(overall)}}
+        return {
+            "payloads": {
+                "data": data,
+                "bins": burn["bins"],
+                "mit": {"players": mit_players, "total_spans": mit["total_spans"]},
+                "dtps": dtps,
+                "split": split_payload,
+            },
+            "raw": {
+                "burn": burn,
+                "waves": waves,
+                "mit": mit,
+                "heavy": heavy,
+                "split": split,
+                "overall": dict(overall),
+            },
+        }
 
     def _split_payload(self, split, overall) -> dict:
         team = split["team"]
@@ -661,26 +825,37 @@ class Analysis:
             inc = t["taken"] + t["absorb"] + t["reduced"]
             sides[s] = {
                 "members": sorted(mem, key=lambda p: ({"tank": 0, "healer": 1}.get(self.role.get(p), 2), p)),
-                "dps": t["dmg"] / secs, "hps": t["heal"] / secs, "taken_ps": t["taken"] / secs,
+                "dps": t["dmg"] / secs,
+                "hps": t["heal"] / secs,
+                "taken_ps": t["taken"] / secs,
                 "reduced": 100 * t["reduced"] / inc if inc else 0,
                 "absorbed": 100 * t["absorb"] / inc if inc else 0,
-                "deaths": int(t["deaths"]), "iso_deaths": int(t["iso"]),
+                "deaths": int(t["deaths"]),
+                "iso_deaths": int(t["iso"]),
                 "night_share": 100 * sum(overall.get(p, 0) for p in mem) / night_tot if night_tot else 0,
                 "phase_share": 100 * t["dmg"] / phase_tot if phase_tot else 0,
             }
         pulls, first, gaps = [], {"west": 0, "east": 0}, []
         late = {"west": 0, "east": 0}
         for r in split["rows"]:
-            row = {"pull": self.pull_no[r["pull"]], "start": r["window"][0], "dur": r["dur"],
-                   "boss_again": (round(r["boss_again"] - r["window"][0], 1)
-                                  if r.get("boss_again") is not None else None)}
+            row = {
+                "pull": self.pull_no[r["pull"]],
+                "start": r["window"][0],
+                "dur": r["dur"],
+                "boss_again": (
+                    round(r["boss_again"] - r["window"][0], 1) if r.get("boss_again") is not None else None
+                ),
+            }
             for s in ("west", "east"):
                 ret = r["ret"].get(s)
-                row[s] = {"dps": r["agg"][s]["dmg"] / r["dur"], "hps": r["agg"][s]["heal"] / r["dur"],
-                          "deaths": r["agg"][s]["deaths"],
-                          "first": round(ret["first"] - r["window"][0], 1) if ret else None,
-                          "back": round(ret["median"] - r["window"][0], 1) if ret else None,
-                          "last": round(ret["last"] - r["window"][0], 1) if ret else None}
+                row[s] = {
+                    "dps": r["agg"][s]["dmg"] / r["dur"],
+                    "hps": r["agg"][s]["heal"] / r["dur"],
+                    "deaths": r["agg"][s]["deaths"],
+                    "first": round(ret["first"] - r["window"][0], 1) if ret else None,
+                    "back": round(ret["median"] - r["window"][0], 1) if ret else None,
+                    "last": round(ret["last"] - r["window"][0], 1) if ret else None,
+                }
                 if row[s]["back"] is not None and row["boss_again"] is not None:
                     # judged on the median: a healer trailing back after a res is
                     # not the side being late, the side is back when most of it is
@@ -695,14 +870,22 @@ class Analysis:
         for s in ("west", "east"):
             sides[s]["roles"] = Counter(self.role.get(p, "dps") for p in sides[s]["members"])
         sizes = [(r["sizes"]["west"], r["sizes"]["east"]) for r in split["rows"]]
-        return {"sides": sides, "pulls": pulls, "secs": secs, "first": first, "late": late,
-                "moves": [{**m, "at": self.pull_no.get(m["at"], m["at"])} for m in split.get("moves", [])],
-                "oneoffs": [{**o, "pull": self.pull_no.get(o["pull"], o["pull"])} for o in split.get("oneoffs", [])],
-                "sizes": sizes,
-                "median_gap": round(statistics.median(gaps), 1) if gaps else None,
-                "clean": len(gaps),
-                "roles": {p: self.role.get(p, "dps") for p in team},
-                "spec": {p: self.spec.get(p, "") for p in team},
-                "cls": {p: self.players[p]["subType"] for p in team},
-                "iso_by_player": dict(iso_by_player),
-                "wrong": split["wrong"]}
+        return {
+            "sides": sides,
+            "pulls": pulls,
+            "secs": secs,
+            "first": first,
+            "late": late,
+            "moves": [{**m, "at": self.pull_no.get(m["at"], m["at"])} for m in split.get("moves", [])],
+            "oneoffs": [
+                {**o, "pull": self.pull_no.get(o["pull"], o["pull"])} for o in split.get("oneoffs", [])
+            ],
+            "sizes": sizes,
+            "median_gap": round(statistics.median(gaps), 1) if gaps else None,
+            "clean": len(gaps),
+            "roles": {p: self.role.get(p, "dps") for p in team},
+            "spec": {p: self.spec.get(p, "") for p in team},
+            "cls": {p: self.players[p]["subType"] for p in team},
+            "iso_by_player": dict(iso_by_player),
+            "wrong": split["wrong"],
+        }

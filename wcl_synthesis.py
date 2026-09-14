@@ -23,17 +23,17 @@ import db
 
 # Map title patterns -> (canonical leader display name, leader_id used in raid-helper data).
 LEADER_PATTERNS: list[tuple[re.Pattern, str, str]] = [
-    (re.compile(r"\bragz|raigs", re.IGNORECASE),       "🆁🅰🅶🅾🅽🆉",    "217965404335636482"),
-    (re.compile(r"\bpiian",       re.IGNORECASE),        "Piian",       "247328889184059392"),
-    (re.compile(r"\breznor|\brezn0r|\blowfi|\blow-fi", re.IGNORECASE), "Rezn0r",  "1023365272549204079"),
-    (re.compile(r"\bgryph",       re.IGNORECASE),        "Gryph",       "101944487927873536"),
-    (re.compile(r"\bsaurfang|saürfang", re.IGNORECASE),  "Saurfang",    "416710811445231629"),
-    (re.compile(r"\bmelody|mêlôdý", re.IGNORECASE),      "Melody",      "201451367376617472"),
-    (re.compile(r"\byoro",        re.IGNORECASE),        "Yoro",        "198040805083054080"),
-    (re.compile(r"\bjustinsane",  re.IGNORECASE),        "JustInsane",  "290239723572559872"),
-    (re.compile(r"\bjaysale",     re.IGNORECASE),        "Jaysale",     "203844195310501888"),
-    (re.compile(r"\bblossy",      re.IGNORECASE),        "Blossy",      "636247753315581952"),
-    (re.compile(r"\bfaerhune|raaza", re.IGNORECASE),     "FaeRhune/Raaza", "179339863659642880"),
+    (re.compile(r"\bragz|raigs", re.IGNORECASE), "🆁🅰🅶🅾🅽🆉", "217965404335636482"),
+    (re.compile(r"\bpiian", re.IGNORECASE), "Piian", "247328889184059392"),
+    (re.compile(r"\breznor|\brezn0r|\blowfi|\blow-fi", re.IGNORECASE), "Rezn0r", "1023365272549204079"),
+    (re.compile(r"\bgryph", re.IGNORECASE), "Gryph", "101944487927873536"),
+    (re.compile(r"\bsaurfang|saürfang", re.IGNORECASE), "Saurfang", "416710811445231629"),
+    (re.compile(r"\bmelody|mêlôdý", re.IGNORECASE), "Melody", "201451367376617472"),
+    (re.compile(r"\byoro", re.IGNORECASE), "Yoro", "198040805083054080"),
+    (re.compile(r"\bjustinsane", re.IGNORECASE), "JustInsane", "290239723572559872"),
+    (re.compile(r"\bjaysale", re.IGNORECASE), "Jaysale", "203844195310501888"),
+    (re.compile(r"\bblossy", re.IGNORECASE), "Blossy", "636247753315581952"),
+    (re.compile(r"\bfaerhune|raaza", re.IGNORECASE), "FaeRhune/Raaza", "179339863659642880"),
 ]
 
 # Fallback when title doesn't pattern-match: look for the leader's own (eponymous)
@@ -41,10 +41,10 @@ LEADER_PATTERNS: list[tuple[re.Pattern, str, str]] = [
 # raids AND absent from others' — Mêlódý was excluded because she attends most Ragz
 # raids, so her presence doesn't distinguish a Melody-led raid.
 LEADER_CHARACTERS: dict[str, tuple[str, str]] = {
-    "Piian":       ("Piian",        "247328889184059392"),
-    "Ragz":        ("🆁🅰🅶🅾🅽🆉",      "217965404335636482"),
-    "Gryphandrus": ("Gryph",        "101944487927873536"),
-    "Rezuk":       ("Rezn0r",       "1023365272549204079"),
+    "Piian": ("Piian", "247328889184059392"),
+    "Ragz": ("🆁🅰🅶🅾🅽🆉", "217965404335636482"),
+    "Gryphandrus": ("Gryph", "101944487927873536"),
+    "Rezuk": ("Rezn0r", "1023365272549204079"),
 }
 
 
@@ -125,6 +125,7 @@ def lp_zone_names(conn: psycopg.Connection) -> list[str]:
     _zone_cache = (now, zones)
     return zones
 
+
 # Manual exclusion list — WCL reports the maintainer has flagged as false positives
 # (pugs, alt-runs, etc.) that pass our automatic filters.
 EXCLUDED_CODES: set[str] = {
@@ -144,19 +145,29 @@ EXCLUDED_CODES: set[str] = {
     # Large-roster pool logs that slipped past zone+title filter (>50 players = not single raid).
     # These would also be caught by the new roster≤50 filter in boss_progression but listed
     # here so the gap-fill synthesis ignores them too.
-    "9HBZxR48QX6mWNL3", "2kg8yxPzfKCrnZAt", "v8a6LPz1BmnYryZQ",
-    "d6HJLj2C9RV8DpxA", "zvpN1y6B4CQwXfAd", "jzmT9vM8npN2DL1W",
-    "kdja2TPzXNFAZV3t", "drcVnTFp8b1WXaKA", "vy1x4tZfAHk6mcb3",
-    "1LD9M8Gnf6ht4qkK", "PWY8yDFQVq1kBfHG", "zRF76ZWNv4GpdqLA",
-    "vBpYqTAg7a8n6DzR", "bq8jrgw42mQGKWhd", "fLNyazBDcAwrtg1V",
+    "9HBZxR48QX6mWNL3",
+    "2kg8yxPzfKCrnZAt",
+    "v8a6LPz1BmnYryZQ",
+    "d6HJLj2C9RV8DpxA",
+    "zvpN1y6B4CQwXfAd",
+    "jzmT9vM8npN2DL1W",
+    "kdja2TPzXNFAZV3t",
+    "drcVnTFp8b1WXaKA",
+    "vy1x4tZfAHk6mcb3",
+    "1LD9M8Gnf6ht4qkK",
+    "PWY8yDFQVq1kBfHG",
+    "zRF76ZWNv4GpdqLA",
+    "vBpYqTAg7a8n6DzR",
+    "bq8jrgw42mQGKWhd",
+    "fLNyazBDcAwrtg1V",
 }
 
 
 def _match_leader(title: str | None, owner: str | None, roster: list[dict]) -> tuple[str, str, bool]:
     """Return (leadername, leaderid, confident). Strategy:
-      1. Match title/owner against LEADER_PATTERNS (most reliable when present).
-      2. Fall back to scanning the roster for a known leader character.
-      3. Last resort: use the WCL log owner (not confident — caller may want to skip).
+    1. Match title/owner against LEADER_PATTERNS (most reliable when present).
+    2. Fall back to scanning the roster for a known leader character.
+    3. Last resort: use the WCL log owner (not confident — caller may want to skip).
     """
     blob = f"{title or ''} {owner or ''}"
     for pat, name, lid in LEADER_PATTERNS:
@@ -245,33 +256,42 @@ def _synthesize_signups_from_player_details(pd: dict) -> list[dict]:
             name = p.get("name") or "Unknown"
             server = p.get("server") or ""
             full_name = f"{name}-{server}" if server else name
-            out.append({
-                "userid": _stable_userid(p),
-                "name": full_name,
-                "class": cls,
-                "cClass": cls,
-                "spec": spec,
-                "cSpec": spec,
-                "role": role,
-                "status": "primary",
-                "spec_emote": "",
-                "class_emote": "",
-                "_source": "wcl",
-                "_ilvl_min": p.get("minItemLevel"),
-                "_ilvl_max": p.get("maxItemLevel"),
-            })
+            out.append(
+                {
+                    "userid": _stable_userid(p),
+                    "name": full_name,
+                    "class": cls,
+                    "cClass": cls,
+                    "spec": spec,
+                    "cSpec": spec,
+                    "role": role,
+                    "status": "primary",
+                    "spec_emote": "",
+                    "class_emote": "",
+                    "_source": "wcl",
+                    "_ilvl_min": p.get("minItemLevel"),
+                    "_ilvl_max": p.get("maxItemLevel"),
+                }
+            )
     return out
 
 
 # Map of class + spec → role hint when WCL doesn't tell us directly.
 _RANGED_DPS_SPECS = {
-    ("Mage", "Frost"), ("Mage", "Fire"), ("Mage", "Arcane"),
-    ("Warlock", "Affliction"), ("Warlock", "Demonology"), ("Warlock", "Destruction"),
+    ("Mage", "Frost"),
+    ("Mage", "Fire"),
+    ("Mage", "Arcane"),
+    ("Warlock", "Affliction"),
+    ("Warlock", "Demonology"),
+    ("Warlock", "Destruction"),
     ("Shaman", "Elemental"),
     ("Druid", "Balance"),
     ("Priest", "Shadow"),
-    ("Hunter", "Beastmastery"), ("Hunter", "Marksmanship"), ("Hunter", "Survival"),
-    ("Evoker", "Devastation"), ("Evoker", "Augmentation"),
+    ("Hunter", "Beastmastery"),
+    ("Hunter", "Marksmanship"),
+    ("Hunter", "Survival"),
+    ("Evoker", "Devastation"),
+    ("Evoker", "Augmentation"),
 }
 
 
@@ -364,9 +384,7 @@ def load_event_wcl_difficulty(
         links = effective_report_links(conn)
     counts: dict[str, dict[str, int]] = {}
     with conn.cursor() as cur:
-        cur.execute(
-            "SELECT code, difficulty FROM wcl_reports WHERE difficulty IS NOT NULL"
-        )
+        cur.execute("SELECT code, difficulty FROM wcl_reports WHERE difficulty IS NOT NULL")
         for r in cur.fetchall():
             if r["code"] in excluded:
                 continue
@@ -375,10 +393,7 @@ def load_event_wcl_difficulty(
                 continue
             bucket = counts.setdefault(raid_id, {})
             bucket[r["difficulty"]] = bucket.get(r["difficulty"], 0) + 1
-    return {
-        rid: max(bucket.items(), key=lambda kv: kv[1])[0]
-        for rid, bucket in counts.items()
-    }
+    return {rid: max(bucket.items(), key=lambda kv: kv[1])[0] for rid, bucket in counts.items()}
 
 
 def _encounter_ids_from_fights(fights_payload: dict | None) -> list[int]:
@@ -459,8 +474,7 @@ def _load_forced_raid_links(conn: psycopg.Connection) -> dict[str, str]:
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT code, forced_raid_id FROM wcl_report_overrides "
-                "WHERE forced_raid_id IS NOT NULL"
+                "SELECT code, forced_raid_id FROM wcl_report_overrides WHERE forced_raid_id IS NOT NULL"
             )
             return {r["code"]: r["forced_raid_id"] for r in cur.fetchall()}
     except Exception:
@@ -550,7 +564,7 @@ def load_ilvl_map(
             )
             rows += cur.fetchall()
 
-    best: dict[str, dict[str, tuple]] = {}   # raid_id -> name -> (max, code, min)
+    best: dict[str, dict[str, tuple]] = {}  # raid_id -> name -> (max, code, min)
     for r in rows:
         bucket = best.setdefault(links[r["code"]], {})
         for name, lv in (r["ilvl_summary"] or {}).items():

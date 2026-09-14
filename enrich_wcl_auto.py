@@ -29,12 +29,12 @@ GUILD_ID = int(os.environ.get("WCL_GUILD_ID", "819778"))
 # Same list as enrich_wcl_leaders.py — the raid leaders whose personal feeds
 # pick up logs that aren't tagged with the guild.
 LEADER_CHARACTERS: list[tuple[str, str, str]] = [
-    ("Piian",       "silvermoon",  "EU"),
-    ("Ragz",        "arathor",     "EU"),
-    ("Gryphandrus", "arathor",     "EU"),
-    ("Mêlódý",      "frostwolf",   "EU"),
-    ("Karviainen",  "arathor",     "EU"),
-    ("Tarp",        "blackmoore",  "EU"),
+    ("Piian", "silvermoon", "EU"),
+    ("Ragz", "arathor", "EU"),
+    ("Gryphandrus", "arathor", "EU"),
+    ("Mêlódý", "frostwolf", "EU"),
+    ("Karviainen", "arathor", "EU"),
+    ("Tarp", "blackmoore", "EU"),
 ]
 LEADER_FEED_LIMIT = int(os.environ.get("WCL_LEADER_FEED_LIMIT", "30"))
 
@@ -45,10 +45,14 @@ MATCH_WINDOW_SEC = int(os.environ.get("WCL_MATCH_WINDOW_SEC", str(3 * 3600)))
 REFRESH_WINDOW_SEC = int(os.environ.get("WCL_REFRESH_WINDOW_SEC", str(24 * 3600)))
 
 DIFFICULTY_MAP = {
-    1: "LFR", 17: "LFR",
-    3: "Normal", 14: "Normal",
-    4: "Heroic", 15: "Heroic",
-    5: "Mythic", 16: "Mythic",
+    1: "LFR",
+    17: "LFR",
+    3: "Normal",
+    14: "Normal",
+    4: "Heroic",
+    15: "Heroic",
+    5: "Mythic",
+    16: "Mythic",
 }
 
 
@@ -58,9 +62,7 @@ DIFFICULTY_MAP = {
 # Maps WoW character name (as it appears in WCL rosters) → Discord leader id
 # (as it appears in events.data->>'leaderid'), so the matcher can award the
 # leader bonus only to the event that leader actually posted.
-_LEADER_MAINS: dict[str, str] = {
-    char: lid for char, (_display, lid) in LEADER_CHAR_LOOKUP.items()
-}
+_LEADER_MAINS: dict[str, str] = {char: lid for char, (_display, lid) in LEADER_CHAR_LOOKUP.items()}
 
 
 def _find_matching_event(
@@ -167,7 +169,10 @@ def _enrich_one(
     # Roster + difficulty feed into the matcher's scoring so we don't pick a
     # time-adjacent event that doesn't actually share players or difficulty.
     raid_id = _find_matching_event(
-        conn, start_ms // 1000, roster=roster, wcl_difficulty=difficulty,
+        conn,
+        start_ms // 1000,
+        roster=roster,
+        wcl_difficulty=difficulty,
     )
 
     with conn.cursor() as cur:
@@ -187,8 +192,16 @@ def _enrich_one(
                 raid_id = COALESCE(EXCLUDED.raid_id, wcl_reports.raid_id)
             """,
             (
-                code, start_ms, end_ms, title, zone, owner,
-                guild_id, raid_id, json.dumps(roster), difficulty,
+                code,
+                start_ms,
+                end_ms,
+                title,
+                zone,
+                owner,
+                guild_id,
+                raid_id,
+                json.dumps(roster),
+                difficulty,
                 json.dumps(fights_payload) if fights_payload else None,
                 json.dumps(player_details) if player_details else None,
                 json.dumps(_ilvl_summary(player_details)) if player_details else None,
@@ -209,7 +222,7 @@ def run(conn: psycopg.Connection) -> dict[str, int]:
     # Gather candidate codes from both sources, keeping the listing-level metadata
     # so we don't have to re-fetch it later.
     candidates: dict[str, dict] = {}  # code -> list metadata
-    sources: dict[str, str] = {}      # code -> "guild" or "leader-X" (for logging)
+    sources: dict[str, str] = {}  # code -> "guild" or "leader-X" (for logging)
 
     try:
         guild_reports = wcl.list_guild_reports(client, GUILD_ID)
@@ -222,16 +235,14 @@ def run(conn: psycopg.Connection) -> dict[str, int]:
 
     for char_name, server, region in LEADER_CHARACTERS:
         try:
-            reports = wcl.fetch_character_reports(client, char_name, server, region,
-                                                   limit=LEADER_FEED_LIMIT)
+            reports = wcl.fetch_character_reports(client, char_name, server, region, limit=LEADER_FEED_LIMIT)
             n_new = 0
             for r in reports:
                 if r["code"] not in candidates:
                     candidates[r["code"]] = r
                     sources[r["code"]] = f"leader:{char_name}"
                     n_new += 1
-            print(f"  {char_name} feed: {len(reports)} reports ({n_new} new to candidate set)",
-                  flush=True)
+            print(f"  {char_name} feed: {len(reports)} reports ({n_new} new to candidate set)", flush=True)
         except Exception as exc:
             print(f"  {char_name} feed failed: {exc}", flush=True)
 

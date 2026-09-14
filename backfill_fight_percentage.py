@@ -69,15 +69,13 @@ def main() -> None:
     season_start_ms = SEASON_START_TS * 1000
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT code, fights FROM wcl_reports "
-            "WHERE start_time_ms >= %s ORDER BY start_time_ms",
+            "SELECT code, fights FROM wcl_reports WHERE start_time_ms >= %s ORDER BY start_time_ms",
             (season_start_ms,),
         )
         rows = cur.fetchall()
 
     candidates = [r for r in rows if _needs_backfill(r["fights"])]
-    print(f"Considering {len(rows)} reports since season start; "
-          f"{len(candidates)} need backfill.", flush=True)
+    print(f"Considering {len(rows)} reports since season start; {len(candidates)} need backfill.", flush=True)
 
     updated = 0
     failed = 0

@@ -82,6 +82,7 @@ class Fetcher:
               fights{id name encounterID difficulty kill bossPercentage fightPercentage
                      startTime endTime}}}}"""
             return self._q(q, {"c": self.code})["reportData"]["report"]
+
         return self.cached("fights", build)
 
     def actors(self) -> list[dict]:
@@ -89,6 +90,7 @@ class Fetcher:
             q = """query($c:String!){reportData{report(code:$c){
                      masterData{actors{id name type subType}}}}}"""
             return self._q(q, {"c": self.code})["reportData"]["report"]["masterData"]["actors"]
+
         return self.cached("actors", build)
 
     def abilities(self) -> list[dict]:
@@ -96,6 +98,7 @@ class Fetcher:
             q = """query($c:String!){reportData{report(code:$c){
                      masterData{abilities{gameID name}}}}}"""
             return self._q(q, {"c": self.code})["reportData"]["report"]["masterData"]["abilities"]
+
         return self.cached("abilities", build)
 
     def player_details(self, fight_ids: list[int]) -> Any:
@@ -103,20 +106,31 @@ class Fetcher:
             q = """query($c:String!,$f:[Int]!){reportData{report(code:$c){
                      playerDetails(fightIDs:$f, includeCombatantInfo:true)}}}"""
             return self._q(q, {"c": self.code, "f": fight_ids})["reportData"]["report"]["playerDetails"]
+
         return self.cached("player_details", build)
 
     def damage_table(self, fight_ids: list[int]) -> dict:
         """Per-player damage with its per-target split and active time."""
+
         def build():
             q = """query($c:String!,$f:[Int]!){reportData{report(code:$c){
                      table(dataType:DamageDone,fightIDs:$f,startTime:0,endTime:100000000000,
                            hostilityType:Friendlies)}}}"""
             return self._q(q, {"c": self.code, "f": fight_ids})["reportData"]["report"]["table"]["data"]
+
         return self.cached("damage_table", build)
 
-    def events(self, key: str, fight_ids: list[int], data_type: str, *,
-               ability_id: float | None = None, hostility: str | None = None) -> list[dict]:
+    def events(
+        self,
+        key: str,
+        fight_ids: list[int],
+        data_type: str,
+        *,
+        ability_id: float | None = None,
+        hostility: str | None = None,
+    ) -> list[dict]:
         """One paged events query across every pull, cached under `key`."""
+
         def build():
             q = """
             query($c:String!,$f:[Int]!,$t:EventDataType!,$st:Float!,$ab:Float,$h:HostilityType){
@@ -126,13 +140,22 @@ class Fetcher:
             out: list[dict] = []
             st = 0.0
             while True:
-                block = self._q(q, {"c": self.code, "f": fight_ids, "t": data_type,
-                                    "st": st, "ab": ability_id, "h": hostility}
-                                )["reportData"]["report"]["events"]
+                block = self._q(
+                    q,
+                    {
+                        "c": self.code,
+                        "f": fight_ids,
+                        "t": data_type,
+                        "st": st,
+                        "ab": ability_id,
+                        "h": hostility,
+                    },
+                )["reportData"]["report"]["events"]
                 if block is None:  # no events of this type in these fights
                     return out
                 out += block["data"]
                 if not block.get("nextPageTimestamp"):
                     return out
                 st = block["nextPageTimestamp"]
+
         return self.cached(key, build)

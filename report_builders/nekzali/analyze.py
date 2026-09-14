@@ -78,8 +78,9 @@ class Analysis:
             difficulty = counts.most_common(1)[0][0] if counts else 5
         self.encounter = encounter
         self.difficulty = difficulty
-        self.pulls = sorted((x for x in fights if x["difficulty"] == difficulty),
-                            key=lambda x: x["startTime"])
+        self.pulls = sorted(
+            (x for x in fights if x["difficulty"] == difficulty), key=lambda x: x["startTime"]
+        )
         if not self.pulls:
             raise SystemExit(f"no encounter {encounter} difficulty {difficulty} pulls in report {code}")
         self.ids = [x["id"] for x in self.pulls]
@@ -90,16 +91,16 @@ class Analysis:
     def ids_named(self, name: str) -> set[int]:
         return set(self._by_name.get(name, ()))
 
-    def _events(self, key: str, data_type: str, *, name: str | None = None,
-                hostility: str | None = None) -> list[dict]:
+    def _events(
+        self, key: str, data_type: str, *, name: str | None = None, hostility: str | None = None
+    ) -> list[dict]:
         """Every event of a type across every pull. `name` fans out over each id
         behind that ability name and merges the results."""
         if name is None:
             return self.f.events(key, self.ids, data_type, hostility=hostility)
         out: list[dict] = []
         for aid in sorted(self.ids_named(name)):
-            out += self.f.events(f"{key}_{aid}", self.ids, data_type,
-                                 ability_id=aid, hostility=hostility)
+            out += self.f.events(f"{key}_{aid}", self.ids, data_type, ability_id=aid, hostility=hostility)
         out.sort(key=lambda e: e["timestamp"])
         return out
 
@@ -193,26 +194,44 @@ class Analysis:
         lust: list[dict] = []
         for n in spells.LUST:
             if self.ids_named(n):
-                lust += self._events(f"lust_{n.replace(' ', '_')}", "Buffs", name=n,
-                                     hostility="Friendlies")
+                lust += self._events(f"lust_{n.replace(' ', '_')}", "Buffs", name=n, hostility="Friendlies")
 
-        pulls = [self._pull(i, fight, coil, se, gd, coil_dmg, well_dmg, deaths,
-                            enemy_deaths, ritual, curse, lust)
-                 for i, fight in enumerate(self.pulls, 1)]
+        pulls = [
+            self._pull(i, fight, coil, se, gd, coil_dmg, well_dmg, deaths, enemy_deaths, ritual, curse, lust)
+            for i, fight in enumerate(self.pulls, 1)
+        ]
 
         deepest = min(pulls, key=lambda p: p["boss_pct"] if p["boss_pct"] is not None else 100)
-        return {"pulls": pulls, "deepest": deepest, "damage": self.damage_split(deepest),
-                "roster": self.roster()}
+        return {
+            "pulls": pulls,
+            "deepest": deepest,
+            "damage": self.damage_split(deepest),
+            "roster": self.roster(),
+        }
 
-    def _pull(self, index: int, fight: dict, coil, se, gd, coil_dmg, well_dmg, deaths,
-              enemy_deaths, ritual, curse, lust) -> dict:
+    def _pull(
+        self,
+        index: int,
+        fight: dict,
+        coil,
+        se,
+        gd,
+        coil_dmg,
+        well_dmg,
+        deaths,
+        enemy_deaths,
+        ritual,
+        curse,
+        lust,
+    ) -> dict:
         dur = _seconds_into(fight, fight["endTime"])
         trips = self.dives(coil, fight)
         locks = self.lockouts(se, fight)
         real = {tid: [d for d in ds if d[2]] for tid, ds in trips.items()}
 
-        windows = _windows((_seconds_into(fight, e["timestamp"]) for e in self._in(gd, fight)),
-                           spells.WINDOW_GAP_SECONDS)
+        windows = _windows(
+            (_seconds_into(fight, e["timestamp"]) for e in self._in(gd, fight)), spells.WINDOW_GAP_SECONDS
+        )
 
         waves: list[dict] = []
         for t, tid in sorted((d[0], tid) for tid, ds in real.items() for d in ds):
@@ -225,9 +244,14 @@ class Analysis:
             w["members"] = sorted(set(w["members"]))
             del w["last"]
 
-        deaths_here = sorted((_seconds_into(fight, e["timestamp"]), self.names.get(e["targetID"]),
-                              self.ability_name.get(e.get("killingAbilityGameID")))
-                             for e in self._in(deaths, fight))
+        deaths_here = sorted(
+            (
+                _seconds_into(fight, e["timestamp"]),
+                self.names.get(e["targetID"]),
+                self.ability_name.get(e.get("killingAbilityGameID")),
+            )
+            for e in self._in(deaths, fight)
+        )
         death_times = [d[0] for d in deaths_here]
 
         early = []
@@ -237,9 +261,14 @@ class Analysis:
                     overlap = min(b, sb) - max(a, sa)
                     if overlap > spells.OVERLAP_FLOOR_SECONDS and a >= sa:
                         dead_by_then = sum(1 for t in death_times if t < a)
-                        early.append({"who": self.names.get(tid), "t": round(a, 1),
-                                      "early_by": round(sb - a, 1),
-                                      "chaos": dead_by_then >= spells.COLLAPSE_DEATHS})
+                        early.append(
+                            {
+                                "who": self.names.get(tid),
+                                "t": round(a, 1),
+                                "early_by": round(sb - a, 1),
+                                "chaos": dead_by_then >= spells.COLLAPSE_DEATHS,
+                            }
+                        )
 
         amplified, clean_ticks = [], []
         for e in self._in(coil_dmg, fight) + self._in(well_dmg, fight):
@@ -248,21 +277,33 @@ class Analysis:
             if not unmit:
                 continue
             if amount / unmit > 2:
-                amplified.append({"who": self.names.get(e.get("targetID")),
-                                  "t": _seconds_into(fight, e["timestamp"]),
-                                  "amount": amount, "unmitigated": unmit,
-                                  "ratio": round(amount / unmit, 2),
-                                  "ability": self.ability_name.get(e.get("abilityGameID"))})
+                amplified.append(
+                    {
+                        "who": self.names.get(e.get("targetID")),
+                        "t": _seconds_into(fight, e["timestamp"]),
+                        "amount": amount,
+                        "unmitigated": unmit,
+                        "ratio": round(amount / unmit, 2),
+                        "ability": self.ability_name.get(e.get("abilityGameID")),
+                    }
+                )
             elif self.ability_name.get(e.get("abilityGameID")) == spells.IMMORTAL_COIL:
                 clean_ticks.append(amount)
         amplified.sort(key=lambda x: x["t"])
 
-        rit = [_seconds_into(fight, e["timestamp"]) for e in self._in(ritual, fight)
-               if e["type"] == "begincast"]
-        jawae = [_seconds_into(fight, e["timestamp"]) for e in self._in(enemy_deaths, fight)
-                 if spells.ECHO_OF_JAWAE in str(self.names.get(e.get("targetID")))]
-        amani = sum(1 for e in self._in(enemy_deaths, fight)
-                    if spells.RESTLESS_AMANI in str(self.names.get(e.get("targetID"))))
+        rit = [
+            _seconds_into(fight, e["timestamp"]) for e in self._in(ritual, fight) if e["type"] == "begincast"
+        ]
+        jawae = [
+            _seconds_into(fight, e["timestamp"])
+            for e in self._in(enemy_deaths, fight)
+            if spells.ECHO_OF_JAWAE in str(self.names.get(e.get("targetID")))
+        ]
+        amani = sum(
+            1
+            for e in self._in(enemy_deaths, fight)
+            if spells.RESTLESS_AMANI in str(self.names.get(e.get("targetID")))
+        )
         curse_here = self._in(curse, fight)
 
         # The cascade that ends the pull: the first death followed by a pile-up.
@@ -273,13 +314,18 @@ class Analysis:
                 break
 
         return {
-            "pull": index, "fight": fight["id"], "dur": dur,
-            "boss_pct": fight.get("bossPercentage"), "kill": fight.get("kill"),
+            "pull": index,
+            "fight": fight["id"],
+            "dur": dur,
+            "boss_pct": fight.get("bossPercentage"),
+            "kill": fight.get("kill"),
             "windows": [[round(a, 1), round(b, 1)] for a, b in windows],
             "cadence": [round(windows[j + 1][0] - windows[j][0], 1) for j in range(len(windows) - 1)],
             "waves": waves,
-            "dives": [{"who": self.names.get(tid), "spans": [[a, b] for a, b, _ in ds]}
-                      for tid, ds in sorted(real.items(), key=lambda kv: self.names.get(kv[0], ""))],
+            "dives": [
+                {"who": self.names.get(tid), "spans": [[a, b] for a, b, _ in ds]}
+                for tid, ds in sorted(real.items(), key=lambda kv: self.names.get(kv[0], ""))
+            ],
             "lockouts": {self.names.get(tid): v for tid, v in locks.items()},
             "early": early,
             "amplified": amplified,
@@ -291,8 +337,13 @@ class Analysis:
             "amani_killed": amani,
             "curse_cast": sum(1 for e in curse_here if e["type"] == "begincast"),
             "curse_landed": sum(1 for e in curse_here if e["type"] == "cast"),
-            "lust": sorted({round(_seconds_into(fight, e["timestamp"]))
-                            for e in self._in(lust, fight) if e["type"] == "applybuff"}),
+            "lust": sorted(
+                {
+                    round(_seconds_into(fight, e["timestamp"]))
+                    for e in self._in(lust, fight)
+                    if e["type"] == "applybuff"
+                }
+            ),
             "gd_damage": sum(e.get("amount") or 0 for e in self._in(gd, fight)),
         }
 
@@ -311,11 +362,13 @@ class Analysis:
                 roles[p["name"]] = "healer" if role == "healers" else ("tank" if role == "tanks" else "dps")
                 if p.get("maxItemLevel"):
                     ilvls.append(p["maxItemLevel"])
-        return {"roles": roles,
-                "tanks": sum(1 for v in roles.values() if v == "tank"),
-                "healers": sum(1 for v in roles.values() if v == "healer"),
-                "dps": sum(1 for v in roles.values() if v == "dps"),
-                "ilvl_median": round(statistics.median(ilvls)) if ilvls else None}
+        return {
+            "roles": roles,
+            "tanks": sum(1 for v in roles.values() if v == "tank"),
+            "healers": sum(1 for v in roles.values() if v == "healer"),
+            "dps": sum(1 for v in roles.values() if v == "dps"),
+            "ilvl_median": round(statistics.median(ilvls)) if ilvls else None,
+        }
 
     def damage_split(self, pull: dict) -> dict:
         """Where the raid's damage went on one pull, and how much of the fight
@@ -331,7 +384,10 @@ class Analysis:
             for t in entry.get("targets", []) or []:
                 by_target[t["name"]] += t.get("total", 0)
         secs = (table.get("totalTime") or 1) / 1000
-        return {"total": total, "dps": total / secs,
-                "uptime": (sum(uptime) / len(uptime)) if uptime else None,
-                "by_target": by_target.most_common(8),
-                "seconds": secs}
+        return {
+            "total": total,
+            "dps": total / secs,
+            "uptime": (sum(uptime) / len(uptime)) if uptime else None,
+            "by_target": by_target.most_common(8),
+            "seconds": secs,
+        }

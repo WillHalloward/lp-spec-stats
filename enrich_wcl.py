@@ -137,7 +137,9 @@ def main() -> None:
             unmatched += 1
         dt = datetime.fromtimestamp(start_sec, timezone.utc).strftime("%Y-%m-%d %H:%M")
         link = f"-> {raid_id}" if raid_id else "(gap-fill)"
-        print(f"  fetched {code}  {dt}  {len(roster):2d} players  {link}  {r.get('title','')[:60]}", flush=True)
+        print(
+            f"  fetched {code}  {dt}  {len(roster):2d} players  {link}  {r.get('title', '')[:60]}", flush=True
+        )
         time.sleep(REQUEST_DELAY)
 
     print(f"\nDone. fetched={fetched} matched={matched} unmatched={unmatched} skipped={skipped}", flush=True)

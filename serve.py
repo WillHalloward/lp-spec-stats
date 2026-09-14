@@ -113,6 +113,7 @@ def _cached_json(
 def admin_page() -> HTMLResponse:
     return admin.admin_page()
 
+
 FRONTEND_DIST = Path(__file__).parent / "frontend" / "dist"
 
 
@@ -201,8 +202,10 @@ def _build_events(conn: psycopg.Connection) -> dict:
         if ov and ov.get("excluded"):
             continue
         if ov:
-            if ov.get("difficulty"): ev["_override_difficulty"] = ov["difficulty"]
-            if ov.get("series_suffix"): ev["_override_series_suffix"] = ov["series_suffix"]
+            if ov.get("difficulty"):
+                ev["_override_difficulty"] = ov["difficulty"]
+            if ov.get("series_suffix"):
+                ev["_override_series_suffix"] = ov["series_suffix"]
         visible_gap_fills.append(ev)
     events = visible
     gap_fills = visible_gap_fills
@@ -235,7 +238,8 @@ def api_character_progression(request: Request, names: str = "") -> Response:
         return JSONResponse({"kills": []})
     key = "character-progression:" + ",".join(sorted(n.lower() for n in name_list))
     return _cached_json(
-        request, key,
+        request,
+        key,
         lambda conn: {"kills": character_progression.first_kills(conn, name_list)},
     )
 
@@ -248,7 +252,8 @@ def api_event_kills(request: Request) -> Response:
     if not os.environ.get("DATABASE_URL"):
         return JSONResponse({"kills": []})
     return _cached_json(
-        request, "event-kills",
+        request,
+        "event-kills",
         lambda conn: {"kills": boss_progression.per_event_first_kills(conn)},
     )
 
@@ -260,7 +265,8 @@ def api_boss_attempts(request: Request, encounterID: int, difficulty: str) -> Re
     if not os.environ.get("DATABASE_URL"):
         return JSONResponse({"attempts": [], "error": "DATABASE_URL not set"})
     return _cached_json(
-        request, f"boss-attempts:{encounterID}:{difficulty}",
+        request,
+        f"boss-attempts:{encounterID}:{difficulty}",
         lambda conn: {"attempts": boss_progression.attempts_for_boss(conn, encounterID, difficulty)},
     )
 
@@ -297,7 +303,9 @@ def report(slug: str) -> HTMLResponse:
     if path is None:
         return HTMLResponse(
             '<p style="font-family:system-ui;padding:40px">No such report. '
-            '<a href="/reports">All reports</a></p>', status_code=404)
+            '<a href="/reports">All reports</a></p>',
+            status_code=404,
+        )
     return HTMLResponse(path.read_text(encoding="utf-8"))
 
 
@@ -340,11 +348,12 @@ class _HashedStaticFiles(StaticFiles):
 if FRONTEND_DIST.exists():
     app.mount("/", _HashedStaticFiles(directory=str(FRONTEND_DIST), html=True), name="frontend")
 else:
+
     @app.get("/", response_class=HTMLResponse)
     def _placeholder() -> HTMLResponse:
         return HTMLResponse(
             "<h1>lp-spec-stats</h1>"
             "<p>Frontend not built yet. Run <code>npm install && npm run build</code> in <code>frontend/</code>.</p>"
-            "<p>Meanwhile: <a href=\"/legacy\">/legacy</a> · <a href=\"/health\">/health</a> · "
-            "<a href=\"/api/events\">/api/events</a></p>"
+            '<p>Meanwhile: <a href="/legacy">/legacy</a> · <a href="/health">/health</a> · '
+            '<a href="/api/events">/api/events</a></p>'
         )

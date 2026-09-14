@@ -17,10 +17,14 @@ import wcl
 
 
 DIFFICULTY_MAP = {
-    1: "LFR", 17: "LFR",
-    3: "Normal", 14: "Normal",
-    4: "Heroic", 15: "Heroic",
-    5: "Mythic", 16: "Mythic",
+    1: "LFR",
+    17: "LFR",
+    3: "Normal",
+    14: "Normal",
+    4: "Heroic",
+    15: "Heroic",
+    5: "Mythic",
+    16: "Mythic",
 }
 
 REQUEST_DELAY = float(os.environ.get("WCL_REQUEST_DELAY_SEC", "0.3"))
