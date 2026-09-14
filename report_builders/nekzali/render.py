@@ -168,7 +168,7 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     late_gaps = [g for p in pulls for g in p["cadence"][2:] if g <= 50]
     cadence = round(statistics.median(late_gaps)) if late_gaps else 40
     early_gaps = [g for p in pulls for g in p["cadence"][:2]]
-    early_cadence = f"{round(min(early_gaps))}–{round(max(early_gaps))}" if early_gaps else "70–110"
+    early_cadence = f"{round(min(early_gaps))} to {round(max(early_gaps))}" if early_gaps else "70 to 110"
 
     exhaustion = round(exhaustion_seconds(pulls))
     dive_cost = dive_len + exhaustion
@@ -188,7 +188,7 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         rows.append(
             f'<tr><td class="name">{p["pull"]}</td><td class="num">{p["boss_pct"]}%</td>'
             f'<td class="num">{len(p["windows"])}</td><td class="num hot">{len(calls)}</td>'
-            f"<td>{first['t']:.1f}s — {escape(str(first['who']))}, "
+            f"<td>{first['t']:.1f}s, {escape(str(first['who']))}, "
             f"{first['early_by']:.1f}s early</td>"
             f'<td class="num">{round(p["dur"] - first["t"])}s</td></tr>'
         )
@@ -216,7 +216,7 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     our_inter = (deep["stage_two"] - deep["ritual"]) if deep["stage_two"] and deep["ritual"] else None
 
     def diff(ours: float | None, theirs: float) -> str:
-        return "—" if ours is None else f'<span class="hot">{ours - theirs:+.1f}s</span>'
+        return "n/a" if ours is None else f'<span class="hot">{ours - theirs:+.1f}s</span>'
 
     milestones = [
         ("Boss to 50% (Ritual begins)", kill_ritual, deep["ritual"]),
@@ -226,14 +226,14 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     ]
     milestone_rows = "".join(
         f'<tr><td class="name">{label}</td><td class="num">{theirs:.1f}s</td>'
-        f'<td class="num">{f"{ours:.1f}s" if ours is not None else "—"}</td>'
+        f'<td class="num">{f"{ours:.1f}s" if ours is not None else "n/a"}</td>'
         f'<td class="num">{diff(ours, theirs)}</td></tr>'
         for label, theirs, ours in milestones
     )
     kill_windows = [len(k["windows"]) for k in baseline.KILLS]
     milestone_rows += (
         f'<tr><td class="name">Echoes the raid must survive</td>'
-        f'<td class="num">{min(kill_windows)}–{max(kill_windows)}</td>'
+        f'<td class="num">{min(kill_windows)} to {max(kill_windows)}</td>'
         f'<td class="num">{len(deep["windows"])}</td>'
         f'<td class="num hot">+{len(deep["windows"]) - max(kill_windows)}</td></tr>'
     )
@@ -266,7 +266,7 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     kill_lust = [k["lust"] for k in baseline.KILLS]
     kill_curse = [k["curse_cast"] for k in baseline.KILLS]
 
-    lust_cell = f"on Stage Two ({deep['lust'][0]}s)" if deep["lust"] else "—"
+    lust_cell = f"on Stage Two ({deep['lust'][0]}s)" if deep["lust"] else "not recorded"
 
     strategy_rows = "".join(
         [
@@ -279,13 +279,13 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
             f'<tr><td class="name">Number of well teams</td><td>2</td><td>{len(_teams(deep))}</td>'
             f'<td class="calm">identical</td></tr>',
             f'<tr><td class="name">Lust</td>'
-            f"<td>on Stage Two ({round(min(kill_lust))}–{round(max(kill_lust))}s)</td>"
+            f"<td>on Stage Two ({round(min(kill_lust))} to {round(max(kill_lust))}s)</td>"
             f"<td>{lust_cell}</td>"
             f'<td class="calm">identical call</td></tr>',
-            f'<tr><td class="name">Median item level</td><td>{kill_ilvl}</td><td>{our_ilvl or "—"}</td>'
+            f'<tr><td class="name">Median item level</td><td>{kill_ilvl}</td><td>{our_ilvl or "n/a"}</td>'
             f'<td class="calm">{"you’re ahead" if ahead_on_gear else "behind"}</td></tr>',
             f'<tr><td class="name">Soulcoiler’s Curse let through</td>'
-            f"<td>0 of {min(kill_curse)}–{max(kill_curse)}</td>"
+            f"<td>0 of {min(kill_curse)} to {max(kill_curse)}</td>"
             f"<td>{deep['curse_landed']} of {deep['curse_cast']}</td>"
             f'<td class="calm">{"identical" if not deep["curse_landed"] else "slightly behind"}</td></tr>',
             f'<tr><td class="name">Raid damage</td><td>{kill_dps / 1e6:.2f}M/s</td>'
@@ -358,14 +358,14 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "last_window": last_len,
         "last_window_note": (
             f"The last band never ends. The Echo that woke at {last_window[0]:.0f}s was still alive when "
-            f"the raid died — Grasping Depths ticked on everyone for {last_len} unbroken seconds."
+            f"the raid died, and Grasping Depths ticked on everyone for {last_len} unbroken seconds."
             if not deep.get("kill")
             else f"The final Echo window ran {last_len} seconds."
         ),
         "kill_dur": kill_dur,
         "kill_intermission": f"{kill_inter:.1f}",
         "kill_stage_two": f"{kill_stage_two:.0f}",
-        "your_intermission": f"{our_inter:.1f}" if our_inter else "—",
+        "your_intermission": f"{our_inter:.1f}" if our_inter else "not recorded",
         "intermission_gap": round(100 * (our_inter / kill_inter - 1)) if our_inter else 0,
         "intermission_loss": f"{our_inter - kill_inter:.0f} seconds" if our_inter else "Much",
         "time_gap": round(deep["dur"] - baseline.mean("dur")),

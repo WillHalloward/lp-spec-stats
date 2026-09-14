@@ -41,7 +41,6 @@ h3{font-size:16px;font-weight:600;letter-spacing:.01em}
   font-size:11px;font-weight:500;color:var(--accent)}
 p{margin:0;max-width:66ch;color:var(--ink-2)}
 p + p{margin-top:14px}
-p strong{color:var(--ink);font-weight:400;box-shadow:inset 0 -.42em 0 var(--accent-soft)}
 .note{font-size:15px;color:var(--muted);max-width:70ch}
 a{color:var(--accent)}
 .mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
@@ -138,12 +137,12 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <span>{{pulls}} pulls &middot; best <b>{{best_pct}}%</b></span>
     <span class="mono">{{code}}</span>
   </div>
-  <h1>Two teams can't cover a <em>forty-second</em> well</h1>
+  <h1>{{boss_short}}, {{pulls}} pulls, and a well two teams cannot cover.</h1>
   <div class="rule"></div>
   <p class="standfirst">Soul Exhaustion lasts {{exhaustion}} seconds and starts when you climb <em>out</em>.
-  In Stage Two the Drowned Echo returns every {{cadence}}. <strong>A two-team rotation is about
-  {{deficit}} seconds short on every cycle</strong> — and across {{pulls}} pulls it only broke the rotation
-  {{break_count_word}} times, on the {{break_count_word}} pulls that got deepest.</p>
+  In Stage Two the Drowned Echo comes back every {{cadence}}. That leaves a two-team rotation about
+  {{deficit}} seconds short on every cycle. Across {{pulls}} pulls it broke {{break_count_word}} times, on the
+  {{break_count_word}} pulls that got deep enough to meet it.</p>
 </header>
 
 <div class="tiles">
@@ -156,11 +155,11 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
 
 <section>
   <div class="head">
-    <span class="lab">01 &mdash; The arithmetic</span>
-    <h2>What a dive costs versus what the boss gives you</h2>
+    <span class="lab">The arithmetic</span>
+    <h2>What a dive costs, and what the boss gives you</h2>
   </div>
   <p>A dive is not {{dive_len}} seconds of your time, it is {{dive_cost}}. You are in the well until the
-  Echo dies — about {{dive_len}} seconds on this night — and then locked out for a further {{exhaustion}}.
+  Echo dies, about {{dive_len}} seconds on this night, and then locked out for a further {{exhaustion}}.
   Everything below is on the same scale.</p>
 
   <div class="bars">
@@ -181,7 +180,7 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
         <div class="seg gap" style="flex:{{deficit}}">{{deficit}}s short</div>
         <div style="flex:{{bar_tail}}"></div>
       </div>
-      <div class="verdict no">Impossible — you are still Exhausted when the Echo spawns</div>
+      <div class="verdict no">Impossible: you are still Exhausted when the Echo spawns</div>
     </div>
     <div class="brow">
       <div class="bhead"><span class="t">Three teams, Echo every {{cadence}}s</span>
@@ -191,22 +190,22 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
         <div class="seg slack" style="flex:{{three_team_slack}}">{{three_team_slack}}s slack</div>
         <div style="flex:{{three_tail}}"></div>
       </div>
-      <div class="verdict yes">Works — and leaves room for a slow kill</div>
+      <div class="verdict yes">Works, with room for a slow kill</div>
     </div>
   </div>
 
   <p class="note">This is why the mythic guides disagree with each other. Through Stage One and the
-  intermission the Echo came every {{early_cadence}} seconds, where two alternating teams is genuinely
-  fine — that is the regime the two-team guides describe. Stage Two locks it to {{cadence}}.</p>
+  intermission the Echo came every {{early_cadence}} seconds, and two alternating teams covers that
+  comfortably. That is the regime the two-team guides are describing. Stage Two locks it to {{cadence}}.</p>
 </section>
 
 <section>
   <div class="head">
-    <span class="lab">02 &mdash; All {{pulls_word}} pulls</span>
-    <h2>Only {{break_count_word}} pulls ever ran out of divers</h2>
+    <span class="lab">The night</span>
+    <h2>The {{break_count_word}} pulls that ran out of divers</h2>
   </div>
-  <p>Every pull of the night on one clock. Each teal tick is an Echo waking; the dashed notch is the
-  Ritual of Awakening. Magenta diamonds are entries taken while the diver was still Exhausted.</p>
+  <p>Every pull of the night on one clock. Each teal tick is an Echo waking, the dashed notch is the
+  Ritual of Awakening, and the magenta diamonds are entries taken while the diver was still Exhausted.</p>
   <figure>
     <div class="scroll"><svg id="night" role="img" aria-label="Every pull of the night on one clock, with Echo spawns, the intermission and early well entries"></svg></div>
     <figcaption>
@@ -215,29 +214,30 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
       <span class="key"><span class="sw" style="background:var(--bad);width:11px;height:11px;transform:rotate(45deg)"></span>Entered while Exhausted</span>
     </figcaption>
   </figure>
-  <p>Most pulls never got past a fifth Echo, and the rotation held through them — two teams is enough at
-  the Stage One cadence. The {{break_count_word}} pulls that lived to see {{broke_echoes}} Echoes are the
-  ones where whole teams went in early, every time in the last window before the wipe.</p>
+  <p>Most pulls never got past a fifth Echo, and the rotation held through all of them, which is what two
+  teams at the Stage One cadence looks like when it works. The {{break_count_word}} pulls that lived to see
+  {{broke_echoes}} Echoes are the ones where whole teams went in early, every time in the last window before
+  the wipe.</p>
   <div class="tablewrap">
     <table>
       <thead><tr><th>Pull</th><th class="num">Ended</th><th class="num">Echoes</th><th class="num">Early entries</th><th>First early entry</th><th class="num">Wipe followed</th></tr></thead>
       <tbody>{{deep_rows}}</tbody>
     </table>
   </div>
-  <p class="note">{{single_count_word}} other pulls show a single diamond — one person going in early on
-  their own, which is a mistake rather than the rotation running out of people. Everything else that looks
-  like an early entry happens after five or more of the raid are already dead: that is the pull dragging
-  corpses into the water, not a call.</p>
+  <p class="note">On the counting. Another {{single_count_word}} pulls show a single diamond, one person
+  going in early on their own, which is a mistake rather than the rotation running out of people. Everything
+  else that looks like an early entry happens after five or more of the raid are already dead. That is the
+  wipe dragging corpses into the water rather than a call, and it is not counted against anybody.</p>
 </section>
 
 <section>
   <div class="head">
-    <span class="lab">03 &mdash; The best pull, second by second</span>
+    <span class="lab">The best pull</span>
     <h2>Where the rotation came apart</h2>
   </div>
   <p>Pull {{best_pull}}, {{best_dur}}, ended at {{best_pct}}%. Every well trip and every lockout, read
-  straight from the Immortal Coil and Soul Exhaustion aura events. The violet bands are Grasping Depths
-  windows — the Echo is up and someone has to be in the water.</p>
+  straight from the Immortal Coil and Soul Exhaustion aura events. The violet bands are the Grasping Depths
+  windows, meaning the Echo is up and somebody has to be in the water.</p>
   <figure>
     <div class="scroll"><svg id="deep" role="img" aria-label="Well dives and Soul Exhaustion lockouts for both teams through the deepest pull"></svg></div>
     <figcaption>
@@ -253,29 +253,29 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
 
 <section>
   <div class="head">
-    <span class="lab">04 &mdash; The evidence</span>
+    <span class="lab">The evidence</span>
     <h2>Every amplified hit in the pull</h2>
   </div>
-  <p>Soul Exhaustion is visible in the log without reading a single aura: it multiplies well damage by
-  roughly 3.5 against the unmitigated value. {{amp_count_word}} hits in the whole pull carry it.</p>
+  <p>Soul Exhaustion shows up in the log without reading a single aura: it multiplies well damage by
+  roughly 3.5 against the unmitigated value, and {{amp_count_word}} hits in the whole pull carry it.</p>
   <div class="tablewrap">
     <table>
       <thead><tr><th>Time</th><th>Player</th><th>Ability</th><th class="num">Taken</th><th class="num">Unmitigated</th><th class="num">Ratio</th></tr></thead>
       <tbody>{{amp_rows}}</tbody>
     </table>
   </div>
-  <p class="note">A clean Immortal Coil tick costs about {{clean_tick}}. An Exhausted one costs {{amp_tick}}.
-  Nothing else in the fight has that shape.</p>
+  <p class="note">A clean Immortal Coil tick costs about {{clean_tick}}. An Exhausted one costs {{amp_tick}},
+  and nothing else in the fight leaves that shape in the damage.</p>
 </section>
 
 <section>
   <div class="head">
-    <span class="lab">05 &mdash; How the kills do it</span>
-    <h2>Four guilds who killed it on day one, and none of them used three teams</h2>
+    <span class="lab">How the kills do it</span>
+    <h2>Four day-one kills, none of them on three teams</h2>
   </div>
   <p>The earliest public Mythic kills on record, all four from 2 September, the first day the difficulty
-  opened. Every one of them ran <strong>two teams</strong>, exactly like you. Between them they took zero
-  Soul Exhaustion penalties.</p>
+  opened. Every one of them ran two teams, the same as this raid does. Between them they took no Soul
+  Exhaustion penalties at all.</p>
   <figure>
     <div class="scroll"><svg id="comp" role="img" aria-label="Four day-one mythic kills against this night's best pull"></svg></div>
     <figcaption>
@@ -285,12 +285,12 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
       <span class="key"><span class="sw" style="background:var(--bad);width:11px;height:11px;transform:rotate(45deg)"></span>Entered while Exhausted</span>
     </figcaption>
   </figure>
-  <p>Two teams works for them because <strong>a {{kill_dur}}-second kill only ever asks for six dives</strong>.
-  Their cadence compresses the same way yours does, but the {{cadence}}-second regime only lasts for the last
-  two Echoes — and two teams covers exactly two. Then the boss dies.</p>
+  <p>Two teams works for them because a {{kill_dur}}-second kill only ever asks for six dives. Their cadence
+  compresses the same way this one does, but the {{cadence}}-second regime only lasts for the last two Echoes,
+  and two teams covers exactly two. Then the boss dies.</p>
   <p>Three of the four never dive the final Echo at all. It wakes around 397s, they leave it alive, eat
-  Grasping Depths for seventeen to twenty seconds, and kill the boss through it.
-  <strong>The last Echo is not a mechanic they solve. It is one they outrun.</strong></p>
+  Grasping Depths for seventeen to twenty seconds, and kill the boss through it. The last Echo is something
+  they outrun rather than solve.</p>
 
   <h3 style="margin-top:14px">Where the {{time_gap}} seconds go</h3>
   <div class="tablewrap">
@@ -299,91 +299,91 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
       <tbody>{{milestone_rows}}</tbody>
     </table>
   </div>
-  <p><strong>The single biggest loss is the intermission.</strong> And it compounds: your Ritual runs long
-  enough that a whole Grasping Depths window opens inside it. With everyone on the Echoes of Jawae nobody can
-  spare five people, and that window ran {{stuck_window}} seconds with the raid in the water for only the last
-  {{stuck_covered}}. The day-one kills do not have this problem — their intermission finishes around
-  {{kill_stage_two}}s and the next Echo does not wake until 311–317s. It lands in the gap.</p>
+  <p>The intermission is the single biggest loss, and it compounds. The Ritual runs long enough here that a
+  whole Grasping Depths window opens inside it, and with everyone on the Echoes of Jawae nobody can spare five
+  people. That window ran {{stuck_window}} seconds with the raid in the water for only the last
+  {{stuck_covered}}. The day-one kills never face it: their intermission finishes around {{kill_stage_two}}s
+  and the next Echo does not wake until 311s at the earliest, so it lands in the gap.</p>
 </section>
 
 <section>
   <div class="head">
-    <span class="lab">06 &mdash; Same plan, different clock</span>
-    <h2>You are not running a different strategy. You are running the same one slower.</h2>
+    <span class="lab">Same plan, different clock</span>
+    <h2>The same strategy, run slower</h2>
   </div>
-  <p>The obvious next question is whether the kill guilds know something you do not. Composition, gear, who
-  dives, when they lust, how they handle the adds — almost everything matches.</p>
+  <p>The next question is whether the kill guilds know something this raid does not. Composition, gear, who
+  dives, when they lust, how they handle the adds: almost all of it matches.</p>
   <div class="tablewrap">
     <table>
       <thead><tr><th>What</th><th>Day-one kills</th><th>This night</th><th>Verdict</th></tr></thead>
       <tbody>{{strategy_rows}}</tbody>
     </table>
   </div>
-  <p>Same plan, {{gear_verdict}}, faster reactions — and {{dps_gap}}% less damage. The gap is not tactical
+  <p>Same plan, {{gear_verdict}}, faster reactions, and {{dps_gap}}% less damage. The gap is not tactical
   knowledge and it is not loot. It is time on target.</p>
 
   <h3 style="margin-top:14px">Two fixed numbers that prove it</h3>
-  <p>Some health pools in this fight do not move, which makes them a stopwatch.
-  <strong>Every raid here did exactly 198.9M damage to the Echoes of Jawae</strong> — it is a fixed pool. The
-  kills spent {{kill_intermission}} seconds on it. You spent {{your_intermission}}. Same damage,
-  {{intermission_gap}}% longer. <strong>Nek'zali herself is 697.1M</strong>; the kills all did precisely that,
-  and you did {{boss_damage}} before the raid died.</p>
+  <p>Some health pools in this fight do not move, which makes them a stopwatch. The Echoes of Jawae are a
+  fixed 198.9M, and every raid here did exactly that number. The kills spent {{kill_intermission}} seconds on
+  it and this night spent {{your_intermission}}, the same damage taking {{intermission_gap}}% longer. Nek'zali
+  herself is 697.1M. The kills all did precisely that, and this raid did {{boss_damage}} before it died.</p>
 
-  <h3 style="margin-top:14px">What the lost time costs you</h3>
-  <p>The clock is not a neutral penalty — it feeds back. Grasping Depths damage taken, per player:</p>
+  <h3 style="margin-top:14px">What the lost time costs</h3>
+  <p>The clock is not a neutral penalty, it feeds back. Grasping Depths damage taken, per player:</p>
   <div class="bars">{{gd_bars}}</div>
-  <p>That is the whole spiral in one number. Grasping Depths ticks on all twenty players for every second an
-  Echo is up, and two windows went uncovered. <strong>Your healers paid roughly {{gd_extra}} extra per player
-  for time nobody was in the water.</strong> That healing comes out of the damage that would have shortened
-  the fight.</p>
+  <p>Grasping Depths ticks on all twenty players for every second an Echo is up, and two windows went
+  uncovered. The healers paid roughly {{gd_extra}} extra per player for time nobody was in the water, and that
+  healing comes out of the damage that would have shortened the fight. That is the spiral: the slower the
+  fight, the more Echoes, and the more Echoes the slower it gets.</p>
 </section>
 
 <section>
   <div class="head">
-    <span class="lab">07 &mdash; The call</span>
+    <span class="lab">The call</span>
     <h2>What to change before next week</h2>
   </div>
-  <p>The obvious fix is a third well team. The kill logs say that is the wrong first move —
-  <strong>nobody who killed this on day one used three</strong>, and this rotation's shape already matches
-  theirs. In priority order:</p>
+  <p>The obvious fix is a third well team. The kill logs say that is the wrong first move: nobody who killed
+  this on day one used three, and this rotation's shape already matches theirs. In priority order:</p>
   <div class="cards">
     <div class="card">
-      <h3>1 &mdash; Don't dive the last Echo</h3>
-      <p>Free, and available next pull. Three of four kills leave the final Echo alive and burn through
-      Grasping Depths for the last ~20s. The last Echo of pull {{best_pull}} was dived and never killed — that
-      window ran {{last_window}} seconds. You paid the burn cost <em>and</em> lost the divers.</p>
+      <h3>Don't dive the last Echo</h3>
+      <p>Free, and available next pull. Three of the four kills leave the final Echo alive and burn through
+      Grasping Depths for the last twenty seconds or so. The last Echo of pull {{best_pull}} was dived and
+      never killed, so that window ran {{last_window}} seconds anyway. The burn cost was paid and the divers
+      were lost with it.</p>
     </div>
     <div class="card">
-      <h3>2 &mdash; Fix the intermission</h3>
+      <h3>Fix the intermission</h3>
       <p>{{intermission_loss}} of the {{time_gap}} seconds. It is what pushes an entire Echo inside the Ritual,
       and what makes the seventh and eighth Echoes exist at all. Kill the Echoes of Jawae in
       {{kill_intermission}} seconds and the well rotation stops being a problem on its own.</p>
     </div>
     <div class="card">
-      <h3>3 &mdash; Keep two teams</h3>
+      <h3>Keep two teams</h3>
       <p>The alternation and the entry timing here are better than all four kill logs, and the team shape
-      already matches theirs exactly. A third team is a stopgap for a {{best_dur_secs}}-second fight, not the
-      target.</p>
+      already matches theirs exactly. A third team is a stopgap for a {{best_dur_secs}}-second fight rather
+      than the target.</p>
     </div>
     <div class="card">
-      <h3>4 &mdash; Cover the intermission window</h3>
-      <p>If the Ritual is still running when an Echo wakes, someone has to go anyway. Forty-odd seconds of
+      <h3>Cover the intermission window</h3>
+      <p>If the Ritual is still running when an Echo wakes, somebody has to go anyway. Forty-odd seconds of
       Grasping Depths on twenty players costs more healing than five people missing from the Jawae echoes
       costs damage.</p>
     </div>
     <div class="card">
-      <h3>5 &mdash; Four seconds early is survivable, eight is not</h3>
+      <h3>Four seconds early is survivable, eight is not</h3>
       <p>Immortal Coil ramps for about 4.6s before it bites, so entering a few seconds early can cost nothing
-      at all. Entering eight seconds early killed {{died_early}}. If someone must go in hot, that is the budget.</p>
+      at all. Entering eight seconds early killed {{died_early}}. If somebody has to go in hot, that is the
+      budget.</p>
     </div>
   </div>
 </section>
 
 <footer>
-  Built from the Warcraft Logs v2 API — Immortal Coil, Soul Exhaustion and Grasping Depths aura and damage
+  Built from the Warcraft Logs v2 API: Immortal Coil, Soul Exhaustion and Grasping Depths aura and damage
   events for {{pulls}} pulls of report <a href="https://www.warcraftlogs.com/reports/{{code}}">{{code}}</a>.
-  Dive and lockout windows are read from aura application and removal, not estimated. Day-one kill figures
-  come from the four earliest public Mythic kills, 2 September 2026.
+  Dive and lockout windows are read from aura application and removal rather than estimated. The day-one
+  figures come from the four earliest public Mythic kills, 2 September 2026.
 </footer>
 
 </div>
