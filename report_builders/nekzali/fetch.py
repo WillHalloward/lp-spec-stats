@@ -27,6 +27,12 @@ CACHE_ROOT = Path(__file__).parent / "cache"
 RETRY_STATUS = (429, 502, 503, 504)
 
 
+def _key_for(fight_ids: list[int]) -> str:
+    """Cache suffix for a per-fight query. Without it a call for one pull would
+    be served the cached answer for the whole night."""
+    return "-".join(str(i) for i in sorted(fight_ids))
+
+
 class Fetcher:
     def __init__(self, code: str, cache_root: Path | None = None) -> None:
         self.code = code
@@ -107,7 +113,7 @@ class Fetcher:
                      playerDetails(fightIDs:$f, includeCombatantInfo:true)}}}"""
             return self._q(q, {"c": self.code, "f": fight_ids})["reportData"]["report"]["playerDetails"]
 
-        return self.cached("player_details", build)
+        return self.cached(f"player_details_{_key_for(fight_ids)}", build)
 
     def damage_table(self, fight_ids: list[int]) -> dict:
         """Per-player damage with its per-target split and active time."""
@@ -118,7 +124,7 @@ class Fetcher:
                            hostilityType:Friendlies)}}}"""
             return self._q(q, {"c": self.code, "f": fight_ids})["reportData"]["report"]["table"]["data"]
 
-        return self.cached("damage_table", build)
+        return self.cached(f"damage_table_{_key_for(fight_ids)}", build)
 
     def events(
         self,

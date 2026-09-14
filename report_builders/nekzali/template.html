@@ -150,7 +150,7 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
   <div class="tile"><span class="n">{{best_pct}}%</span><span class="lab">best of the night</span></div>
   <div class="tile"><span class="n">{{teams}}</span><span class="lab">well teams, every pull</span></div>
   <div class="tile hot"><span class="n">{{break_count}}</span><span class="lab">pulls where the rotation ran out of people</span></div>
-  <div class="tile hot"><span class="n">{{max_echoes}}</span><span class="lab">Echoes in the longest pull</span></div>
+  <div class="tile hot"><span class="n">{{max_echoes}}</span><span class="lab">Echoes the longest pull had to cover</span></div>
 </div>
 
 <section>
@@ -158,9 +158,12 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <span class="lab">The arithmetic</span>
     <h2>What a dive costs, and what the boss gives you</h2>
   </div>
-  <p>A dive is not {{dive_len}} seconds of your time, it is {{dive_cost}}. You are in the well until the
-  Echo dies, about {{dive_len}} seconds on this night, and then locked out for a further {{exhaustion}}.
-  Everything below is on the same scale.</p>
+  <p>Grasping Depths wakes a Drowned Echo in the Soulcoil Well and drags the raid towards it, ticking
+  shadow damage on all twenty players until the Echo is dead. Killing it means sending people down. Climbing
+  back out applies Soul Exhaustion, which for {{exhaustion}} seconds adds 300% to anything the well does to
+  you, so the same five cannot simply go again.</p>
+  <p>That makes a dive cost {{dive_cost}} seconds rather than {{dive_len}}: about {{dive_len}} in the water
+  until the Echo dies, then {{exhaustion}} locked out. Everything below is on the same scale.</p>
 
   <div class="bars">
     <div class="brow">
@@ -194,9 +197,10 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     </div>
   </div>
 
-  <p class="note">This is why the mythic guides disagree with each other. Through Stage One and the
-  intermission the Echo came every {{early_cadence}} seconds, and two alternating teams covers that
-  comfortably. That is the regime the two-team guides are describing. Stage Two locks it to {{cadence}}.</p>
+  <p class="note">Two teams is the normal way to run this, and for most of the fight it is the right one.
+  Through Stage One and the intermission the Echo came every {{early_cadence}} seconds, which two alternating
+  teams cover comfortably. Stage Two locks the gap to {{cadence}}, and that is the only part of the fight
+  where the arithmetic above fails.</p>
 </section>
 
 <section>
@@ -204,8 +208,9 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <span class="lab">The night</span>
     <h2>The {{break_count_word}} pulls that ran out of divers</h2>
   </div>
-  <p>Every pull of the night on one clock. Each teal tick is an Echo waking, the dashed notch is the
-  Ritual of Awakening, and the magenta diamonds are entries taken while the diver was still Exhausted.</p>
+  <p>Every pull of the night on one clock, in the order they were pulled. Bar length is how long the pull
+  lasted and the figure on the right is how much boss was left, so a long bar and a low number is a good
+  pull.</p>
   <figure>
     <div class="scroll"><svg id="night" role="img" aria-label="Every pull of the night on one clock, with Echo spawns, the intermission and early well entries"></svg></div>
     <figcaption>
@@ -236,8 +241,8 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <h2>Where the rotation came apart</h2>
   </div>
   <p>Pull {{best_pull}}, {{best_dur}}, ended at {{best_pct}}%. Every well trip and every lockout, read
-  straight from the Immortal Coil and Soul Exhaustion aura events. The violet bands are the Grasping Depths
-  windows, meaning the Echo is up and somebody has to be in the water.</p>
+  straight from the aura events rather than inferred. A violet band is an Echo that is up, which is time
+  somebody has to be in the water.</p>
   <figure>
     <div class="scroll"><svg id="deep" role="img" aria-label="Well dives and Soul Exhaustion lockouts for both teams through the deepest pull"></svg></div>
     <figcaption>
@@ -256,16 +261,16 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <span class="lab">The evidence</span>
     <h2>Every amplified hit in the pull</h2>
   </div>
-  <p>Soul Exhaustion shows up in the log without reading a single aura: it multiplies well damage by
-  roughly 3.5 against the unmitigated value, and {{amp_count_word}} hits in the whole pull carry it.</p>
+  <p>An Exhausted diver is visible in the damage alone, without reading a single aura: the hit lands at
+  roughly 3.5 times its unmitigated value. The whole pull contains {{amp_count_word}} of them.</p>
   <div class="tablewrap">
     <table>
       <thead><tr><th>Time</th><th>Player</th><th>Ability</th><th class="num">Taken</th><th class="num">Unmitigated</th><th class="num">Ratio</th></tr></thead>
       <tbody>{{amp_rows}}</tbody>
     </table>
   </div>
-  <p class="note">A clean Immortal Coil tick costs about {{clean_tick}}. An Exhausted one costs {{amp_tick}},
-  and nothing else in the fight leaves that shape in the damage.</p>
+  <p class="note">A clean Immortal Coil tick costs about {{clean_tick}} and an Exhausted one {{amp_tick}},
+  which is the difference between a dive and a death.</p>
 </section>
 
 <section>
@@ -311,8 +316,8 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <span class="lab">Same plan, different clock</span>
     <h2>The same strategy, run slower</h2>
   </div>
-  <p>The next question is whether the kill guilds know something this raid does not. Composition, gear, who
-  dives, when they lust, how they handle the adds: almost all of it matches.</p>
+  <p>Composition, gear, who dives, when they lust, how they handle the adds: set this night beside the four
+  kills and almost all of it matches.</p>
   <div class="tablewrap">
     <table>
       <thead><tr><th>What</th><th>Day-one kills</th><th>This night</th><th>Verdict</th></tr></thead>
@@ -322,14 +327,14 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
   <p>Same plan, {{gear_verdict}}, faster reactions, and {{dps_gap}}% less damage. The gap is not tactical
   knowledge and it is not loot. It is time on target.</p>
 
-  <h3 style="margin-top:14px">Two fixed numbers that prove it</h3>
-  <p>Some health pools in this fight do not move, which makes them a stopwatch. The Echoes of Jawae are a
-  fixed 198.9M, and every raid here did exactly that number. The kills spent {{kill_intermission}} seconds on
+  <h3 style="margin-top:14px">Two health pools that do not move</h3>
+  <p>The Echoes of Jawae are a fixed 198.9M pool, and every raid here did exactly that number, which turns
+  the intermission into a stopwatch. The kills spent {{kill_intermission}} seconds on
   it and this night spent {{your_intermission}}, the same damage taking {{intermission_gap}}% longer. Nek'zali
   herself is 697.1M. The kills all did precisely that, and this raid did {{boss_damage}} before it died.</p>
 
   <h3 style="margin-top:14px">What the lost time costs</h3>
-  <p>The clock is not a neutral penalty, it feeds back. Grasping Depths damage taken, per player:</p>
+  <p>Grasping Depths damage taken, per player, across the whole pull:</p>
   <div class="bars">{{gd_bars}}</div>
   <p>Grasping Depths ticks on all twenty players for every second an Echo is up, and two windows went
   uncovered. The healers paid roughly {{gd_extra}} extra per player for time nobody was in the water, and that

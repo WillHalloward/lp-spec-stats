@@ -206,7 +206,7 @@ class Analysis:
             "pulls": pulls,
             "deepest": deepest,
             "damage": self.damage_split(deepest),
-            "roster": self.roster(),
+            "roster": self.roster([deepest["fight"]]),
         }
 
     def _pull(
@@ -349,8 +349,11 @@ class Analysis:
 
     # ---- roster and damage ----
 
-    def roster(self) -> dict:
-        details = self.f.player_details(self.ids)
+    def roster(self, fight_ids: list[int] | None = None) -> dict:
+        """Who was in the raid, and in what role. Scoped to one pull by default:
+        across a whole night a healer who went DPS for a pull, or anybody swapped
+        in and out, is counted twice and the raid comes out at 21 people."""
+        details = self.f.player_details(fight_ids or self.ids)
         while isinstance(details, dict) and "data" in details:
             details = details["data"]
         if isinstance(details, dict) and "playerDetails" in details:

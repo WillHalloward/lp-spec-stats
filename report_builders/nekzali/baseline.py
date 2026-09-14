@@ -21,6 +21,7 @@ from __future__ import annotations
 KILLS = [
     {
         "guild": "Snowblind",
+        "comp": (2, 4, 14),
         "region": "US",
         "date": "2026-09-02",
         "code": "haCGP2q1rgNKdBpA",
@@ -50,6 +51,7 @@ KILLS = [
     },
     {
         "guild": "Epoch",
+        "comp": (2, 4, 14),
         "region": "EU",
         "date": "2026-09-02",
         "code": "3DkvhAgmBxV6TfPW",
@@ -78,6 +80,7 @@ KILLS = [
     },
     {
         "guild": "Shattered",
+        "comp": (2, 4, 14),
         "region": "EU",
         "date": "2026-09-02",
         "code": "zmPJg7T9YcWFBbdD",
@@ -107,6 +110,7 @@ KILLS = [
     },
     {
         "guild": "The Hex Pistols",
+        "comp": (2, 3, 15),
         "region": "EU",
         "date": "2026-09-02",
         "code": "q14TZfypBFVva93W",

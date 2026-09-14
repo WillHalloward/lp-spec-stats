@@ -257,6 +257,22 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         f"{gd_per_player / best_kill_gd:.1f}× the best kill</div></div></div>"
     )
 
+    # Time from an Echo waking to the first diver reaching the water. The claim
+    # that this raid reacts faster than the kills needs to be on the page, not
+    # asserted, so it goes in the table below.
+    our_lags = []
+    for win_a, win_b in deep["windows"]:
+        entries = [t for d in deep["dives"] for t, _ in d["spans"] if win_a - 4 <= t <= win_b]
+        if entries:
+            our_lags.append(min(entries) - win_a)
+    kill_lags = [entry - a for k in baseline.KILLS for a, _, entry in k["windows"] if entry is not None]
+    our_lag = statistics.median(our_lags) if our_lags else None
+    kill_lag = statistics.median(kill_lags) if kill_lags else None
+
+    kill_comps = {tuple(k["comp"]) for k in baseline.KILLS}
+    ours_comp = (roster["tanks"], roster["healers"], roster["dps"])
+    kill_comp = " or ".join(" / ".join(str(n) for n in c) for c in sorted(kill_comps, reverse=True))
+
     kill_ilvl = round(baseline.mean("ilvl_median"))
     our_ilvl = roster["ilvl_median"]
     ahead_on_gear = bool(our_ilvl and our_ilvl >= kill_ilvl)
@@ -270,10 +286,9 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
 
     strategy_rows = "".join(
         [
-            f'<tr><td class="name">Raid composition</td><td>2 tanks / 4 healers / 14 DPS</td>'
+            f'<tr><td class="name">Raid composition</td><td>{kill_comp}</td>'
             f"<td>{roster['tanks']} / {roster['healers']} / {roster['dps']}</td>"
-            f'<td class="calm">{"identical" if (roster["tanks"], roster["healers"]) == (2, 4) else "differs"}'
-            f"</td></tr>",
+            f'<td class="calm">{"identical" if ours_comp in kill_comps else "differs"}</td></tr>',
             '<tr><td class="name">Well team shape</td><td>4 DPS + 1 healer</td>'
             '<td>4 DPS + 1 healer</td><td class="calm">identical</td></tr>',
             f'<tr><td class="name">Number of well teams</td><td>2</td><td>{len(_teams(deep))}</td>'
@@ -288,6 +303,10 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
             f"<td>0 of {min(kill_curse)} to {max(kill_curse)}</td>"
             f"<td>{deep['curse_landed']} of {deep['curse_cast']}</td>"
             f'<td class="calm">{"identical" if not deep["curse_landed"] else "slightly behind"}</td></tr>',
+            f'<tr><td class="name">Echo wakes to first diver in</td>'
+            f"<td>{f'{kill_lag:+.1f}s' if kill_lag is not None else 'n/a'} typical</td>"
+            f"<td>{f'{our_lag:+.1f}s' if our_lag is not None else 'n/a'} typical</td>"
+            f'<td class="calm">{"you\u2019re ahead" if (our_lag is not None and kill_lag is not None and our_lag < kill_lag) else "behind"}</td></tr>',
             f'<tr><td class="name">Raid damage</td><td>{kill_dps / 1e6:.2f}M/s</td>'
             f'<td>{dmg["dps"] / 1e6:.2f}M/s</td><td class="hot">−{dps_gap}%</td></tr>',
             f'<tr><td class="name">Damage uptime</td><td>{100 * kill_uptime:.1f}%</td>'
@@ -367,7 +386,7 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "kill_stage_two": f"{kill_stage_two:.0f}",
         "your_intermission": f"{our_inter:.1f}" if our_inter else "not recorded",
         "intermission_gap": round(100 * (our_inter / kill_inter - 1)) if our_inter else 0,
-        "intermission_loss": f"{our_inter - kill_inter:.0f} seconds" if our_inter else "Much",
+        "intermission_loss": f"{our_inter - kill_inter:.0f}" if our_inter else "Most",
         "time_gap": round(deep["dur"] - baseline.mean("dur")),
         "milestone_rows": milestone_rows,
         "strategy_rows": strategy_rows,

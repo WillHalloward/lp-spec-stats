@@ -173,7 +173,7 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
   <div class="tile"><span class="n">6.68%</span><span class="lab">best of the night</span></div>
   <div class="tile"><span class="n">2</span><span class="lab">well teams, every pull</span></div>
   <div class="tile hot"><span class="n">3</span><span class="lab">pulls where the rotation ran out of people</span></div>
-  <div class="tile hot"><span class="n">9</span><span class="lab">Echoes in the longest pull</span></div>
+  <div class="tile hot"><span class="n">9</span><span class="lab">Echoes the longest pull had to cover</span></div>
 </div>
 
 <section>
@@ -181,9 +181,12 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <span class="lab">The arithmetic</span>
     <h2>What a dive costs, and what the boss gives you</h2>
   </div>
-  <p>A dive is not 29 seconds of your time, it is 89. You are in the well until the
-  Echo dies, about 29 seconds on this night, and then locked out for a further 60.
-  Everything below is on the same scale.</p>
+  <p>Grasping Depths wakes a Drowned Echo in the Soulcoil Well and drags the raid towards it, ticking
+  shadow damage on all twenty players until the Echo is dead. Killing it means sending people down. Climbing
+  back out applies Soul Exhaustion, which for 60 seconds adds 300% to anything the well does to
+  you, so the same five cannot simply go again.</p>
+  <p>That makes a dive cost 89 seconds rather than 29: about 29 in the water
+  until the Echo dies, then 60 locked out. Everything below is on the same scale.</p>
 
   <div class="bars">
     <div class="brow">
@@ -217,9 +220,10 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     </div>
   </div>
 
-  <p class="note">This is why the mythic guides disagree with each other. Through Stage One and the
-  intermission the Echo came every 71 to 113 seconds, and two alternating teams covers that
-  comfortably. That is the regime the two-team guides are describing. Stage Two locks it to 40.</p>
+  <p class="note">Two teams is the normal way to run this, and for most of the fight it is the right one.
+  Through Stage One and the intermission the Echo came every 71 to 113 seconds, which two alternating
+  teams cover comfortably. Stage Two locks the gap to 40, and that is the only part of the fight
+  where the arithmetic above fails.</p>
 </section>
 
 <section>
@@ -227,8 +231,9 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <span class="lab">The night</span>
     <h2>The three pulls that ran out of divers</h2>
   </div>
-  <p>Every pull of the night on one clock. Each teal tick is an Echo waking, the dashed notch is the
-  Ritual of Awakening, and the magenta diamonds are entries taken while the diver was still Exhausted.</p>
+  <p>Every pull of the night on one clock, in the order they were pulled. Bar length is how long the pull
+  lasted and the figure on the right is how much boss was left, so a long bar and a low number is a good
+  pull.</p>
   <figure>
     <div class="scroll"><svg id="night" role="img" aria-label="Every pull of the night on one clock, with Echo spawns, the intermission and early well entries"></svg></div>
     <figcaption>
@@ -259,8 +264,8 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <h2>Where the rotation came apart</h2>
   </div>
   <p>Pull 15, 8:32, ended at 6.68%. Every well trip and every lockout, read
-  straight from the Immortal Coil and Soul Exhaustion aura events. The violet bands are the Grasping Depths
-  windows, meaning the Echo is up and somebody has to be in the water.</p>
+  straight from the aura events rather than inferred. A violet band is an Echo that is up, which is time
+  somebody has to be in the water.</p>
   <figure>
     <div class="scroll"><svg id="deep" role="img" aria-label="Well dives and Soul Exhaustion lockouts for both teams through the deepest pull"></svg></div>
     <figcaption>
@@ -279,16 +284,16 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <span class="lab">The evidence</span>
     <h2>Every amplified hit in the pull</h2>
   </div>
-  <p>Soul Exhaustion shows up in the log without reading a single aura: it multiplies well damage by
-  roughly 3.5 against the unmitigated value, and seven hits in the whole pull carry it.</p>
+  <p>An Exhausted diver is visible in the damage alone, without reading a single aura: the hit lands at
+  roughly 3.5 times its unmitigated value. The whole pull contains seven of them.</p>
   <div class="tablewrap">
     <table>
       <thead><tr><th>Time</th><th>Player</th><th>Ability</th><th class="num">Taken</th><th class="num">Unmitigated</th><th class="num">Ratio</th></tr></thead>
       <tbody><tr><td>415.0s</td><td class="name">Arúgál</td><td>Soulcoil Well</td><td class="num">419,402</td><td class="num">119,010</td><td class="num hot">×3.52</td></tr><tr><td>464.5s</td><td class="name">Blossy</td><td>Immortal Coil</td><td class="num">209,742</td><td class="num">58,338</td><td class="num hot">×3.60</td></tr><tr><td>465.5s</td><td class="name">Blossy</td><td>Immortal Coil</td><td class="num">207,579</td><td class="num">58,338</td><td class="num hot">×3.56</td></tr><tr><td>467.7s</td><td class="name">Itto</td><td>Immortal Coil</td><td class="num">206,062</td><td class="num">58,338</td><td class="num hot">×3.53</td></tr><tr><td>468.7s</td><td class="name">Itto</td><td>Immortal Coil</td><td class="num">206,793</td><td class="num">58,338</td><td class="num hot">×3.54</td></tr><tr><td>469.8s</td><td class="name">Itto</td><td>Immortal Coil</td><td class="num">190,738</td><td class="num">58,338</td><td class="num hot">×3.27</td></tr><tr><td>470.2s</td><td class="name">Krokhoc</td><td>Immortal Coil</td><td class="num">208,359</td><td class="num">58,338</td><td class="num hot">×3.57</td></tr></tbody>
     </table>
   </div>
-  <p class="note">A clean Immortal Coil tick costs about 52,000. An Exhausted one costs 208,000,
-  and nothing else in the fight leaves that shape in the damage.</p>
+  <p class="note">A clean Immortal Coil tick costs about 52,000 and an Exhausted one 208,000,
+  which is the difference between a dive and a death.</p>
 </section>
 
 <section>
@@ -334,28 +339,28 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     <span class="lab">Same plan, different clock</span>
     <h2>The same strategy, run slower</h2>
   </div>
-  <p>The next question is whether the kill guilds know something this raid does not. Composition, gear, who
-  dives, when they lust, how they handle the adds: almost all of it matches.</p>
+  <p>Composition, gear, who dives, when they lust, how they handle the adds: set this night beside the four
+  kills and almost all of it matches.</p>
   <div class="tablewrap">
     <table>
       <thead><tr><th>What</th><th>Day-one kills</th><th>This night</th><th>Verdict</th></tr></thead>
-      <tbody><tr><td class="name">Raid composition</td><td>2 tanks / 4 healers / 14 DPS</td><td>2 / 5 / 14</td><td class="calm">differs</td></tr><tr><td class="name">Well team shape</td><td>4 DPS + 1 healer</td><td>4 DPS + 1 healer</td><td class="calm">identical</td></tr><tr><td class="name">Number of well teams</td><td>2</td><td>2</td><td class="calm">identical</td></tr><tr><td class="name">Lust</td><td>on Stage Two (290 to 302s)</td><td>on Stage Two (353s)</td><td class="calm">identical call</td></tr><tr><td class="name">Median item level</td><td>318</td><td>320</td><td class="calm">you’re ahead</td></tr><tr><td class="name">Soulcoiler’s Curse let through</td><td>0 of 13 to 18</td><td>2 of 18</td><td class="calm">slightly behind</td></tr><tr><td class="name">Raid damage</td><td>2.64M/s</td><td>2.21M/s</td><td class="hot">−16%</td></tr><tr><td class="name">Damage uptime</td><td>92.6%</td><td>85.6%</td><td class="hot">−7 pts</td></tr></tbody>
+      <tbody><tr><td class="name">Raid composition</td><td>2 / 4 / 14 or 2 / 3 / 15</td><td>2 / 4 / 14</td><td class="calm">identical</td></tr><tr><td class="name">Well team shape</td><td>4 DPS + 1 healer</td><td>4 DPS + 1 healer</td><td class="calm">identical</td></tr><tr><td class="name">Number of well teams</td><td>2</td><td>2</td><td class="calm">identical</td></tr><tr><td class="name">Lust</td><td>on Stage Two (290 to 302s)</td><td>on Stage Two (353s)</td><td class="calm">identical call</td></tr><tr><td class="name">Median item level</td><td>318</td><td>320</td><td class="calm">you’re ahead</td></tr><tr><td class="name">Soulcoiler’s Curse let through</td><td>0 of 13 to 18</td><td>2 of 18</td><td class="calm">slightly behind</td></tr><tr><td class="name">Echo wakes to first diver in</td><td>+1.0s typical</td><td>-0.9s typical</td><td class="calm">you’re ahead</td></tr><tr><td class="name">Raid damage</td><td>2.64M/s</td><td>2.21M/s</td><td class="hot">−16%</td></tr><tr><td class="name">Damage uptime</td><td>92.6%</td><td>85.6%</td><td class="hot">−7 pts</td></tr></tbody>
     </table>
   </div>
   <p>Same plan, better gear, faster reactions, and 16% less damage. The gap is not tactical
   knowledge and it is not loot. It is time on target.</p>
 
-  <h3 style="margin-top:14px">Two fixed numbers that prove it</h3>
-  <p>Some health pools in this fight do not move, which makes them a stopwatch. The Echoes of Jawae are a
-  fixed 198.9M, and every raid here did exactly that number. The kills spent 130.3 seconds on
+  <h3 style="margin-top:14px">Two health pools that do not move</h3>
+  <p>The Echoes of Jawae are a fixed 198.9M pool, and every raid here did exactly that number, which turns
+  the intermission into a stopwatch. The kills spent 130.3 seconds on
   it and this night spent 171.7, the same damage taking 32% longer. Nek'zali
   herself is 697.1M. The kills all did precisely that, and this raid did 650.5M before it died.</p>
 
   <h3 style="margin-top:14px">What the lost time costs</h3>
-  <p>The clock is not a neutral penalty, it feeds back. Grasping Depths damage taken, per player:</p>
-  <div class="bars"><div class="brow"><div class="bhead"><span class="t">Shattered</span><span class="v">2.2M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:23">&nbsp;</div><div style="flex:37"></div></div></div><div class="brow"><div class="bhead"><span class="t">Snowblind</span><span class="v">2.6M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:27">&nbsp;</div><div style="flex:33"></div></div></div><div class="brow"><div class="bhead"><span class="t">The Hex Pistols</span><span class="v">2.6M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:27">&nbsp;</div><div style="flex:33"></div></div></div><div class="brow"><div class="bhead"><span class="t">Epoch</span><span class="v">3.0M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:31">&nbsp;</div><div style="flex:29"></div></div></div><div class="brow"><div class="bhead"><span class="t">This night, pull 15</span><span class="v">5.8M per player · wipe</span></div><div class="bar"><div class="seg gap" style="flex:60">2.6× the best kill</div></div></div></div>
+  <p>Grasping Depths damage taken, per player, across the whole pull:</p>
+  <div class="bars"><div class="brow"><div class="bhead"><span class="t">Shattered</span><span class="v">2.2M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:22">&nbsp;</div><div style="flex:38"></div></div></div><div class="brow"><div class="bhead"><span class="t">Snowblind</span><span class="v">2.6M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:26">&nbsp;</div><div style="flex:34"></div></div></div><div class="brow"><div class="bhead"><span class="t">The Hex Pistols</span><span class="v">2.6M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:26">&nbsp;</div><div style="flex:34"></div></div></div><div class="brow"><div class="bhead"><span class="t">Epoch</span><span class="v">3.0M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:30">&nbsp;</div><div style="flex:30"></div></div></div><div class="brow"><div class="bhead"><span class="t">This night, pull 15</span><span class="v">6.0M per player · wipe</span></div><div class="bar"><div class="seg gap" style="flex:60">2.7× the best kill</div></div></div></div>
   <p>Grasping Depths ticks on all twenty players for every second an Echo is up, and two windows went
-  uncovered. The healers paid roughly 3.2M extra per player for time nobody was in the water, and that
+  uncovered. The healers paid roughly 3.4M extra per player for time nobody was in the water, and that
   healing comes out of the damage that would have shortened the fight. That is the spiral: the slower the
   fight, the more Echoes, and the more Echoes the slower it gets.</p>
 </section>
@@ -377,7 +382,7 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
     </div>
     <div class="card">
       <h3>Fix the intermission</h3>
-      <p>41 seconds of the 96 seconds. It is what pushes an entire Echo inside the Ritual,
+      <p>41 of the 96 seconds. It is what pushes an entire Echo inside the Ritual,
       and what makes the seventh and eighth Echoes exist at all. Kill the Echoes of Jawae in
       130.3 seconds and the well rotation stops being a problem on its own.</p>
     </div>
