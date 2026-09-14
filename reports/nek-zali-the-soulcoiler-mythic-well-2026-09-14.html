@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>Soulcoil Well Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500;700&family=Newsreader:opsz,wght@6..72,300;6..72,400&display=swap">
+<style>
+:root{
+  --ground:#f7f5f9; --surface:#ffffff; --surface-2:#f0ecf4;
+  --ink:#1a1426; --ink-2:#4a4059; --muted:#6a5f7e;
+  --rule:#dcd4e4; --rule-soft:#e9e3ef;
+  --accent:#6a4c9c; --accent-soft:rgba(106,76,156,.12);
+  --dive:#12907f; --lock:#a66e17; --bad:#cc2a71; --bad-soft:rgba(204,42,113,.14);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#16111f; --surface:#1e1830; --surface-2:#251e3a;
+  --ink:#ede7f5; --ink-2:#c4b9d6; --muted:#9b8fb4;
+  --rule:#382e52; --rule-soft:#2b2340;
+  --accent:#a98bdd; --accent-soft:rgba(169,139,221,.15);
+  --dive:#1aa492; --lock:#b07a24; --bad:#d8437f; --bad-soft:rgba(216,67,127,.18);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ground:#16111f; --surface:#1e1830; --surface-2:#251e3a;
+  --ink:#ede7f5; --ink-2:#c4b9d6; --muted:#9b8fb4;
+  --rule:#382e52; --rule-soft:#2b2340;
+  --accent:#a98bdd; --accent-soft:rgba(169,139,221,.15);
+  --dive:#1aa492; --lock:#b07a24; --bad:#d8437f; --bad-soft:rgba(216,67,127,.18);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:"Newsreader",Georgia,"Times New Roman",serif;font-size:17px;line-height:1.6}
+.wrap{max-width:1060px;margin:0 auto;padding-inline:20px;padding-block:40px 80px;
+  display:flex;flex-direction:column;gap:46px}
+h1,h2,h3,.lab{font-family:"Archivo",system-ui,sans-serif;margin:0}
+h1{font-size:clamp(34px,6.2vw,58px);font-weight:800;line-height:1.02;letter-spacing:-.025em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+h2{font-size:clamp(23px,3.4vw,29px);font-weight:700;letter-spacing:-.018em;text-wrap:balance}
+h3{font-size:16px;font-weight:600;letter-spacing:.01em}
+.lab{font-family:"IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.14em;
+  font-size:11px;font-weight:500;color:var(--accent)}
+p{margin:0;max-width:66ch;color:var(--ink-2)}
+p + p{margin-top:14px}
+p strong{color:var(--ink);font-weight:400;box-shadow:inset 0 -.42em 0 var(--accent-soft)}
+.note{font-size:15px;color:var(--muted);max-width:70ch}
+a{color:var(--accent)}
+.mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+header .rule{height:3px;background:var(--accent);width:74px;margin:16px 0 18px}
+header .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:"IBM Plex Mono",monospace;
+  font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:22px}
+header .meta b{color:var(--ink-2);font-weight:500}
+.standfirst{font-size:clamp(18px,2.3vw,21px);line-height:1.5;font-weight:300;max-width:62ch;color:var(--ink-2);margin-top:18px}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule)}
+.tile{background:var(--surface);padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.tile .n{font-family:"Archivo",sans-serif;font-size:27px;font-weight:800;letter-spacing:-.02em;
+  line-height:1;font-variant-numeric:tabular-nums}
+.tile .lab{font-size:11px;color:var(--muted);letter-spacing:.08em}
+.tile.hot .n{color:var(--bad)}
+
+section{display:flex;flex-direction:column;gap:14px}
+section > .head{display:flex;flex-direction:column;gap:7px;border-top:1px solid var(--rule);padding-top:16px}
+
+figure{margin:0;background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.scroll{overflow-x:auto;padding:18px 16px 8px}
+svg{display:block;max-width:100%;height:auto;min-width:760px}
+figcaption{display:flex;flex-wrap:wrap;gap:8px 20px;padding:14px 18px 16px;border-top:1px solid var(--rule-soft);
+  font-family:"Archivo",sans-serif;font-size:12.5px;color:var(--ink-2)}
+.key{display:flex;align-items:center;gap:8px}
+.sw{width:17px;height:10px;border-radius:2px;flex:none}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:600px}
+th,td{padding:10px 16px;text-align:left;border-bottom:1px solid var(--rule-soft);white-space:nowrap}
+th{font-family:"Archivo",sans-serif;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;background:var(--surface-2)}
+td{font-family:"IBM Plex Mono",monospace;font-size:13px;font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+td.name{font-family:"Archivo",sans-serif;font-size:13.5px;font-weight:500}
+.num{text-align:right}
+.hot{color:var(--bad);font-weight:700}
+.calm{font-family:"Archivo",sans-serif;font-size:12.5px;color:var(--muted)}
+
+.bars{display:flex;flex-direction:column}
+.brow{display:flex;flex-direction:column;gap:7px;padding:15px 0;border-top:1px solid var(--rule-soft)}
+.brow:first-child{border-top:0}
+.bhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.bhead .t{font-family:"Archivo",sans-serif;font-weight:600;font-size:15.5px}
+.bhead .v{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted)}
+.bar{display:flex;height:26px;gap:2px}
+.seg{display:flex;align-items:center;padding-inline:9px;border-radius:2px;min-width:0;overflow:hidden;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:500;white-space:nowrap}
+.seg.dive{background:var(--dive);color:#fff}
+.seg.lock{background:var(--lock);color:#fff}
+.seg.gap{background:var(--bad);color:#fff}
+.seg.avail{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--rule)}
+.seg.slack{border:1px dashed var(--rule);color:var(--muted)}
+.verdict{font-family:"Archivo",sans-serif;font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px}
+.verdict::before{content:"";width:8px;height:8px;border-radius:50%;flex:none;background:currentColor}
+.verdict.no{color:var(--bad)}
+.verdict.yes{color:var(--dive)}
+
+.steps{display:grid;gap:1px;background:var(--rule-soft);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.step{background:var(--surface);padding:13px 18px;display:grid;grid-template-columns:78px 1fr;gap:16px;align-items:baseline}
+.step .tm{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:700;color:var(--accent)}
+.step .tx{font-size:15.5px;line-height:1.5;color:var(--ink-2)}
+.step .tx b{color:var(--ink);font-weight:400}
+.step.hot{background:var(--bad-soft)}
+.step.hot .tm{color:var(--bad)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:4px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.card p{font-size:15px;margin:0}
+
+#tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;z-index:50;
+  background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:8px 11px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5;color:var(--ink);max-width:260px;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.5)}
+#tip b{font-family:"Archivo",sans-serif;font-size:12.5px;display:block;margin-bottom:2px}
+
+footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",sans-serif;
+  font-size:13px;color:var(--muted)}
+
+@media (max-width:560px){.step{grid-template-columns:1fr;gap:3px}body{font-size:16px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<style>img{max-width:100%}[hidden]{display:none!important}</style>
+<style>
+/* Strip tying the report back to the site it is served from. */
+.report-nav{display:flex;gap:18px;align-items:center;justify-content:center;
+  background:#070912;color:#8b95ad;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;
+  padding:10px 16px;border-bottom:1px solid #1c2438}
+.report-nav a{color:#8b95ad;text-decoration:none}
+.report-nav a:hover{color:#e0a526}
+.report-nav span{color:#e0a526;letter-spacing:.12em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<nav class="report-nav">
+  <a href="/reports">&larr; Reports</a>
+  <span>Low Pressure</span>
+  <a href="https://www.warcraftlogs.com/reports/nVtMWTA7rCXag2h6">Warcraft Logs</a>
+</nav>
+<div class="wrap">
+
+<header>
+  <div class="meta">
+    <span><b>Low Pressure progression night</b></span>
+    <span>14 September 2026</span>
+    <span>Nek'zali the Soulcoiler &middot; <b>Mythic</b></span>
+    <span>15 pulls &middot; best <b>6.68%</b></span>
+    <span class="mono">nVtMWTA7rCXag2h6</span>
+  </div>
+  <h1>Two teams can't cover a <em>forty-second</em> well</h1>
+  <div class="rule"></div>
+  <p class="standfirst">Soul Exhaustion lasts 60 seconds and starts when you climb <em>out</em>.
+  In Stage Two the Drowned Echo returns every 40. <strong>A two-team rotation is about
+  9 seconds short on every cycle</strong> — and across 15 pulls it only broke the rotation
+  three times, on the three pulls that got deepest.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><span class="n">15</span><span class="lab">pulls on Nek'zali</span></div>
+  <div class="tile"><span class="n">6.68%</span><span class="lab">best of the night</span></div>
+  <div class="tile"><span class="n">2</span><span class="lab">well teams, every pull</span></div>
+  <div class="tile hot"><span class="n">3</span><span class="lab">pulls where the rotation ran out of people</span></div>
+  <div class="tile hot"><span class="n">9</span><span class="lab">Echoes in the longest pull</span></div>
+</div>
+
+<section>
+  <div class="head">
+    <span class="lab">01 &mdash; The arithmetic</span>
+    <h2>What a dive costs versus what the boss gives you</h2>
+  </div>
+  <p>A dive is not 29 seconds of your time, it is 89. You are in the well until the
+  Echo dies — about 29 seconds on this night — and then locked out for a further 60.
+  Everything below is on the same scale.</p>
+
+  <div class="bars">
+    <div class="brow">
+      <div class="bhead"><span class="t">What one dive costs you</span>
+        <span class="v">29s in the well + 60s locked out = 89s</span></div>
+      <div class="bar">
+        <div class="seg dive" style="flex:29">29s in the well</div>
+        <div class="seg lock" style="flex:60">60s Soul Exhaustion</div>
+        <div style="flex:38"></div>
+      </div>
+    </div>
+    <div class="brow">
+      <div class="bhead"><span class="t">Two teams, Echo every 40s</span>
+        <span class="v">your turn comes back after 80s</span></div>
+      <div class="bar">
+        <div class="seg avail" style="flex:80">80s until you're called again</div>
+        <div class="seg gap" style="flex:9">9s short</div>
+        <div style="flex:38"></div>
+      </div>
+      <div class="verdict no">Impossible — you are still Exhausted when the Echo spawns</div>
+    </div>
+    <div class="brow">
+      <div class="bhead"><span class="t">Three teams, Echo every 40s</span>
+        <span class="v">your turn comes back after 120s</span></div>
+      <div class="bar">
+        <div class="seg avail" style="flex:89">89s of cycle</div>
+        <div class="seg slack" style="flex:31">31s slack</div>
+        <div style="flex:8"></div>
+      </div>
+      <div class="verdict yes">Works — and leaves room for a slow kill</div>
+    </div>
+  </div>
+
+  <p class="note">This is why the mythic guides disagree with each other. Through Stage One and the
+  intermission the Echo came every 71–113 seconds, where two alternating teams is genuinely
+  fine — that is the regime the two-team guides describe. Stage Two locks it to 40.</p>
+</section>
+
+<section>
+  <div class="head">
+    <span class="lab">02 &mdash; All fifteen pulls</span>
+    <h2>Only three pulls ever ran out of divers</h2>
+  </div>
+  <p>Every pull of the night on one clock. Each teal tick is an Echo waking; the dashed notch is the
+  Ritual of Awakening. Magenta diamonds are entries taken while the diver was still Exhausted.</p>
+  <figure>
+    <div class="scroll"><svg id="night" role="img" aria-label="Every pull of the night on one clock, with Echo spawns, the intermission and early well entries"></svg></div>
+    <figcaption>
+      <span class="key"><span class="sw" style="background:var(--dive);width:3px;height:14px"></span>Echo wakes</span>
+      <span class="key"><span class="sw" style="background:none;width:12px;height:12px;border:1px solid var(--ink-2);transform:rotate(45deg)"></span>Ritual of Awakening</span>
+      <span class="key"><span class="sw" style="background:var(--bad);width:11px;height:11px;transform:rotate(45deg)"></span>Entered while Exhausted</span>
+    </figcaption>
+  </figure>
+  <p>Most pulls never got past a fifth Echo, and the rotation held through them — two teams is enough at
+  the Stage One cadence. The three pulls that lived to see 8 or 9 Echoes are the
+  ones where whole teams went in early, every time in the last window before the wipe.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Pull</th><th class="num">Ended</th><th class="num">Echoes</th><th class="num">Early entries</th><th>First early entry</th><th class="num">Wipe followed</th></tr></thead>
+      <tbody><tr><td class="name">3</td><td class="num">19.31%</td><td class="num">8</td><td class="num hot">2</td><td>391.3s — Darkowlmaste, 3.8s early</td><td class="num">128s</td></tr><tr><td class="name">12</td><td class="num">14.28%</td><td class="num">9</td><td class="num hot">4</td><td>488.7s — Blossy, 8.3s early</td><td class="num">77s</td></tr><tr><td class="name">15</td><td class="num">6.68%</td><td class="num">8</td><td class="num hot">5</td><td>458.9s — Blossy, 7.6s early</td><td class="num">53s</td></tr></tbody>
+    </table>
+  </div>
+  <p class="note">two other pulls show a single diamond — one person going in early on
+  their own, which is a mistake rather than the rotation running out of people. Everything else that looks
+  like an early entry happens after five or more of the raid are already dead: that is the pull dragging
+  corpses into the water, not a call.</p>
+</section>
+
+<section>
+  <div class="head">
+    <span class="lab">03 &mdash; The best pull, second by second</span>
+    <h2>Where the rotation came apart</h2>
+  </div>
+  <p>Pull 15, 8:32, ended at 6.68%. Every well trip and every lockout, read
+  straight from the Immortal Coil and Soul Exhaustion aura events. The violet bands are Grasping Depths
+  windows — the Echo is up and someone has to be in the water.</p>
+  <figure>
+    <div class="scroll"><svg id="deep" role="img" aria-label="Well dives and Soul Exhaustion lockouts for both teams through the deepest pull"></svg></div>
+    <figcaption>
+      <span class="key"><span class="sw" style="background:var(--dive)"></span>In the well</span>
+      <span class="key"><span class="sw" style="background:var(--bad)"></span>In the well while Exhausted (+300% damage)</span>
+      <span class="key"><span class="sw" style="background:var(--lock);height:5px"></span>Soul Exhaustion lockout</span>
+      <span class="key"><span class="sw" style="background:var(--accent-soft);border:1px solid var(--rule)"></span>Grasping Depths window</span>
+      <span class="key"><span class="sw" style="background:none;width:12px;height:12px;border-radius:50%;border:2px solid var(--bad)"></span>Death</span>
+    </figcaption>
+  </figure>
+  <p class="note">The last band never ends. The Echo that woke at 458s was still alive when the raid died — Grasping Depths ticked on everyone for 53 unbroken seconds.</p>
+</section>
+
+<section>
+  <div class="head">
+    <span class="lab">04 &mdash; The evidence</span>
+    <h2>Every amplified hit in the pull</h2>
+  </div>
+  <p>Soul Exhaustion is visible in the log without reading a single aura: it multiplies well damage by
+  roughly 3.5 against the unmitigated value. seven hits in the whole pull carry it.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Time</th><th>Player</th><th>Ability</th><th class="num">Taken</th><th class="num">Unmitigated</th><th class="num">Ratio</th></tr></thead>
+      <tbody><tr><td>415.0s</td><td class="name">Arúgál</td><td>Soulcoil Well</td><td class="num">419,402</td><td class="num">119,010</td><td class="num hot">×3.52</td></tr><tr><td>464.5s</td><td class="name">Blossy</td><td>Immortal Coil</td><td class="num">209,742</td><td class="num">58,338</td><td class="num hot">×3.60</td></tr><tr><td>465.5s</td><td class="name">Blossy</td><td>Immortal Coil</td><td class="num">207,579</td><td class="num">58,338</td><td class="num hot">×3.56</td></tr><tr><td>467.7s</td><td class="name">Itto</td><td>Immortal Coil</td><td class="num">206,062</td><td class="num">58,338</td><td class="num hot">×3.53</td></tr><tr><td>468.7s</td><td class="name">Itto</td><td>Immortal Coil</td><td class="num">206,793</td><td class="num">58,338</td><td class="num hot">×3.54</td></tr><tr><td>469.8s</td><td class="name">Itto</td><td>Immortal Coil</td><td class="num">190,738</td><td class="num">58,338</td><td class="num hot">×3.27</td></tr><tr><td>470.2s</td><td class="name">Krokhoc</td><td>Immortal Coil</td><td class="num">208,359</td><td class="num">58,338</td><td class="num hot">×3.57</td></tr></tbody>
+    </table>
+  </div>
+  <p class="note">A clean Immortal Coil tick costs about 52,000. An Exhausted one costs 208,000.
+  Nothing else in the fight has that shape.</p>
+</section>
+
+<section>
+  <div class="head">
+    <span class="lab">05 &mdash; How the kills do it</span>
+    <h2>Four guilds who killed it on day one, and none of them used three teams</h2>
+  </div>
+  <p>The earliest public Mythic kills on record, all four from 2 September, the first day the difficulty
+  opened. Every one of them ran <strong>two teams</strong>, exactly like you. Between them they took zero
+  Soul Exhaustion penalties.</p>
+  <figure>
+    <div class="scroll"><svg id="comp" role="img" aria-label="Four day-one mythic kills against this night's best pull"></svg></div>
+    <figcaption>
+      <span class="key"><span class="sw" style="background:var(--dive)"></span>Echo up, team in the water</span>
+      <span class="key"><span class="sw" style="background:var(--bad-soft);border:1px solid var(--bad)"></span>Echo up, nobody in the water</span>
+      <span class="key"><span class="sw" style="background:var(--lock);opacity:.45"></span>Ritual of Awakening</span>
+      <span class="key"><span class="sw" style="background:var(--bad);width:11px;height:11px;transform:rotate(45deg)"></span>Entered while Exhausted</span>
+    </figcaption>
+  </figure>
+  <p>Two teams works for them because <strong>a 416-second kill only ever asks for six dives</strong>.
+  Their cadence compresses the same way yours does, but the 40-second regime only lasts for the last
+  two Echoes — and two teams covers exactly two. Then the boss dies.</p>
+  <p>Three of the four never dive the final Echo at all. It wakes around 397s, they leave it alive, eat
+  Grasping Depths for seventeen to twenty seconds, and kill the boss through it.
+  <strong>The last Echo is not a mechanic they solve. It is one they outrun.</strong></p>
+
+  <h3 style="margin-top:14px">Where the 96 seconds go</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Milestone</th><th class="num">Day-one kills</th><th class="num">Your best pull</th><th class="num">Difference</th></tr></thead>
+      <tbody><tr><td class="name">Boss to 50% (Ritual begins)</td><td class="num">156.3s</td><td class="num">177.8s</td><td class="num"><span class="hot">+21.5s</span></td></tr><tr><td class="name">Ritual of Awakening length</td><td class="num">130.3s</td><td class="num">171.7s</td><td class="num"><span class="hot">+41.4s</span></td></tr><tr><td class="name">Stage Two begins</td><td class="num">286.6s</td><td class="num">349.5s</td><td class="num"><span class="hot">+62.9s</span></td></tr><tr><td class="name">Fight ends</td><td class="num">415.5s</td><td class="num">512.0s</td><td class="num"><span class="hot">+96.5s</span></td></tr><tr><td class="name">Echoes the raid must survive</td><td class="num">6–7</td><td class="num">8</td><td class="num hot">+1</td></tr></tbody>
+    </table>
+  </div>
+  <p><strong>The single biggest loss is the intermission.</strong> And it compounds: your Ritual runs long
+  enough that a whole Grasping Depths window opens inside it. With everyone on the Echoes of Jawae nobody can
+  spare five people, and that window ran 68 seconds with the raid in the water for only the last
+  26. The day-one kills do not have this problem — their intermission finishes around
+  287s and the next Echo does not wake until 311–317s. It lands in the gap.</p>
+</section>
+
+<section>
+  <div class="head">
+    <span class="lab">06 &mdash; Same plan, different clock</span>
+    <h2>You are not running a different strategy. You are running the same one slower.</h2>
+  </div>
+  <p>The obvious next question is whether the kill guilds know something you do not. Composition, gear, who
+  dives, when they lust, how they handle the adds — almost everything matches.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>What</th><th>Day-one kills</th><th>This night</th><th>Verdict</th></tr></thead>
+      <tbody><tr><td class="name">Raid composition</td><td>2 tanks / 4 healers / 14 DPS</td><td>2 / 5 / 14</td><td class="calm">differs</td></tr><tr><td class="name">Well team shape</td><td>4 DPS + 1 healer</td><td>4 DPS + 1 healer</td><td class="calm">identical</td></tr><tr><td class="name">Number of well teams</td><td>2</td><td>2</td><td class="calm">identical</td></tr><tr><td class="name">Lust</td><td>on Stage Two (290–302s)</td><td>on Stage Two (353s)</td><td class="calm">identical call</td></tr><tr><td class="name">Median item level</td><td>318</td><td>320</td><td class="calm">you’re ahead</td></tr><tr><td class="name">Soulcoiler’s Curse let through</td><td>0 of 13–18</td><td>2 of 18</td><td class="calm">slightly behind</td></tr><tr><td class="name">Raid damage</td><td>2.64M/s</td><td>2.21M/s</td><td class="hot">−16%</td></tr><tr><td class="name">Damage uptime</td><td>92.6%</td><td>85.6%</td><td class="hot">−7 pts</td></tr></tbody>
+    </table>
+  </div>
+  <p>Same plan, better gear, faster reactions — and 16% less damage. The gap is not tactical
+  knowledge and it is not loot. It is time on target.</p>
+
+  <h3 style="margin-top:14px">Two fixed numbers that prove it</h3>
+  <p>Some health pools in this fight do not move, which makes them a stopwatch.
+  <strong>Every raid here did exactly 198.9M damage to the Echoes of Jawae</strong> — it is a fixed pool. The
+  kills spent 130.3 seconds on it. You spent 171.7. Same damage,
+  32% longer. <strong>Nek'zali herself is 697.1M</strong>; the kills all did precisely that,
+  and you did 650.5M before the raid died.</p>
+
+  <h3 style="margin-top:14px">What the lost time costs you</h3>
+  <p>The clock is not a neutral penalty — it feeds back. Grasping Depths damage taken, per player:</p>
+  <div class="bars"><div class="brow"><div class="bhead"><span class="t">Shattered</span><span class="v">2.2M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:23">&nbsp;</div><div style="flex:37"></div></div></div><div class="brow"><div class="bhead"><span class="t">Snowblind</span><span class="v">2.6M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:27">&nbsp;</div><div style="flex:33"></div></div></div><div class="brow"><div class="bhead"><span class="t">The Hex Pistols</span><span class="v">2.6M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:27">&nbsp;</div><div style="flex:33"></div></div></div><div class="brow"><div class="bhead"><span class="t">Epoch</span><span class="v">3.0M per player · kill</span></div><div class="bar"><div class="seg avail" style="flex:31">&nbsp;</div><div style="flex:29"></div></div></div><div class="brow"><div class="bhead"><span class="t">This night, pull 15</span><span class="v">5.8M per player · wipe</span></div><div class="bar"><div class="seg gap" style="flex:60">2.6× the best kill</div></div></div></div>
+  <p>That is the whole spiral in one number. Grasping Depths ticks on all twenty players for every second an
+  Echo is up, and two windows went uncovered. <strong>Your healers paid roughly 3.2M extra per player
+  for time nobody was in the water.</strong> That healing comes out of the damage that would have shortened
+  the fight.</p>
+</section>
+
+<section>
+  <div class="head">
+    <span class="lab">07 &mdash; The call</span>
+    <h2>What to change before next week</h2>
+  </div>
+  <p>The obvious fix is a third well team. The kill logs say that is the wrong first move —
+  <strong>nobody who killed this on day one used three</strong>, and this rotation's shape already matches
+  theirs. In priority order:</p>
+  <div class="cards">
+    <div class="card">
+      <h3>1 &mdash; Don't dive the last Echo</h3>
+      <p>Free, and available next pull. Three of four kills leave the final Echo alive and burn through
+      Grasping Depths for the last ~20s. The last Echo of pull 15 was dived and never killed — that
+      window ran 53 seconds. You paid the burn cost <em>and</em> lost the divers.</p>
+    </div>
+    <div class="card">
+      <h3>2 &mdash; Fix the intermission</h3>
+      <p>41 seconds of the 96 seconds. It is what pushes an entire Echo inside the Ritual,
+      and what makes the seventh and eighth Echoes exist at all. Kill the Echoes of Jawae in
+      130.3 seconds and the well rotation stops being a problem on its own.</p>
+    </div>
+    <div class="card">
+      <h3>3 &mdash; Keep two teams</h3>
+      <p>The alternation and the entry timing here are better than all four kill logs, and the team shape
+      already matches theirs exactly. A third team is a stopgap for a 512-second fight, not the
+      target.</p>
+    </div>
+    <div class="card">
+      <h3>4 &mdash; Cover the intermission window</h3>
+      <p>If the Ritual is still running when an Echo wakes, someone has to go anyway. Forty-odd seconds of
+      Grasping Depths on twenty players costs more healing than five people missing from the Jawae echoes
+      costs damage.</p>
+    </div>
+    <div class="card">
+      <h3>5 &mdash; Four seconds early is survivable, eight is not</h3>
+      <p>Immortal Coil ramps for about 4.6s before it bites, so entering a few seconds early can cost nothing
+      at all. Entering eight seconds early killed Blossy and Itto. If someone must go in hot, that is the budget.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Built from the Warcraft Logs v2 API — Immortal Coil, Soul Exhaustion and Grasping Depths aura and damage
+  events for 15 pulls of report <a href="https://www.warcraftlogs.com/reports/nVtMWTA7rCXag2h6">nVtMWTA7rCXag2h6</a>.
+  Dive and lockout windows are read from aura application and removal, not estimated. Day-one kill figures
+  come from the four earliest public Mythic kills, 2 September 2026.
+</footer>
+
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script type="application/json" id="data-night">[{"pull": 1, "dur": 424.7, "pct": 44.66, "ritual": 186.1, "echoes": [43.5, 114.6, 185.5, 233.6, 267.6, 352.1], "calls": [137.3], "trigger": "Hungering Pyre"}, {"pull": 2, "dur": 374.6, "pct": 45.21, "ritual": 179.4, "echoes": [43.5, 114.5, 226.9, 331.0], "calls": [], "trigger": "Grasping Depths"}, {"pull": 3, "dur": 519.4, "pct": 19.31, "ritual": 178.3, "echoes": [43.5, 114.5, 225.8, 260.8, 339.6, 381.3, 421.3, 501.3], "calls": [463.8, 391.3], "trigger": "Grasping Depths"}, {"pull": 4, "dur": 181.3, "pct": 54.94, "ritual": null, "echoes": [43.5, 114.5], "calls": [], "trigger": "Possession Barrage"}, {"pull": 5, "dur": 160.5, "pct": 63.15, "ritual": null, "echoes": [43.5, 114.6], "calls": [], "trigger": "Swirling Spirit"}, {"pull": 6, "dur": 310.0, "pct": 46.86, "ritual": 194.9, "echoes": [43.5, 114.6, 185.5, 242.4], "calls": [], "trigger": "Vessel of Awakening"}, {"pull": 7, "dur": 444.2, "pct": 42.45, "ritual": 187.3, "echoes": [43.5, 114.5, 185.5, 235.2, 305.2, 383.0], "calls": [], "trigger": "Vessel of Awakening"}, {"pull": 8, "dur": 99.7, "pct": 76.28, "ritual": null, "echoes": [43.5], "calls": [], "trigger": "Melee"}, {"pull": 9, "dur": 285.9, "pct": 46.46, "ritual": 188.8, "echoes": [43.6, 114.5, 185.6, 236.3], "calls": [], "trigger": "Hungering Pyre"}, {"pull": 10, "dur": 165.1, "pct": 61.5, "ritual": null, "echoes": [43.5, 114.5], "calls": [], "trigger": "Anguished Echoes"}, {"pull": 11, "dur": 304.3, "pct": 48.54, "ritual": 196.2, "echoes": [43.5, 114.6, 185.6, 243.7], "calls": [248.8], "trigger": "Grasping Depths"}, {"pull": 12, "dur": 566.1, "pct": 14.28, "ritual": 194.2, "echoes": [43.6, 114.5, 185.6, 241.7, 276.7, 359.3, 408.9, 449.0, 489.0], "calls": [488.7, 490.1, 492.3, 494.2], "trigger": "Corpse Blight"}, {"pull": 13, "dur": 368.6, "pct": 45.82, "ritual": 183.5, "echoes": [43.5, 114.5, 185.5, 231.0, 266.0], "calls": [], "trigger": "Grasping Depths"}, {"pull": 14, "dur": 352.4, "pct": 45.59, "ritual": 179.7, "echoes": [43.5, 114.6, 227.2, 262.2], "calls": [], "trigger": "Vessel of Awakening"}, {"pull": 15, "dur": 512.0, "pct": 6.68, "ritual": 177.8, "echoes": [43.5, 114.5, 225.3, 260.4, 337.9, 378.1, 418.0, 458.1], "calls": [462.6, 458.9, 467.4, 462.1, 498.4], "trigger": "Grasping Depths"}]</script>
+<script type="application/json" id="data-deep">{"dur": 512.0, "windows": [[43.5, 68.5], [114.5, 139.5], [225.3, 252.3], [260.4, 328.4], [337.9, 348.9], [378.1, 404.1], [418.0, 436.0], [458.1, 511.1]], "phases": [[177.8, "Ritual of Awakening"], [349.5, "Stage Two"]], "braces": [[378.1, 418.0], [418.0, 458.1]], "teams": [{"name": "Team A", "players": ["Arúgál", "Blossy", "Itto", "Krokhoc", "Sylphiela"]}, {"name": "Team B", "players": ["Darkowlmaste", "Havla", "Iamstabby", "Mêlódý", "Nahary"]}], "dives": {"Arúgál": [[43.0, 75.0], [228.4, 258.3], [377.2, 410.3], [467.4, 494.8]], "Blossy": [[42.5, 75.0], [229.0, 258.3], [381.2, 410.3], [458.9, 466.5]], "Darkowlmaste": [[115.1, 145.5], [305.9, 334.6], [417.4, 442.4], [502.2, 511.2]], "Havla": [[113.6, 145.5], [302.4, 334.6], [420.5, 442.4], [498.4, 504.8]], "Iamstabby": [[113.6, 145.5], [307.2, 334.6], [420.0, 442.4]], "Itto": [[47.1, 75.0], [230.2, 258.3], [380.5, 410.3], [462.1, 469.8]], "Krokhoc": [[44.5, 75.0], [224.4, 258.3], [377.8, 410.3], [462.6, 494.8]], "Mêlódý": [[114.0, 145.5], [305.1, 334.6], [419.1, 442.4], [501.6, 512.0]], "Nahary": [[115.0, 145.5], [309.4, 334.6], [420.2, 442.4]], "Sylphiela": [[42.5, 75.0], [226.7, 258.3], [378.0, 410.3]]}, "lockouts": {"Sylphiela": [[75.2, 135.2], [258.6, 318.6], [410.5, 470.5]], "Itto": [[75.2, 135.2], [258.6, 318.6], [410.5, 469.7]], "Arúgál": [[75.2, 135.2], [258.6, 318.6], [410.5, 470.5], [494.0, 512.0]], "Krokhoc": [[75.2, 135.3], [258.6, 318.6], [410.5, 470.5], [494.0, 512.0]], "Blossy": [[75.2, 135.3], [258.6, 318.6], [410.5, 466.5]], "Havla": [[145.8, 205.8], [334.9, 394.9], [442.6, 502.6], [505.1, 511.0]], "Iamstabby": [[145.8, 205.8], [334.9, 394.9], [442.6, 502.6]], "Mêlódý": [[145.8, 205.8], [334.9, 394.9], [442.6, 502.6]], "Darkowlmaste": [[145.8, 205.8], [334.9, 394.9], [442.6, 502.6]], "Nahary": [[145.8, 205.8], [334.9, 394.9], [442.6, 502.6]]}, "deaths": {"Blossy": 466.5, "Itto": 469.8, "Iamstabby": 509.1, "Sylphiela": 509.1, "Nahary": 510.4, "Havla": 511.0, "Darkowlmaste": 511.2}, "outcome": "wipe"}</script>
+<script type="application/json" id="data-comp">[{"name": "Snowblind", "tag": "US", "dur": 418, "ritual": 156.6, "stage_two": 288.8, "windows": [[43.5, 70.5, 42.7], [114.5, 139.5, 114.5], [204.1, 228.1, 206.3], [263.0, 288.0, 263.9], [317.3, 341.3, 318.2], [357.3, 388.3, 359.7], [397.3, 417.3, null]], "calls": [], "ours": false, "result": "kill · one death"}, {"name": "Epoch", "tag": "EU", "dur": 415, "ritual": 154.0, "stage_two": 283.1, "windows": [[43.5, 72.5, 43.6], [114.6, 148.6, 117.0], [201.4, 233.5, 203.1], [262.6, 282.6, 263.9], [311.6, 333.6, 314.4], [351.6, 390.6, 355.8]], "calls": [], "ours": false, "result": "kill · no deaths"}, {"name": "Shattered", "tag": "EU", "dur": 414, "ritual": 155.0, "stage_two": 285.7, "windows": [[43.5, 66.5, 43.3], [114.6, 134.6, 114.3], [202.5, 226.5, 204.3], [261.8, 284.8, 263.4], [314.2, 340.2, 316.5], [354.2, 378.2, 354.4], [394.2, 413.2, null]], "calls": [], "ours": false, "result": "kill · no deaths"}, {"name": "The Hex Pistols", "tag": "EU", "dur": 415, "ritual": 159.8, "stage_two": 288.9, "windows": [[43.5, 63.5, 42.6], [114.5, 145.5, 116.4], [207.3, 232.3, 208.1], [265.3, 288.3, 266.4], [317.4, 336.4, 317.1], [357.4, 390.4, 358.4], [397.4, 414.4, null]], "calls": [], "ours": false, "result": "kill · two deaths"}, {"name": "This night", "tag": "pull 15", "dur": 512.0, "ritual": 177.8, "stage_two": 349.5, "windows": [[43.5, 68.5, 42.5], [114.5, 139.5, 113.6], [225.3, 252.3, 224.4], [260.4, 328.4, 302.4], [337.9, 348.9, null], [378.1, 404.1, 377.2], [418.0, 436.0, 417.4], [458.1, 511.1, 458.9]], "calls": [462.6, 458.9, 467.4, 462.1, 498.4], "ours": true, "result": "wipe · 6.68% · fifteen deaths"}]</script>
+<script>
+const NIGHT = JSON.parse(document.getElementById("data-night").textContent);
+const DEEP  = JSON.parse(document.getElementById("data-deep").textContent);
+const COMP  = JSON.parse(document.getElementById("data-comp").textContent);
+
+const NS = "http://www.w3.org/2000/svg", W = 1000;
+const el = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+const fmt = s => { const m = Math.floor(s / 60); return m + ":" + String(Math.round(s - m * 60)).padStart(2, "0"); };
+
+const tip = document.getElementById("tip");
+function tipify(node, head, kind, a, b, extra) {
+  node.style.cursor = "crosshair";
+  node.addEventListener("pointerenter", e => {
+    const span = b == null ? fmt(a) : `${fmt(a)} → ${fmt(b)}  (${(b - a).toFixed(1)}s)`;
+    tip.innerHTML = `<b>${head}</b>${kind}<br>${span}${extra ? "<br>" + extra : ""}`;
+    tip.style.opacity = 1; move(e);
+  });
+  node.addEventListener("pointermove", move);
+  node.addEventListener("pointerleave", () => { tip.style.opacity = 0; });
+}
+function move(e) {
+  const pad = 14, r = tip.getBoundingClientRect();
+  let x = e.clientX + pad, y = e.clientY + pad;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - pad;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - pad;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+
+/* ---- every pull on one clock ---- */
+(function () {
+  const svg = document.getElementById("night");
+  const L = 54, R = 118, TOP = 26, ROW = 25, AXIS = 34;
+  const maxT = Math.max(...NIGHT.map(d => d.dur)) * 1.04;
+  const x = t => L + (t / maxT) * (W - L - R);
+  const H = TOP + NIGHT.length * ROW + AXIS;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+
+  let h = el("text", { x: 10, y: 16, fill: "var(--muted)", "font-size": "10.5",
+    "font-family": "IBM Plex Mono, monospace", "letter-spacing": ".1em" });
+  h.textContent = "PULL"; svg.appendChild(h);
+  h = el("text", { x: W - 10, y: 16, "text-anchor": "end", fill: "var(--muted)", "font-size": "10.5",
+    "font-family": "IBM Plex Mono, monospace", "letter-spacing": ".1em" });
+  h.textContent = "ENDED AT"; svg.appendChild(h);
+
+  NIGHT.forEach((d, i) => {
+    const cy = TOP + i * ROW + ROW / 2, deep = d.calls.length >= 2;
+    let t = el("text", { x: L - 12, y: cy + 4, "text-anchor": "end", fill: deep ? "var(--ink)" : "var(--muted)",
+      "font-size": "12", "font-family": "IBM Plex Mono, monospace", "font-weight": deep ? "700" : "400" });
+    t.textContent = d.pull; svg.appendChild(t);
+
+    const bar = el("rect", { x: x(0), y: cy - 7, width: x(d.dur) - x(0), height: 14, rx: 3,
+      fill: "var(--accent-soft)", stroke: "var(--accent)", "stroke-opacity": deep ? ".7" : ".3", "stroke-width": "1" });
+    tipify(bar, `Pull ${d.pull}`, `${fmt(d.dur)} — ended at ${d.pct}%`, 0, null,
+      d.trigger ? `collapse began with ${d.trigger}` : "");
+    svg.appendChild(bar);
+
+    if (d.ritual != null)
+      svg.appendChild(el("line", { x1: x(d.ritual), y1: cy - 11, x2: x(d.ritual), y2: cy + 11,
+        stroke: "var(--ink-2)", "stroke-width": "1.4", "stroke-dasharray": "2 3" }));
+
+    d.echoes.forEach((e, j) => {
+      const tk = el("rect", { x: x(e) - 1.5, y: cy - 7, width: 3, height: 14, fill: "var(--dive)" });
+      tipify(tk, `Pull ${d.pull}`, `Echo ${j + 1} wakes`, e, null, ""); svg.appendChild(tk);
+    });
+
+    d.calls.forEach(c => {
+      const s = 5.2;
+      const dm = el("path", { d: `M ${x(c)} ${cy - s - 7} L ${x(c) + s} ${cy - 7} L ${x(c)} ${cy + s - 7} L ${x(c) - s} ${cy - 7} Z`,
+        fill: "var(--bad)", stroke: "var(--surface)", "stroke-width": "1" });
+      tipify(dm, `Pull ${d.pull}`, "Entered while Exhausted", c, null, ""); svg.appendChild(dm);
+    });
+
+    const pc = el("text", { x: W - 10, y: cy + 4, "text-anchor": "end", fill: deep ? "var(--bad)" : "var(--ink-2)",
+      "font-size": "12", "font-family": "IBM Plex Mono, monospace", "font-weight": deep ? "700" : "400" });
+    pc.textContent = d.pct.toFixed(2) + "%"; svg.appendChild(pc);
+  });
+  axis(svg, x, TOP + NIGHT.length * ROW + 12, maxT);
+})();
+
+function axis(svg, x, y, maxT) {
+  svg.appendChild(el("line", { x1: x(0), y1: y, x2: x(maxT), y2: y, stroke: "var(--rule)", "stroke-width": "1" }));
+  for (let t = 0; t <= maxT - 40; t += 60) {
+    svg.appendChild(el("line", { x1: x(t), y1: y, x2: x(t), y2: y + 5, stroke: "var(--rule)", "stroke-width": "1" }));
+    const lb = el("text", { x: x(t), y: y + 19, "text-anchor": "middle", fill: "var(--muted)",
+      "font-size": "11", "font-family": "IBM Plex Mono, monospace" });
+    lb.textContent = fmt(t); svg.appendChild(lb);
+  }
+}
+
+/* ---- the deepest pull, lane by lane ---- */
+(function () {
+  const svg = document.getElementById("deep");
+  const L = 96, R = 22, TOP = 46, LANE = 27, GRP = 22, AXIS = 82;
+  const x = t => L + (t / DEEP.dur) * (W - L - R);
+  const rows = [];
+  DEEP.teams.forEach(tm => { rows.push({ group: tm.name }); tm.players.forEach(p => rows.push({ player: p })); });
+  const bodyH = rows.reduce((h, r) => h + (r.group ? GRP : LANE), 0);
+  const H = TOP + bodyH + AXIS;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  const plotTop = TOP, plotBot = TOP + bodyH;
+
+  DEEP.windows.forEach(([a, b], i) => {
+    svg.appendChild(el("rect", { x: x(a), y: plotTop - 16, width: Math.max(2, x(b) - x(a)),
+      height: plotBot - plotTop + 16, fill: "var(--accent-soft)", stroke: "var(--accent)",
+      "stroke-opacity": ".28", "stroke-width": "1" }));
+    const lab = el("text", { x: x(a) + 4, y: plotTop - 21, fill: "var(--muted)", "font-size": "10.5",
+      "font-family": "IBM Plex Mono, monospace" });
+    lab.textContent = "E" + (i + 1); svg.appendChild(lab);
+  });
+
+  DEEP.phases.forEach(([t, label]) => {
+    svg.appendChild(el("line", { x1: x(t), y1: plotTop - 30, x2: x(t), y2: plotBot, stroke: "var(--ink-2)",
+      "stroke-width": "1.5", "stroke-dasharray": "2 4", "stroke-opacity": ".75" }));
+    const tx = el("text", { x: x(t) + 6, y: plotTop - 33, fill: "var(--ink-2)", "font-size": "11",
+      "font-family": "Archivo, sans-serif", "font-weight": "600" });
+    tx.textContent = label; svg.appendChild(tx);
+  });
+
+  let y = TOP;
+  rows.forEach(r => {
+    if (r.group) {
+      const g = el("text", { x: 10, y: y + 15, fill: "var(--accent)", "font-size": "11",
+        "font-family": "Archivo, sans-serif", "font-weight": "600", "letter-spacing": ".1em" });
+      g.textContent = r.group.toUpperCase(); svg.appendChild(g); y += GRP; return;
+    }
+    const p = r.player, cy = y + LANE / 2;
+    svg.appendChild(el("line", { x1: L, y1: cy + 7.5, x2: W - R, y2: cy + 7.5, stroke: "var(--rule-soft)", "stroke-width": "1" }));
+    const nm = el("text", { x: L - 10, y: cy + 3, "text-anchor": "end", fill: "var(--ink-2)", "font-size": "12.5",
+      "font-family": "Archivo, sans-serif", "font-weight": "500" });
+    nm.textContent = p; svg.appendChild(nm);
+
+    (DEEP.lockouts[p] || []).forEach(([a, b]) => {
+      const rect = el("rect", { x: x(a), y: cy + 4, width: Math.max(2, x(b) - x(a)), height: 5, rx: 2, fill: "var(--lock)" });
+      tipify(rect, p, "Soul Exhaustion", a, b, "locked out of the well"); svg.appendChild(rect);
+    });
+    (DEEP.dives[p] || []).forEach(([a, b]) => {
+      const rect = el("rect", { x: x(a), y: cy - 10, width: Math.max(2.5, x(b) - x(a)), height: 12, rx: 2.5,
+        fill: "var(--dive)", stroke: "var(--surface)", "stroke-width": "1" });
+      tipify(rect, p, "In the well", a, b, ""); svg.appendChild(rect);
+      (DEEP.lockouts[p] || []).forEach(([sa, sb]) => {
+        const oa = Math.max(a, sa), ob = Math.min(b, sb);
+        if (ob - oa > 0.05) {
+          const bad = el("rect", { x: x(oa), y: cy - 10, width: Math.max(2.5, x(ob) - x(oa)), height: 12, rx: 2.5,
+            fill: "var(--bad)", stroke: "var(--surface)", "stroke-width": "1" });
+          tipify(bad, p, "In the well while Exhausted", oa, ob, "+300% well damage"); svg.appendChild(bad);
+        }
+      });
+    });
+    if (DEEP.deaths[p] != null) {
+      const d = DEEP.deaths[p];
+      svg.appendChild(el("circle", { cx: x(d), cy: cy - 4, r: 5, fill: "var(--surface)", stroke: "var(--bad)", "stroke-width": "2" }));
+      const c = el("circle", { cx: x(d), cy: cy - 4, r: 9, fill: "transparent" });
+      tipify(c, p, "Death", d, null, ""); svg.appendChild(c);
+    }
+    y += LANE;
+  });
+
+  const ay = plotBot + 14;
+  svg.appendChild(el("line", { x1: L, y1: ay, x2: W - R, y2: ay, stroke: "var(--rule)", "stroke-width": "1" }));
+  for (let t = 0; t <= DEEP.dur; t += 60) {
+    if (x(DEEP.dur) - x(t) < 62) continue;
+    svg.appendChild(el("line", { x1: x(t), y1: ay, x2: x(t), y2: ay + 5, stroke: "var(--rule)", "stroke-width": "1" }));
+    const lb = el("text", { x: x(t), y: ay + 19, "text-anchor": "middle", fill: "var(--muted)", "font-size": "11",
+      "font-family": "IBM Plex Mono, monospace" });
+    lb.textContent = fmt(t); svg.appendChild(lb);
+  }
+  svg.appendChild(el("line", { x1: x(DEEP.dur), y1: ay, x2: x(DEEP.dur), y2: ay + 5, stroke: "var(--bad)", "stroke-width": "1.5" }));
+  const end = el("text", { x: x(DEEP.dur), y: ay + 19, "text-anchor": "end", fill: "var(--bad)", "font-size": "11",
+    "font-family": "IBM Plex Mono, monospace", "font-weight": "700" });
+  end.textContent = fmt(DEEP.dur) + " " + DEEP.outcome; svg.appendChild(end);
+
+  const by = ay + 48;
+  DEEP.braces.forEach(([a, b]) => {
+    svg.appendChild(el("line", { x1: x(a), y1: by, x2: x(b), y2: by, stroke: "var(--bad)", "stroke-width": "1.5" }));
+    svg.appendChild(el("line", { x1: x(a), y1: by - 3, x2: x(a), y2: by + 3, stroke: "var(--bad)", "stroke-width": "1.5" }));
+    svg.appendChild(el("line", { x1: x(b), y1: by - 3, x2: x(b), y2: by + 3, stroke: "var(--bad)", "stroke-width": "1.5" }));
+    const t = el("text", { x: (x(a) + x(b)) / 2, y: by - 6, "text-anchor": "middle", fill: "var(--bad)",
+      "font-size": "10.5", "font-family": "IBM Plex Mono, monospace", "font-weight": "700" });
+    t.textContent = Math.round(b - a) + "s"; svg.appendChild(t);
+  });
+  if (DEEP.braces.length) {
+    const cd = el("text", { x: x(DEEP.braces[0][0]) - 8, y: by + 3, "text-anchor": "end", fill: "var(--muted)",
+      "font-size": "10.5", "font-family": "Archivo, sans-serif" });
+    cd.textContent = "Stage Two cadence"; svg.appendChild(cd);
+  }
+})();
+
+/* ---- day-one kills against the best pull ---- */
+(function () {
+  const svg = document.getElementById("comp");
+  const L = 128, R = 196, TOP = 30, ROW = 46, AXIS = 34;
+  const maxT = Math.max(...COMP.map(d => d.dur)) * 1.02;
+  const x = t => L + (t / maxT) * (W - L - R);
+  const H = TOP + COMP.length * ROW + AXIS;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+
+  COMP.forEach((d, i) => {
+    const cy = TOP + i * ROW + 20, ours = !!d.ours;
+    let t = el("text", { x: L - 12, y: cy - 1, "text-anchor": "end", fill: ours ? "var(--bad)" : "var(--ink)",
+      "font-size": "13", "font-family": "Archivo, sans-serif", "font-weight": ours ? "700" : "600" });
+    t.textContent = d.name; svg.appendChild(t);
+    t = el("text", { x: L - 12, y: cy + 12, "text-anchor": "end", fill: "var(--muted)", "font-size": "10.5",
+      "font-family": "IBM Plex Mono, monospace" });
+    t.textContent = d.tag; svg.appendChild(t);
+
+    svg.appendChild(el("rect", { x: x(0), y: cy - 9, width: x(d.dur) - x(0), height: 18, rx: 3,
+      fill: "var(--surface-2)", stroke: "var(--rule)", "stroke-width": "1" }));
+    if (d.ritual != null && d.stage_two != null) {
+      const ib = el("rect", { x: x(d.ritual), y: cy - 9, width: x(d.stage_two) - x(d.ritual), height: 18,
+        fill: "var(--lock)", "fill-opacity": ".42" });
+      tipify(ib, d.name, "Ritual of Awakening", d.ritual, d.stage_two,
+        `${(d.stage_two - d.ritual).toFixed(0)}s intermission`);
+      svg.appendChild(ib);
+    }
+    d.windows.forEach(([a, b, entry], j) => {
+      const uncoveredEnd = entry == null ? b : Math.max(a, entry);
+      if (uncoveredEnd > a) {
+        const u = el("rect", { x: x(a), y: cy - 9, width: Math.max(2, x(uncoveredEnd) - x(a)), height: 18,
+          fill: "var(--bad-soft)", stroke: "var(--bad)", "stroke-width": "1", "stroke-opacity": ".8" });
+        tipify(u, d.name, `Echo ${j + 1} — nobody in the water`, a, uncoveredEnd,
+          entry == null ? "burned through it" : `${(entry - a).toFixed(0)}s late`);
+        svg.appendChild(u);
+      }
+      if (entry != null && b > Math.max(a, entry)) {
+        const c = el("rect", { x: x(Math.max(a, entry)), y: cy - 9,
+          width: Math.max(2, x(b) - x(Math.max(a, entry))), height: 18, fill: "var(--dive)" });
+        tipify(c, d.name, `Echo ${j + 1} — team in the water`, Math.max(a, entry), b, "");
+        svg.appendChild(c);
+      }
+      const lb = el("text", { x: x(a) + 2, y: cy - 13, fill: "var(--muted)", "font-size": "9.5",
+        "font-family": "IBM Plex Mono, monospace" });
+      lb.textContent = j + 1; svg.appendChild(lb);
+    });
+    (d.calls || []).forEach(c => {
+      const s = 5;
+      const dm = el("path", { d: `M ${x(c)} ${cy + 9} L ${x(c) + s} ${cy + 9 + s} L ${x(c)} ${cy + 9 + 2 * s} L ${x(c) - s} ${cy + 9 + s} Z`,
+        fill: "var(--bad)", stroke: "var(--surface)", "stroke-width": "1" });
+      tipify(dm, d.name, "Entered while Exhausted", c, null, ""); svg.appendChild(dm);
+    });
+    const rs = el("text", { x: W - 8, y: cy + 4, "text-anchor": "end", fill: ours ? "var(--bad)" : "var(--ink-2)",
+      "font-size": "11.5", "font-family": "IBM Plex Mono, monospace", "font-weight": ours ? "700" : "400" });
+    rs.textContent = d.result; svg.appendChild(rs);
+  });
+  axis(svg, x, TOP + COMP.length * ROW + 8, maxT);
+})();
+</script>
+
+</body>
+</html>
