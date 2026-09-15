@@ -102,8 +102,8 @@ td.name{font-family:"Archivo",sans-serif;font-size:13.5px;font-weight:500}
 .verdict.yes{color:var(--dive)}
 
 .steps{display:grid;gap:1px;background:var(--rule-soft);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
-.step{background:var(--surface);padding:13px 18px;display:grid;grid-template-columns:78px 1fr;gap:16px;align-items:baseline}
-.step .tm{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:700;color:var(--accent)}
+.step{background:var(--surface);padding:15px 18px;display:grid;grid-template-columns:104px 1fr;gap:18px;align-items:baseline}
+.step .tm{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.12em}
 .step .tx{font-size:15.5px;line-height:1.5;color:var(--ink-2)}
 .step .tx b{color:var(--ink);font-weight:400}
 .step.hot{background:var(--bad-soft)}
@@ -151,6 +151,31 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
   <div class="tile"><span class="n">{{teams}}</span><span class="lab">well teams, every pull</span></div>
   <div class="tile hot"><span class="n">{{break_count}}</span><span class="lab">pulls where the rotation ran out of people</span></div>
   <div class="tile hot"><span class="n">{{max_echoes}}</span><span class="lab">Echoes the longest pull had to cover</span></div>
+</div>
+
+<div class="steps">
+  <div class="step">
+    <span class="tm">The issue</span>
+    <span class="tx">On {{break_count_word}} pulls the well rotation ran out of divers. Whole teams went
+    down while still locked out, taking 300% extra from everything the well does, and each of those pulls
+    was over within {{break_to_wipe}} seconds of the first one going in early.</span>
+  </div>
+  <div class="step">
+    <span class="tm">Why</span>
+    <span class="tx">A dive costs {{dive_cost}} seconds: {{dive_len}} in the water and {{exhaustion}} locked
+    out behind Soul Exhaustion. In Stage Two the Echo returns every {{cadence}} seconds, so two alternating
+    teams get a turn every {{two_team_cycle}}. That is {{deficit}} seconds short on every cycle and no amount of
+    discipline closes it. The same two teams never missed across the other {{shallow_count}} pulls, where
+    the Echo comes slowly enough for the rotation to work.</span>
+  </div>
+  <div class="step">
+    <span class="tm">The fix</span>
+    <span class="tx">Not a third team: all four day-one kills ran two. They finish in {{kill_dur}} seconds,
+    which only ever asks for six dives, and three of the four never dive the final Echo at all. The nearest
+    lever here is the intermission, {{intermission_loss}} of the {{time_gap}} seconds this fight runs long.
+    Until that moves, stop diving the last Echo. On pull {{best_pull}} it was dived, never killed, and ran
+    {{last_window}} seconds regardless.</span>
+  </div>
 </div>
 
 <section>

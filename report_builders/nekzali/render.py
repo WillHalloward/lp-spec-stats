@@ -352,6 +352,12 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "best_dur": mmss(deep["dur"]),
         "best_dur_secs": round(deep["dur"]),
         "teams": len(_teams(deep)),
+        # How fast a broken rotation ends the pull: the longest any of them
+        # survived after the first diver went in locked out.
+        "break_to_wipe": (
+            max(round(p["dur"] - min(c["t"] for c in _calls(p))) for p in broke) if broke else 0
+        ),
+        "shallow_count": len(pulls) - len(broke),
         "break_count": len(broke),
         "break_count_word": word(len(broke)),
         "single_count_word": word(len(singles)),
