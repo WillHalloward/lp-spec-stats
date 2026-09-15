@@ -311,6 +311,12 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     s2_boss_share = 100 * s2["boss"] / s2["total"] if s2.get("total") else None
     kill_share = [100 * k["s2_boss"] / k["s2_total"] for k in baseline.KILLS]
     s2_add_share = 100 * s2["adds"] / s2["total"] if s2.get("total") else None
+    # The same stretch of Stage Two the kills get, so length cannot flatter
+    # either side. This is the figure the add argument has to survive.
+    s2m = phases.get("two_matched") or {}
+    s2m_boss_dps = (s2m.get("boss", 0) / s2m["seconds"]) if s2m.get("seconds") else None
+    s2m_add_share = 100 * s2m["adds"] / s2m["total"] if s2m.get("total") else None
+    s2m_boss_share = 100 * s2m["boss"] / s2m["total"] if s2m.get("total") else None
     # Where her health bar really stands when Stage Two opens.
     pool = baseline.BOSS_POOL
     ritual_boss = (phases.get("ritual") or {}).get("boss", 0)
@@ -454,6 +460,12 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "s2_boss_share": f"{s2_boss_share:.0f}" if s2_boss_share else "n/a",
         "kill_boss_share": f"{min(kill_share):.0f} to {max(kill_share):.0f}",
         "s2_add_share": f"{s2_add_share:.0f}" if s2_add_share else "n/a",
+        "s2m_seconds": f"{s2m['seconds']:.0f}" if s2m.get("seconds") else "n/a",
+        "s2m_raid_dmg": f"{s2m.get('total', 0) / 1e6:.0f}M",
+        "s2m_boss_dmg": f"{s2m.get('boss', 0) / 1e6:.0f}M",
+        "s2m_boss_dps": f"{s2m_boss_dps / 1e6:.2f}" if s2m_boss_dps else "n/a",
+        "s2m_add_share": f"{s2m_add_share:.0f}" if s2m_add_share else "n/a",
+        "s2m_boss_share": f"{s2m_boss_share:.0f}" if s2m_boss_share else "n/a",
         "kill_add_share": (
             f"{min(100 * k['s2_adds'] / k['s2_total'] for k in baseline.KILLS):.0f} to "
             f"{max(100 * k['s2_adds'] / k['s2_total'] for k in baseline.KILLS):.0f}"

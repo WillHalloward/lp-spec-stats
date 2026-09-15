@@ -369,8 +369,13 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
   </div>
   <p>You do more total damage in Stage Two than any guild that killed it. {{s2_raid_dmg}} against their
   {{kill_s2_raid_dmg}}, and the boss still lives, because {{s2_add_share}}% of it goes into Restless Amani
-  rather than {{kill_add_share}}%. Per add the cost is the same as theirs; there are simply more of them in a
-  Stage Two that runs {{s2_len}} seconds instead of {{kill_s2_len}}.</p>
+  rather than {{kill_add_share}}%.</p>
+  <p>The obvious objection is that a longer stage meets more adds by definition, so measure the same stretch:
+  the first {{s2m_seconds}} seconds of Stage Two, which is a whole Stage Two for them.
+  <em>{{s2m_add_share}}% into adds against their {{kill_add_share}}%, and {{s2m_boss_dps}}M a second onto the
+  boss against their {{kill_s2_boss_dps}}M.</em> Matching the clock barely moves it, so the add tax is not a
+  consequence of the fight running long. Per add the cost is identical to theirs. There are simply more
+  adds.</p>
   <p class="note">Uptime is not the explanation. {{lowest_uptime_kill}} killed this on {{lowest_uptime_value}}%
   uptime, against {{s2_uptime}}% here, and still put {{lowest_uptime_dps}}M a second into the boss against
   {{s2_boss_dps}}M. The difference is which target the damage landed on.</p>

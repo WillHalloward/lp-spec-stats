@@ -14,6 +14,7 @@ import datetime as dt
 import json
 from pathlib import Path
 
+from . import baseline
 from .analyze import Analysis
 from .render import payloads, render, tokens
 
@@ -81,7 +82,7 @@ def main() -> None:
     args = ap.parse_args()
 
     a = Analysis(args.report, args.encounter, args.difficulty)
-    built = a.build()
+    built = a.build(matched_window=baseline.stage_two_length())
     start = dt.datetime.fromtimestamp(a.report["startTime"] / 1000)
     date = args.date or start.strftime("%Y-%m-%d")
     date_long = dt.datetime.strptime(date, "%Y-%m-%d").strftime("%-d %B %Y")

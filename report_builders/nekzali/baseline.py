@@ -183,3 +183,9 @@ def mean(key: str) -> float:
 def intermission() -> float:
     """How long the Ritual of Awakening took them, start to last Jawae death."""
     return sum(k["stage_two"] - k["ritual"] for k in KILLS) / len(KILLS)
+
+
+def stage_two_length() -> float:
+    """How long a kill's Stage Two lasts, for measuring the same stretch of a
+    prog night's."""
+    return sum(k["dur"] - k["stage_two"] for k in KILLS) / len(KILLS)

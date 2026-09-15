@@ -181,7 +181,7 @@ class Analysis:
 
     # ---- the whole night ----
 
-    def build(self) -> dict:
+    def build(self, matched_window: float | None = None) -> dict:
         coil = self._events("coil", "Debuffs", name=spells.IMMORTAL_COIL)
         se = self._events("exhaustion", "Debuffs", name=spells.SOUL_EXHAUSTION)
         gd = self._events("grasping", "DamageTaken", name=spells.GRASPING_DEPTHS)
@@ -209,6 +209,15 @@ class Analysis:
                 "ritual": self.phase_damage(deepest, deepest["ritual"], deepest["stage_two"]),
                 "two": self.phase_damage(deepest, deepest["stage_two"], deepest["dur"]),
             }
+            # The same stretch of Stage Two a kill gets. Comparing whole stages
+            # is circular: a longer stage meets more adds by definition, so the
+            # add share would look worse even if nothing else differed.
+            if matched_window:
+                phases["two_matched"] = self.phase_damage(
+                    deepest,
+                    deepest["stage_two"],
+                    min(deepest["stage_two"] + matched_window, deepest["dur"]),
+                )
         return {
             "pulls": pulls,
             "deepest": deepest,
