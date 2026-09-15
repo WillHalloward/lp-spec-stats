@@ -276,6 +276,58 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     our_lag = statistics.median(our_lags) if our_lags else None
     kill_lag = statistics.median(kill_lags) if kill_lags else None
 
+    # What actually governs the well rotation. The Echo schedule is anchored to
+    # the start of Stage Two (about 28s in, then every cadence), so nothing in
+    # Stage One or the intermission changes how many Echoes Stage Two contains.
+    # Only Stage Two's own length does.
+    s2_start = deep["stage_two"]
+    s2_len = round(deep["dur"] - s2_start) if s2_start else None
+    s2_echo_starts = [w[0] for w in deep["windows"] if s2_start and w[0] >= s2_start]
+    kill_s2 = [k["dur"] - k["stage_two"] for k in baseline.KILLS]
+    kill_s2_len = round(sum(kill_s2) / len(kill_s2))
+    kill_s2_echoes = [len([w for w in k["windows"] if w[0] >= k["stage_two"]]) for k in baseline.KILLS]
+    # A last Echo that wakes close enough to the kill gets burned rather than
+    # dived, which is how two teams get away with covering only two of them.
+    kill_last_gaps = [
+        k["dur"] - max(w[0] for w in k["windows"] if w[0] >= k["stage_two"]) for k in baseline.KILLS
+    ]
+    burned = [
+        g
+        for g, k in zip(kill_last_gaps, baseline.KILLS, strict=True)
+        if [w for w in k["windows"] if w[0] >= k["stage_two"]][-1][2] is None
+    ]
+    last_echo_gap = round(deep["dur"] - max(s2_echo_starts)) if s2_echo_starts else None
+    # Boss health per second once she is targetable again.
+    s2_rate = (50 - (deep["boss_pct"] or 0)) / s2_len if s2_len else None
+    kill_s2_rate = 50 / kill_s2_len
+    s2_rate_gap = round(100 * (kill_s2_rate / s2_rate - 1)) if s2_rate else None
+
+    # The intermission Echoes: a separate failure, and not the cause of the above.
+    int_lags, int_late_pulls, deep_int_lag = [], 0, None
+    for p in pulls:
+        if not (p["ritual"] and p["stage_two"]):
+            continue
+        starts = [x for d in p["dives"] for x, _ in d["spans"]]
+        worst = None
+        for win_a, win_b in p["windows"]:
+            if not (p["ritual"] <= win_a <= p["stage_two"]):
+                continue
+            entries = [x for x in starts if win_a - 4 <= x <= win_b]
+            lag = (min(entries) - win_a) if entries else (win_b - win_a)
+            worst = lag if worst is None else max(worst, lag)
+        if worst is not None:
+            int_lags.append(worst)
+            if p is deep:
+                deep_int_lag = worst
+            if worst > 20:
+                int_late_pulls += 1
+    kill_int_lags = [
+        w[2] - w[0]
+        for k in baseline.KILLS
+        for w in k["windows"]
+        if w[2] is not None and k["ritual"] <= w[0] <= k["stage_two"]
+    ]
+
     kill_comps = {tuple(k["comp"]) for k in baseline.KILLS}
     ours_comp = (roster["tanks"], roster["healers"], roster["dps"])
     kill_comp = " or ".join(" / ".join(str(n) for n in c) for c in sorted(kill_comps, reverse=True))
@@ -358,6 +410,24 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
             max(round(p["dur"] - min(c["t"] for c in _calls(p))) for p in broke) if broke else 0
         ),
         "shallow_count": len(pulls) - len(broke),
+        "s2_len": s2_len,
+        "kill_s2_len": kill_s2_len,
+        "s2_echoes": len(s2_echo_starts),
+        "kill_s2_echoes": (
+            f"{min(kill_s2_echoes)} or {max(kill_s2_echoes)}"
+            if min(kill_s2_echoes) != max(kill_s2_echoes)
+            else str(kill_s2_echoes[0])
+        ),
+        "s2_offset": round(min(s2_echo_starts) - s2_start) if s2_echo_starts else 0,
+        "last_echo_gap": last_echo_gap,
+        "kill_last_gap": f"{round(min(burned))} to {round(max(burned))}" if burned else "n/a",
+        "burned_count_word": word(len(burned)),
+        "s2_rate_gap": s2_rate_gap,
+        "s2_rate": f"{s2_rate:.3f}" if s2_rate else "n/a",
+        "kill_s2_rate": f"{kill_s2_rate:.3f}",
+        "int_late": round(deep_int_lag) if deep_int_lag else 0,
+        "int_late_pulls_word": word(int_late_pulls),
+        "kill_int_lag": (f"{min(kill_int_lags):.1f} to {max(kill_int_lags):.1f}" if kill_int_lags else "n/a"),
         "break_count": len(broke),
         "break_count_word": word(len(broke)),
         "single_count_word": word(len(singles)),
