@@ -18,7 +18,9 @@ ends — they burn the boss down through it.
 The damage fields are per phase, measured with `Analysis.phase_damage` against
 each guild's own log: `p1_boss` up to the Ritual, `ritual_boss` during it (she
 is not immune, she takes 33-37M while tethered), then `s2_total` and `s2_boss`
-for Stage Two. Boss damage per second in Stage Two is the honest comparison,
+for Stage Two, with `s2m_adds_killed` and `s2m_adds_damage` counting Restless
+Amani over the matched window (death events deduplicated: the log emits the same
+add death more than once, at a different rate in every report). Boss damage per second in Stage Two is the honest comparison,
 because it assumes nothing about where her health bar sat when the stage began.
 """
 
@@ -32,6 +34,8 @@ KILLS = [
         "s2_total": 3.961e08,
         "s2_boss": 3.141e08,
         "s2_adds": 6.26e07,
+        "s2m_adds_killed": 25,
+        "s2m_adds_damage": 6.23e07,
         "s2_uptime": 0.95,
         "comp": (2, 4, 14),
         "region": "US",
@@ -68,6 +72,8 @@ KILLS = [
         "s2_total": 3.853e08,
         "s2_boss": 3.13e08,
         "s2_adds": 5.32e07,
+        "s2m_adds_killed": 18,
+        "s2m_adds_damage": 5.14e07,
         "s2_uptime": 0.975,
         "comp": (2, 4, 14),
         "region": "EU",
@@ -103,6 +109,8 @@ KILLS = [
         "s2_total": 3.901e08,
         "s2_boss": 3.103e08,
         "s2_adds": 6.16e07,
+        "s2m_adds_killed": 29,
+        "s2m_adds_damage": 6.18e07,
         "s2_uptime": 0.931,
         "comp": (2, 4, 14),
         "region": "EU",
@@ -139,6 +147,8 @@ KILLS = [
         "s2_total": 3.742e08,
         "s2_boss": 3.102e08,
         "s2_adds": 4.49e07,
+        "s2m_adds_killed": 19,
+        "s2m_adds_damage": 4.47e07,
         "s2_uptime": 0.841,
         "comp": (2, 3, 15),
         "region": "EU",

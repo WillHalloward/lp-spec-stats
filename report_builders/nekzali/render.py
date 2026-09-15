@@ -317,6 +317,7 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     s2m_boss_dps = (s2m.get("boss", 0) / s2m["seconds"]) if s2m.get("seconds") else None
     s2m_add_share = 100 * s2m["adds"] / s2m["total"] if s2m.get("total") else None
     s2m_boss_share = 100 * s2m["boss"] / s2m["total"] if s2m.get("total") else None
+    s2m_adds_killed = s2m.get("adds_killed") or 0
     # Where her health bar really stands when Stage Two opens.
     pool = baseline.BOSS_POOL
     ritual_boss = (phases.get("ritual") or {}).get("boss", 0)
@@ -466,6 +467,16 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "s2m_boss_dps": f"{s2m_boss_dps / 1e6:.2f}" if s2m_boss_dps else "n/a",
         "s2m_add_share": f"{s2m_add_share:.0f}" if s2m_add_share else "n/a",
         "s2m_boss_share": f"{s2m_boss_share:.0f}" if s2m_boss_share else "n/a",
+        "s2m_adds_killed": s2m_adds_killed,
+        "s2m_per_add": f"{s2m['adds'] / s2m_adds_killed / 1e6:.1f}M" if s2m_adds_killed else "n/a",
+        "kill_adds_killed": (
+            f"{min(k['s2m_adds_killed'] for k in baseline.KILLS)} to "
+            f"{max(k['s2m_adds_killed'] for k in baseline.KILLS)}"
+        ),
+        "kill_per_add": (
+            f"{min(k['s2m_adds_damage'] / k['s2m_adds_killed'] for k in baseline.KILLS) / 1e6:.1f} to "
+            f"{max(k['s2m_adds_damage'] / k['s2m_adds_killed'] for k in baseline.KILLS) / 1e6:.1f}M"
+        ),
         "kill_add_share": (
             f"{min(100 * k['s2_adds'] / k['s2_total'] for k in baseline.KILLS):.0f} to "
             f"{max(100 * k['s2_adds'] / k['s2_total'] for k in baseline.KILLS):.0f}"

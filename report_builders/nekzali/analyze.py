@@ -213,10 +213,11 @@ class Analysis:
             # is circular: a longer stage meets more adds by definition, so the
             # add share would look worse even if nothing else differed.
             if matched_window:
-                phases["two_matched"] = self.phase_damage(
-                    deepest,
-                    deepest["stage_two"],
-                    min(deepest["stage_two"] + matched_window, deepest["dur"]),
+                deep_fight = next(f for f in self.pulls if f["id"] == deepest["fight"])
+                window_end = min(deepest["stage_two"] + matched_window, deepest["dur"])
+                phases["two_matched"] = self.phase_damage(deepest, deepest["stage_two"], window_end)
+                phases["two_matched"]["adds_killed"] = self.adds_killed(
+                    enemy_deaths, deep_fight, deepest["stage_two"], window_end
                 )
         return {
             "pulls": pulls,
@@ -389,6 +390,19 @@ class Analysis:
             "dps": sum(1 for v in roles.values() if v == "dps"),
             "ilvl_median": round(statistics.median(ilvls)) if ilvls else None,
         }
+
+    def adds_killed(self, enemy_deaths: list[dict], fight: dict, a: float, b: float) -> int:
+        """Restless Amani that died in a window. Death events are deduplicated by
+        (instance, timestamp): the log emits the same add death more than once,
+        at a different rate in every report, so raw counts are not comparable."""
+        return len(
+            {
+                (e.get("targetInstance"), e["timestamp"])
+                for e in enemy_deaths
+                if spells.RESTLESS_AMANI in str(self.names.get(e.get("targetID")))
+                and a <= _seconds_into(fight, e["timestamp"]) <= b
+            }
+        )
 
     def phase_damage(self, pull: dict, a: float, b: float) -> dict:
         """The damage table for one slice of a pull, split by target.
