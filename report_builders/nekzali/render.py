@@ -297,10 +297,25 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         if [w for w in k["windows"] if w[0] >= k["stage_two"]][-1][2] is None
     ]
     last_echo_gap = round(deep["dur"] - max(s2_echo_starts)) if s2_echo_starts else None
-    # Boss health per second once she is targetable again.
-    s2_rate = (50 - (deep["boss_pct"] or 0)) / s2_len if s2_len else None
-    kill_s2_rate = 50 / kill_s2_len
-    s2_rate_gap = round(100 * (kill_s2_rate / s2_rate - 1)) if s2_rate else None
+    # Stage Two damage, measured rather than derived. She is not immune during
+    # the Ritual (33-37M lands on her), so a rate worked back from "Stage Two
+    # starts at 50%" is wrong by about a tenth. Damage onto her per second needs
+    # no such assumption.
+    phases = built.get("phases") or {}
+    s2 = phases.get("two") or {}
+    s2_boss_dps = (s2.get("boss", 0) / s2["seconds"]) if s2.get("seconds") else None
+    kill_s2_boss_dps = sum(k["s2_boss"] / (k["dur"] - k["stage_two"]) for k in baseline.KILLS) / len(
+        baseline.KILLS
+    )
+    s2_rate_gap = round(100 * (kill_s2_boss_dps / s2_boss_dps - 1)) if s2_boss_dps else None
+    s2_boss_share = 100 * s2["boss"] / s2["total"] if s2.get("total") else None
+    kill_share = [100 * k["s2_boss"] / k["s2_total"] for k in baseline.KILLS]
+    s2_add_share = 100 * s2["adds"] / s2["total"] if s2.get("total") else None
+    # Where her health bar really stands when Stage Two opens.
+    pool = baseline.BOSS_POOL
+    ritual_boss = (phases.get("ritual") or {}).get("boss", 0)
+    s2_start_pct = 50 - 100 * ritual_boss / pool
+    kill_s2_start = [50 - 100 * k["ritual_boss"] / pool for k in baseline.KILLS]
 
     # The intermission Echoes: a separate failure, and not the cause of the above.
     int_lags, int_late_pulls, deep_int_lag = [], 0, None
@@ -423,8 +438,48 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "kill_last_gap": f"{round(min(burned))} to {round(max(burned))}" if burned else "n/a",
         "burned_count_word": word(len(burned)),
         "s2_rate_gap": s2_rate_gap,
-        "s2_rate": f"{s2_rate:.3f}" if s2_rate else "n/a",
-        "kill_s2_rate": f"{kill_s2_rate:.3f}",
+        "boss_pool": millions(baseline.BOSS_POOL),
+        "s2_boss_dps": f"{s2_boss_dps / 1e6:.2f}" if s2_boss_dps else "n/a",
+        "kill_s2_boss_dps": f"{kill_s2_boss_dps / 1e6:.2f}",
+        "s2_raid_dmg": f"{s2.get('total', 0) / 1e6:.0f}M",
+        "s2_boss_dmg": f"{s2.get('boss', 0) / 1e6:.0f}M",
+        "kill_s2_raid_dmg": (
+            f"{min(k['s2_total'] for k in baseline.KILLS) / 1e6:.0f} to "
+            f"{max(k['s2_total'] for k in baseline.KILLS) / 1e6:.0f}M"
+        ),
+        "kill_s2_boss_dmg": (
+            f"{min(k['s2_boss'] for k in baseline.KILLS) / 1e6:.0f} to "
+            f"{max(k['s2_boss'] for k in baseline.KILLS) / 1e6:.0f}M"
+        ),
+        "s2_boss_share": f"{s2_boss_share:.0f}" if s2_boss_share else "n/a",
+        "kill_boss_share": f"{min(kill_share):.0f} to {max(kill_share):.0f}",
+        "s2_add_share": f"{s2_add_share:.0f}" if s2_add_share else "n/a",
+        "kill_add_share": (
+            f"{min(100 * k['s2_adds'] / k['s2_total'] for k in baseline.KILLS):.0f} to "
+            f"{max(100 * k['s2_adds'] / k['s2_total'] for k in baseline.KILLS):.0f}"
+        ),
+        "s2_uptime": f"{100 * s2['uptime']:.1f}" if s2.get("uptime") else "n/a",
+        "kill_s2_uptime": (
+            f"{100 * min(k['s2_uptime'] for k in baseline.KILLS):.1f} to "
+            f"{100 * max(k['s2_uptime'] for k in baseline.KILLS):.1f}"
+        ),
+        "lowest_uptime_kill": min(baseline.KILLS, key=lambda k: k["s2_uptime"])["guild"],
+        "lowest_uptime_value": f"{100 * min(k['s2_uptime'] for k in baseline.KILLS):.1f}",
+        "lowest_uptime_dps": (
+            f"{min(baseline.KILLS, key=lambda k: k['s2_uptime'])['s2_boss'] / (min(baseline.KILLS, key=lambda k: k['s2_uptime'])['dur'] - min(baseline.KILLS, key=lambda k: k['s2_uptime'])['stage_two']) / 1e6:.2f}"
+        ),
+        "s2_start_pct": f"{s2_start_pct:.1f}",
+        "kill_s2_start": f"{min(kill_s2_start):.1f} to {max(kill_s2_start):.1f}",
+        "ritual_boss_dmg": f"{ritual_boss / 1e6:.0f}M",
+        "kill_ritual_boss": (
+            f"{min(k['ritual_boss'] for k in baseline.KILLS) / 1e6:.0f} to "
+            f"{max(k['ritual_boss'] for k in baseline.KILLS) / 1e6:.0f}M"
+        ),
+        "p1_boss_dmg": f"{(phases.get('one') or {}).get('boss', 0) / 1e6:.0f}M",
+        "kill_p1_boss": (
+            f"{min(k['p1_boss'] for k in baseline.KILLS) / 1e6:.0f} to "
+            f"{max(k['p1_boss'] for k in baseline.KILLS) / 1e6:.0f}M"
+        ),
         "int_late": round(deep_int_lag) if deep_int_lag else 0,
         "int_late_pulls_word": word(int_late_pulls),
         "kill_int_lag": (f"{min(kill_int_lags):.1f} to {max(kill_int_lags):.1f}" if kill_int_lags else "n/a"),

@@ -14,6 +14,12 @@ are exactly what it computes, plus the per-target damage split from the damage
 table. `windows` is [start, end, first_diver_entry_or_null] per Echo; a null
 entry is an Echo nobody dived, which for three of these four is how the fight
 ends — they burn the boss down through it.
+
+The damage fields are per phase, measured with `Analysis.phase_damage` against
+each guild's own log: `p1_boss` up to the Ritual, `ritual_boss` during it (she
+is not immune, she takes 33-37M while tethered), then `s2_total` and `s2_boss`
+for Stage Two. Boss damage per second in Stage Two is the honest comparison,
+because it assumes nothing about where her health bar sat when the stage began.
 """
 
 from __future__ import annotations
@@ -21,6 +27,12 @@ from __future__ import annotations
 KILLS = [
     {
         "guild": "Snowblind",
+        "p1_boss": 3.504e08,
+        "ritual_boss": 3.32e07,
+        "s2_total": 3.961e08,
+        "s2_boss": 3.141e08,
+        "s2_adds": 6.26e07,
+        "s2_uptime": 0.95,
         "comp": (2, 4, 14),
         "region": "US",
         "date": "2026-09-02",
@@ -51,6 +63,12 @@ KILLS = [
     },
     {
         "guild": "Epoch",
+        "p1_boss": 3.501e08,
+        "ritual_boss": 3.29e07,
+        "s2_total": 3.853e08,
+        "s2_boss": 3.13e08,
+        "s2_adds": 5.32e07,
+        "s2_uptime": 0.975,
         "comp": (2, 4, 14),
         "region": "EU",
         "date": "2026-09-02",
@@ -80,6 +98,12 @@ KILLS = [
     },
     {
         "guild": "Shattered",
+        "p1_boss": 3.498e08,
+        "ritual_boss": 3.69e07,
+        "s2_total": 3.901e08,
+        "s2_boss": 3.103e08,
+        "s2_adds": 6.16e07,
+        "s2_uptime": 0.931,
         "comp": (2, 4, 14),
         "region": "EU",
         "date": "2026-09-02",
@@ -110,6 +134,12 @@ KILLS = [
     },
     {
         "guild": "The Hex Pistols",
+        "p1_boss": 3.516e08,
+        "ritual_boss": 3.51e07,
+        "s2_total": 3.742e08,
+        "s2_boss": 3.102e08,
+        "s2_adds": 4.49e07,
+        "s2_uptime": 0.841,
         "comp": (2, 3, 15),
         "region": "EU",
         "date": "2026-09-02",

@@ -342,7 +342,7 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
         <tr><td class="name">Length</td><td class="num">{{kill_s2_len}}s</td><td class="num hot">{{s2_len}}s</td></tr>
         <tr><td class="name">Echoes it contains</td><td class="num">{{kill_s2_echoes}}</td><td class="num">{{s2_echoes}}</td></tr>
         <tr><td class="name">Last Echo to the end of the fight</td><td class="num">{{kill_last_gap}}s</td><td class="num hot">{{last_echo_gap}}s</td></tr>
-        <tr><td class="name">Boss health per second</td><td class="num">{{kill_s2_rate}}%/s</td><td class="num hot">{{s2_rate}}%/s</td></tr>
+        <tr><td class="name">Damage onto the boss, per second</td><td class="num">{{kill_s2_boss_dps}}M/s</td><td class="num hot">{{s2_boss_dps}}M/s</td></tr>
       </tbody>
     </table>
   </div>
@@ -351,6 +351,37 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
   down through it, and the fourth finished Stage Two before a third Echo could wake at all. Either way the rotation is never asked for a third
   turn. Here the last Echo woke with {{last_echo_gap}} seconds still to play, far too long to stand in, so it
   was dived by the only team whose turn it was, and they were {{deficit}} seconds short.</p>
+
+  <h3 style="margin-top:32px">Stage Two damage, side by side</h3>
+  <p>Which raises the obvious question of why Stage Two runs long, and the answer is not the one you would
+  guess. Damage in Stage Two only, measured in the window rather than worked back from her health bar.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Stage Two</th><th class="num">Day-one kills</th><th class="num">Your best pull</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Total raid damage</td><td class="num">{{kill_s2_raid_dmg}}</td><td class="num">{{s2_raid_dmg}}</td></tr>
+        <tr><td class="name">Of it, onto the boss</td><td class="num">{{kill_s2_boss_dmg}}</td><td class="num hot">{{s2_boss_dmg}}</td></tr>
+        <tr><td class="name">Share that reached the boss</td><td class="num">{{kill_boss_share}}%</td><td class="num hot">{{s2_boss_share}}%</td></tr>
+        <tr><td class="name">Share into Restless Amani</td><td class="num">{{kill_add_share}}%</td><td class="num hot">{{s2_add_share}}%</td></tr>
+        <tr><td class="name">Damage uptime</td><td class="num">{{kill_s2_uptime}}%</td><td class="num">{{s2_uptime}}%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>You do more total damage in Stage Two than any guild that killed it. {{s2_raid_dmg}} against their
+  {{kill_s2_raid_dmg}}, and the boss still lives, because {{s2_add_share}}% of it goes into Restless Amani
+  rather than {{kill_add_share}}%. Per add the cost is the same as theirs; there are simply more of them in a
+  Stage Two that runs {{s2_len}} seconds instead of {{kill_s2_len}}.</p>
+  <p class="note">Uptime is not the explanation. {{lowest_uptime_kill}} killed this on {{lowest_uptime_value}}%
+  uptime, against {{s2_uptime}}% here, and still put {{lowest_uptime_dps}}M a second into the boss against
+  {{s2_boss_dps}}M. The difference is which target the damage landed on.</p>
+
+  <h3 style="margin-top:32px">What she has left when Stage Two opens</h3>
+  <p>One assumption worth checking, since everything above rests on it. The Ritual is gated at exactly half:
+  {{p1_boss_dmg}} of damage went into her before it here, against {{kill_p1_boss}} for the kills, which is
+  50% of a {{boss_pool}} health bar to within a percent for all five. She is not immune while tethered
+  though. {{ritual_boss_dmg}} landed on her during the Ritual here and {{kill_ritual_boss}} for them, so
+  Stage Two opens at {{s2_start_pct}}% rather than a clean 50, against {{kill_s2_start}}% for the kills. That
+  is the one figure on which this night starts slightly behind, and it is worth about four seconds.</p>
 </section>
 
 <section>

@@ -202,9 +202,17 @@ class Analysis:
         ]
 
         deepest = min(pulls, key=lambda p: p["boss_pct"] if p["boss_pct"] is not None else 100)
+        phases = {}
+        if deepest["ritual"] and deepest["stage_two"]:
+            phases = {
+                "one": self.phase_damage(deepest, 0, deepest["ritual"]),
+                "ritual": self.phase_damage(deepest, deepest["ritual"], deepest["stage_two"]),
+                "two": self.phase_damage(deepest, deepest["stage_two"], deepest["dur"]),
+            }
         return {
             "pulls": pulls,
             "deepest": deepest,
+            "phases": phases,
             "damage": self.damage_split(deepest),
             "roster": self.roster([deepest["fight"]]),
         }
@@ -371,6 +379,36 @@ class Analysis:
             "healers": sum(1 for v in roles.values() if v == "healer"),
             "dps": sum(1 for v in roles.values() if v == "dps"),
             "ilvl_median": round(statistics.median(ilvls)) if ilvls else None,
+        }
+
+    def phase_damage(self, pull: dict, a: float, b: float) -> dict:
+        """The damage table for one slice of a pull, split by target.
+
+        Used to measure Stage Two on its own terms rather than inferring it from
+        boss health percentages: the boss is not immune during the Ritual, so a
+        phase's damage is the only figure that needs no assumption about where
+        her health bar stood when it began."""
+        fight = next(f for f in self.pulls if f["id"] == pull["fight"])
+        base = fight["startTime"]
+        table = self.f.damage_table([pull["fight"]], start=base + a * 1000, end=base + b * 1000)
+        secs = (table.get("totalTime") or 1) / 1000
+        by_target: collections.Counter = collections.Counter()
+        total, uptime = 0, []
+        for entry in table.get("entries", []):
+            total += entry.get("total", 0)
+            if table.get("totalTime"):
+                uptime.append(entry.get("activeTime", 0) / table["totalTime"])
+            for t in entry.get("targets", []) or []:
+                by_target[t["name"]] += t.get("total", 0)
+        boss = sum(v for k, v in by_target.items() if k.startswith(self.boss.split()[0]))
+        adds = sum(v for k, v in by_target.items() if spells.RESTLESS_AMANI in k)
+        return {
+            "seconds": secs,
+            "total": total,
+            "boss": boss,
+            "adds": adds,
+            "uptime": (sum(uptime) / len(uptime)) if uptime else None,
+            "by_target": by_target.most_common(6),
         }
 
     def damage_split(self, pull: dict) -> dict:

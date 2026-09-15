@@ -115,16 +115,28 @@ class Fetcher:
 
         return self.cached(f"player_details_{_key_for(fight_ids)}", build)
 
-    def damage_table(self, fight_ids: list[int]) -> dict:
-        """Per-player damage with its per-target split and active time."""
+    def damage_table(
+        self, fight_ids: list[int], *, start: float | None = None, end: float | None = None
+    ) -> dict:
+        """Per-player damage with its per-target split and active time.
+
+        `start` and `end` are report-relative milliseconds, the same clock a
+        fight's own startTime uses, so a phase window is that fight's startTime
+        plus an offset. Omit both for the whole fight."""
+        window = (start is not None) or (end is not None)
 
         def build():
-            q = """query($c:String!,$f:[Int]!){reportData{report(code:$c){
-                     table(dataType:DamageDone,fightIDs:$f,startTime:0,endTime:100000000000,
+            q = """query($c:String!,$f:[Int]!,$st:Float!,$en:Float!){reportData{report(code:$c){
+                     table(dataType:DamageDone,fightIDs:$f,startTime:$st,endTime:$en,
                            hostilityType:Friendlies)}}}"""
-            return self._q(q, {"c": self.code, "f": fight_ids})["reportData"]["report"]["table"]["data"]
+            return self._q(
+                q, {"c": self.code, "f": fight_ids, "st": float(start or 0), "en": float(end or 100000000000)}
+            )["reportData"]["report"]["table"]["data"]
 
-        return self.cached(f"damage_table_{_key_for(fight_ids)}", build)
+        key = f"damage_table_{_key_for(fight_ids)}"
+        if window:
+            key += f"_{int(start or 0)}_{int(end or 0)}"
+        return self.cached(key, build)
 
     def events(
         self,
