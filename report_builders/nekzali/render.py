@@ -172,9 +172,16 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
 
     exhaustion = round(exhaustion_seconds(pulls))
     dive_cost = dive_len + exhaustion
+    # Two teams alternate, so a team's turn comes back after two Echoes. Stage
+    # One is measured at its tightest gap, which is the fairest case to put
+    # against Stage Two's flat one.
+    early_gap = round(min(early_gaps)) if early_gaps else 70
+    early_cycle = early_gap * 2
+    early_slack = max(early_cycle - dive_cost, 0)
     two_cycle = cadence * 2
     deficit = max(dive_cost - two_cycle, 0)
-    three_cycle = cadence * 3
+    # One scale behind all three bars, so their lengths are comparable.
+    bar_scale = max(dive_cost, early_cycle, two_cycle + deficit) + 8
 
     # One diver going in early is somebody's mistake. Two or more in the same
     # pull is the rotation running out of people, which is what this is about.
@@ -361,11 +368,12 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "cadence": cadence,
         "early_cadence": early_cadence,
         "two_team_cycle": two_cycle,
+        "early_cycle": early_cycle,
+        "early_slack": early_slack,
+        "tail_dive": max(bar_scale - dive_cost, 4),
+        "tail_early": max(bar_scale - dive_cost - early_slack, 4),
+        "tail_late": max(bar_scale - two_cycle - deficit, 4),
         "deficit": deficit,
-        "three_team_cycle": three_cycle,
-        "three_team_slack": max(three_cycle - dive_cost, 0),
-        "bar_tail": max(dive_cost + 38 - two_cycle - deficit, 8),
-        "three_tail": max(dive_cost + 38 - three_cycle, 8),
         "deep_rows": (
             "".join(rows)
             or '<tr><td colspan="6" class="calm">No pull ran the rotation out of people.</td></tr>'

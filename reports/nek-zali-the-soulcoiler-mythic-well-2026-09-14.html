@@ -179,14 +179,16 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
 <section>
   <div class="head">
     <span class="lab">The arithmetic</span>
-    <h2>What a dive costs, and what the boss gives you</h2>
+    <h2>What a dive costs, and when the fight can afford it</h2>
   </div>
   <p>Grasping Depths wakes a Drowned Echo in the Soulcoil Well and drags the raid towards it, ticking
   shadow damage on all twenty players until the Echo is dead. Killing it means sending people down. Climbing
   back out applies Soul Exhaustion, which for 60 seconds adds 300% to anything the well does to
   you, so the same five cannot simply go again.</p>
   <p>That makes a dive cost 89 seconds rather than 29: about 29 in the water
-  until the Echo dies, then 60 locked out. Everything below is on the same scale.</p>
+  until the Echo dies, then 60 locked out. Whether two teams can cover that depends entirely on
+  how often the Echo comes back, and the fight answers that differently in each stage. All three bars are on
+  the same scale.</p>
 
   <div class="bars">
     <div class="brow">
@@ -195,35 +197,34 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
       <div class="bar">
         <div class="seg dive" style="flex:29">29s in the well</div>
         <div class="seg lock" style="flex:60">60s Soul Exhaustion</div>
-        <div style="flex:38"></div>
+        <div style="flex:61"></div>
       </div>
     </div>
     <div class="brow">
-      <div class="bhead"><span class="t">Two teams, Echo every 40s</span>
-        <span class="v">your turn comes back after 80s</span></div>
+      <div class="bhead"><span class="t">Stage One and the intermission: an Echo every 71 to 113s</span>
+        <span class="v">two teams, so your turn comes back after 142s at worst</span></div>
+      <div class="bar">
+        <div class="seg avail" style="flex:89">89s of cycle</div>
+        <div class="seg slack" style="flex:53">53s slack</div>
+        <div style="flex:8"></div>
+      </div>
+      <div class="verdict yes">Works, and this is most of the fight</div>
+    </div>
+    <div class="brow">
+      <div class="bhead"><span class="t">Stage Two: an Echo every 40s</span>
+        <span class="v">two teams, so your turn comes back after 80s</span></div>
       <div class="bar">
         <div class="seg avail" style="flex:80">80s until you're called again</div>
         <div class="seg gap" style="flex:9">9s short</div>
-        <div style="flex:38"></div>
+        <div style="flex:61"></div>
       </div>
       <div class="verdict no">Impossible: you are still Exhausted when the Echo spawns</div>
     </div>
-    <div class="brow">
-      <div class="bhead"><span class="t">Three teams, Echo every 40s</span>
-        <span class="v">your turn comes back after 120s</span></div>
-      <div class="bar">
-        <div class="seg avail" style="flex:89">89s of cycle</div>
-        <div class="seg slack" style="flex:31">31s slack</div>
-        <div style="flex:8"></div>
-      </div>
-      <div class="verdict yes">Works, with room for a slow kill</div>
-    </div>
   </div>
 
-  <p class="note">Two teams is the normal way to run this, and for most of the fight it is the right one.
-  Through Stage One and the intermission the Echo came every 71 to 113 seconds, which two alternating
-  teams cover comfortably. Stage Two locks the gap to 40, and that is the only part of the fight
-  where the arithmetic above fails.</p>
+  <p class="note">So nothing is wrong with two teams for most of the fight, and every one of the day-one
+  kills further down runs exactly that. Only the last stretch is short, which is also the stretch a kill
+  spends the least time in. The rest of this page is about what happened in it.</p>
 </section>
 
 <section>

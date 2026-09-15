@@ -156,14 +156,16 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
 <section>
   <div class="head">
     <span class="lab">The arithmetic</span>
-    <h2>What a dive costs, and what the boss gives you</h2>
+    <h2>What a dive costs, and when the fight can afford it</h2>
   </div>
   <p>Grasping Depths wakes a Drowned Echo in the Soulcoil Well and drags the raid towards it, ticking
   shadow damage on all twenty players until the Echo is dead. Killing it means sending people down. Climbing
   back out applies Soul Exhaustion, which for {{exhaustion}} seconds adds 300% to anything the well does to
   you, so the same five cannot simply go again.</p>
   <p>That makes a dive cost {{dive_cost}} seconds rather than {{dive_len}}: about {{dive_len}} in the water
-  until the Echo dies, then {{exhaustion}} locked out. Everything below is on the same scale.</p>
+  until the Echo dies, then {{exhaustion}} locked out. Whether two teams can cover that depends entirely on
+  how often the Echo comes back, and the fight answers that differently in each stage. All three bars are on
+  the same scale.</p>
 
   <div class="bars">
     <div class="brow">
@@ -172,35 +174,34 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-family:"Archivo",s
       <div class="bar">
         <div class="seg dive" style="flex:{{dive_len}}">{{dive_len}}s in the well</div>
         <div class="seg lock" style="flex:{{exhaustion}}">{{exhaustion}}s Soul Exhaustion</div>
-        <div style="flex:{{bar_tail}}"></div>
+        <div style="flex:{{tail_dive}}"></div>
       </div>
     </div>
     <div class="brow">
-      <div class="bhead"><span class="t">Two teams, Echo every {{cadence}}s</span>
-        <span class="v">your turn comes back after {{two_team_cycle}}s</span></div>
+      <div class="bhead"><span class="t">Stage One and the intermission: an Echo every {{early_cadence}}s</span>
+        <span class="v">two teams, so your turn comes back after {{early_cycle}}s at worst</span></div>
+      <div class="bar">
+        <div class="seg avail" style="flex:{{dive_cost}}">{{dive_cost}}s of cycle</div>
+        <div class="seg slack" style="flex:{{early_slack}}">{{early_slack}}s slack</div>
+        <div style="flex:{{tail_early}}"></div>
+      </div>
+      <div class="verdict yes">Works, and this is most of the fight</div>
+    </div>
+    <div class="brow">
+      <div class="bhead"><span class="t">Stage Two: an Echo every {{cadence}}s</span>
+        <span class="v">two teams, so your turn comes back after {{two_team_cycle}}s</span></div>
       <div class="bar">
         <div class="seg avail" style="flex:{{two_team_cycle}}">{{two_team_cycle}}s until you're called again</div>
         <div class="seg gap" style="flex:{{deficit}}">{{deficit}}s short</div>
-        <div style="flex:{{bar_tail}}"></div>
+        <div style="flex:{{tail_late}}"></div>
       </div>
       <div class="verdict no">Impossible: you are still Exhausted when the Echo spawns</div>
     </div>
-    <div class="brow">
-      <div class="bhead"><span class="t">Three teams, Echo every {{cadence}}s</span>
-        <span class="v">your turn comes back after {{three_team_cycle}}s</span></div>
-      <div class="bar">
-        <div class="seg avail" style="flex:{{dive_cost}}">{{dive_cost}}s of cycle</div>
-        <div class="seg slack" style="flex:{{three_team_slack}}">{{three_team_slack}}s slack</div>
-        <div style="flex:{{three_tail}}"></div>
-      </div>
-      <div class="verdict yes">Works, with room for a slow kill</div>
-    </div>
   </div>
 
-  <p class="note">Two teams is the normal way to run this, and for most of the fight it is the right one.
-  Through Stage One and the intermission the Echo came every {{early_cadence}} seconds, which two alternating
-  teams cover comfortably. Stage Two locks the gap to {{cadence}}, and that is the only part of the fight
-  where the arithmetic above fails.</p>
+  <p class="note">So nothing is wrong with two teams for most of the fight, and every one of the day-one
+  kills further down runs exactly that. Only the last stretch is short, which is also the stretch a kill
+  spends the least time in. The rest of this page is about what happened in it.</p>
 </section>
 
 <section>
