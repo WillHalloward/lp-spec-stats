@@ -43,6 +43,12 @@ boss or difficulty (otherwise the most-pulled one wins), `--title` and
      night. Side damage totals therefore measure add supply, not throughput, so
      `render._split_damage_note` checks the counts before making any claim and
      says plainly when the sides *are* comparable.
+   - **The boss is three health bars that are one.** Ula'tek, Gore Rattle and
+     the Venomous Heart share a pool, so `Analysis.boss_damage()` sums all
+     three per player over the whole fight, one table per target per pull
+     (the table rolls pets into their owner's total). That is a different
+     question from the burn-window charts, and `render` checks whether the two
+     orders actually differ before saying so.
    - **Waves belong to a phase.** `Analysis.phases()` dates the split phase off
      the coordinates, and `waves()` calls everything before it phase one and
      everything after it phase two. The boss throws them on two different

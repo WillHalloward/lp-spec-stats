@@ -224,6 +224,18 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 </section>
 
 <section>
+  <div class="head"><h2>Damage onto the boss</h2>
+  <p>Ula'tek, Gore Rattle and the Venomous Heart share one health bar, so the only number that decides whether she dies is the sum of the three. This is every pull of the night, start to finish, not the {{window_secs}} seconds of exposure the burn charts measure. {{boss_dmg_total}} went into the pool across {{pulls}} pulls: {{boss_ulatek_pct}}% into Ula'tek herself, {{boss_heart_pct}}% into the heart, {{boss_gore_pct}}% into Gore Rattle. {{boss_top}} led it with {{boss_top_dmg}}.{{boss_vs_burn}}</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s1)"></i>Ula&#39;tek</span><span><i style="background:var(--s3)"></i>Venomous Heart</span><span><i style="background:var(--s4)"></i>Gore Rattle</span></div>
+    <svg id="c-boss" viewBox="0 0 900 520" role="img" aria-label="Damage to the boss health pool by player"></svg>
+    <figcaption>Each bar is one player's whole night, split by target. The number beside it is the total and damage per second of pull time, so a player who sat a pull is measured on the same clock as everyone else.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-boss"><thead><tr>
+    <th>Player</th><th>Spec</th><th>Ula&#39;tek</th><th>Heart</th><th>Gore Rattle</th><th>Total</th><th>DPS</th><th>Share</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
   <div class="head"><h2>Caustic Waves</h2>
   <p>{{wave_casts}} waves went out; {{wave_hits}} of them clipped somebody, and {{wave_deaths}} of those hits killed. Tank contacts are the cost of holding Ula'tek in melee; the other {{wave_nontank}} are the avoidable ones.</p>
   <p>The boss throws them on two patterns, and they are worth reading apart. Before the split phase it is {{wave_volleys_p1_typical}} volleys of about {{wave_per_volley_p1}} waves, every pull, {{wave_casts_p1}} casts across the night, and they caught non-tanks {{wave_nontank_p1}} times &mdash; {{wave_miss_rate_p1}}% of casts. After it the volleys come about every fifty seconds, up to {{wave_volleys_p2_max}} of them on the longest pulls, about {{wave_per_volley_p2}} waves each, {{wave_casts_p2}} casts on the {{wave_p2_pulls_word}} pulls that got that far, catching non-tanks {{wave_nontank_p2}} times, or {{wave_miss_rate_p2}}% of casts. Deaths follow the same shape: {{wave_deaths_p1}} in the first phase, {{wave_deaths_p2}} in the second. No wave has ever landed during the split phase itself.</p></div>
@@ -432,6 +444,42 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
     txt(s,xb+8,yy+12,`${fmtM(d.burn_dmg)} \u00b7 ${(d.burn_dps/1e3).toFixed(0)}k dps`,{size:11});});
   txt(s,L,H-4,'0',{});txt(s,W-R,H-4,fmtM(max),{anchor:'end'});
+})();
+
+/* chart 3b - the shared health pool, whole fight */
+(function(){
+  const s=document.getElementById('c-boss'),W=900,L=150,R=185,T=8;
+  const p=[...D.players].sort((a,b)=>b.boss_total-a.boss_total), rh=24, H=T+p.length*rh+20;
+  s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const raid=p.reduce((a,d)=>a+d.boss_total,0)||1;
+  const max=Math.max(...p.map(d=>d.boss_total))||1, x=v=>L+v/max*(W-L-R);
+  const PARTS=[['boss_ulatek','var(--s1)',"Ula\u2019tek"],['boss_heart','var(--s3)','Venomous Heart'],
+               ['boss_gore','var(--s4)','Gore Rattle']];
+  p.forEach((d,i)=>{
+    const yy=T+i*rh, bh=15;
+    const tip=`<b>${d.player}</b> &middot; ${d.spec} ${d.class}${d.role!=='dps'?` (${d.role})`:''}<br>`+
+      PARTS.map(([k,,lab])=>`${lab} ${fmtM(d[k])}`).join('<br>')+
+      `<br><b>${fmtM(d.boss_total)}</b> total &middot; ${(d.boss_dps/1e3).toFixed(0)}k dps`+
+      `<br>${(100*d.boss_total/raid).toFixed(1)}% of the raid's boss damage`;
+    let at=L;
+    PARTS.forEach(([k,col])=>{
+      const wseg=x(d[k])-L;
+      if(wseg<=0) return;
+      const r=mk(s,'rect',{x:at,y:yy,width:Math.max(1,wseg),height:bh,fill:col,rx:2});
+      hook(r,tip); at+=wseg;});
+    txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
+    txt(s,x(d.boss_total)+8,yy+12,
+      `${fmtM(d.boss_total)} \u00b7 ${(d.boss_dps/1e3).toFixed(0)}k dps`,{size:11});});
+  txt(s,L,H-4,'0',{});txt(s,W-R,H-4,fmtM(max),{anchor:'end'});
+
+  const tb=document.querySelector('#t-boss tbody');
+  p.forEach(d=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${d.player}${d.role!=='dps'?` <span class="chip">${d.role}</span>`:''}</td>
+      <td>${d.spec}</td><td>${fmtM(d.boss_ulatek)}</td><td>${fmtM(d.boss_heart)}</td>
+      <td>${fmtM(d.boss_gore)}</td><td>${fmtM(d.boss_total)}</td>
+      <td>${(d.boss_dps/1e3).toFixed(0)}k</td><td>${(100*d.boss_total/raid).toFixed(1)}%</td>`;
+    tb.appendChild(tr);});
 })();
 
 /* chart 4 \u2014 wave hits */

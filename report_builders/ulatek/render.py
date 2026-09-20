@@ -237,6 +237,39 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     wave_deaths_p1 = sum(1 for d in data["wave_deaths"] if d.get("phase") == 1)
     wave_deaths_p2 = sum(1 for d in data["wave_deaths"] if d.get("phase") == 2)
 
+    boss_raid = sum(p["boss_total"] for p in players) or 1
+    boss_rank = sorted(players, key=lambda p: -p["boss_total"])
+
+    # does the whole-fight order actually differ from the burn-window one? Some
+    # nights it does and some it does not, so the page checks before claiming
+    dps_only = [p for p in players if p["role"] == "dps"]
+    burn_pos = {p["player"]: i for i, p in enumerate(sorted(dps_only, key=lambda p: -p["burn_dmg"]))}
+    boss_pos = {p["player"]: i for i, p in enumerate(sorted(dps_only, key=lambda p: -p["boss_total"]))}
+    shifts = sorted(
+        ((burn_pos[p] - boss_pos[p], p) for p in burn_pos), key=lambda x: -abs(x[0])
+    )
+    big = [(d, p) for d, p in shifts if abs(d) >= 3]
+    if not shifts:
+        boss_vs_burn = ""
+    elif not big:
+        worst = abs(shifts[0][0])
+        boss_vs_burn = (
+            " It puts the damage dealers in nearly the order the burn windows do this night &mdash; "
+            f"nobody moves more than {word(worst)} place{'s' if worst != 1 else ''} &mdash; so neither "
+            "chart is flattering anyone."
+            if worst
+            else " It puts the damage dealers in exactly the order the burn windows do this night."
+        )
+    else:
+        bits = names(
+            f"{p} {word(abs(d))} place{'s' if abs(d) != 1 else ''} {'higher' if d > 0 else 'lower'}"
+            for d, p in big[:3]
+        )
+        boss_vs_burn = (
+            f" A player can carry a window and still be thin across a fight, and the two orders differ "
+            f"here: {bits} than the burn windows put them."
+        )
+
     expose_casts = 0
     for fid in a.ids:
         expose_casts += sum(
@@ -334,6 +367,18 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "heart_best_pct": round(by_heart[0]["heart_pct"]) if by_heart else 0,
         "heart_worst": names(p["player"] for p in by_heart[-2:]) if len(by_heart) > 1 else "",
         "heart_worst_pct": round(by_heart[-1]["heart_pct"]) if by_heart else 0,
+        # the shared health pool, whole fight
+        "boss_dmg_total": (
+            f"{sum(p['boss_total'] for p in players) / 1e9:.2f}B"
+            if sum(p["boss_total"] for p in players) >= 1e9
+            else f"{sum(p['boss_total'] for p in players) / 1e6:.0f}M"
+        ),
+        "boss_ulatek_pct": round(100 * sum(p["boss_ulatek"] for p in players) / boss_raid),
+        "boss_heart_pct": round(100 * sum(p["boss_heart"] for p in players) / boss_raid),
+        "boss_gore_pct": round(100 * sum(p["boss_gore"] for p in players) / boss_raid, 1),
+        "boss_vs_burn": boss_vs_burn,
+        "boss_top": boss_rank[0]["player"] if boss_rank else "",
+        "boss_top_dmg": f"{boss_rank[0]['boss_total'] / 1e6:.0f}M" if boss_rank else "0M",
         "wave_casts": sum(f["wave_casts"] for f in fights),
         "wave_hits": sum(p["wave_hits"] for p in players),
         "wave_nontank": sum(p["wave_hits"] for p in players if p["role"] != "tank"),

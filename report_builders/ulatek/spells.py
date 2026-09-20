@@ -7,6 +7,7 @@ report's own ability table gives us the ids for whatever names are in this log.
 # NPCs, by the gameID Warcraft Logs reports for them (name is the fallback).
 HEART = ("Venomous Heart", 267460)
 BOSS = ("Ula'tek", 257758)
+GORE = ("Gore Rattle", 259555)  # shares Ula'tek's health bar
 VIPER = ("Blightscale Viper", 261915)
 
 WAVE = "Caustic Waves"  # the avoidable wave, cast by the boss

@@ -139,14 +139,23 @@ class Fetcher:
         return self.cached(key, build)
 
     def table(
-        self, key: str, fight_id: int, data_type: str, *, start: float | None = None, end: float | None = None
+        self,
+        key: str,
+        fight_id: int,
+        data_type: str,
+        *,
+        start: float | None = None,
+        end: float | None = None,
+        target_id: int | None = None,
     ) -> dict:
         def build():
             q = """
-            query($c:String!,$f:[Int]!,$t:TableDataType!,$st:Float,$en:Float){
-              reportData{report(code:$c){table(dataType:$t,fightIDs:$f,startTime:$st,endTime:$en)}}}"""
-            return self._q(q, {"c": self.code, "f": [fight_id], "t": data_type, "st": start, "en": end})[
-                "reportData"
-            ]["report"]["table"]["data"]
+            query($c:String!,$f:[Int]!,$t:TableDataType!,$st:Float,$en:Float,$tid:Int){
+              reportData{report(code:$c){
+                table(dataType:$t,fightIDs:$f,startTime:$st,endTime:$en,targetID:$tid)}}}"""
+            return self._q(
+                q,
+                {"c": self.code, "f": [fight_id], "t": data_type, "st": start, "en": end, "tid": target_id},
+            )["reportData"]["report"]["table"]["data"]
 
         return self.cached(key, build)

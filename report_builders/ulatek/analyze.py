@@ -56,6 +56,7 @@ class Analysis:
 
         self.heart_id = self._npc(*spells.HEART)
         self.boss_ids = self._npcs(*spells.BOSS)
+        self.gore_ids = self._npcs(*spells.GORE)
         self.viper_id = self._npc(*spells.VIPER)
 
         pd = self.f.player_details(self.ids)
@@ -336,6 +337,34 @@ class Analysis:
                 "nontank_p2": nontank_ph[2],
             }
         return {"per_player": per_player, "per_pull": per_pull, "deaths": deaths}
+
+    def boss_damage(self) -> dict:
+        """Damage onto the boss's health pool across the whole fight.
+
+        Ula'tek, Gore Rattle and the Venomous Heart share one health bar, so
+        what kills the boss is the sum of the three. The burn-window numbers
+        elsewhere answer a different question -- who shows up for twenty
+        seconds -- and a player can look strong there and thin over the night.
+
+        One table per target per pull rather than per-event, because the table
+        already rolls a player's pets into their own total.
+        """
+        groups = [
+            ("ulatek", self.boss_ids),
+            ("gore", self.gore_ids),
+            ("heart", [self.heart_id] if self.heart_id else []),
+        ]
+        per: dict = defaultdict(lambda: defaultdict(float))
+        secs = 0.0
+        for fid in self.ids:
+            secs += (self.fight[fid]["endTime"] - self.fight[fid]["startTime"]) / 1000
+            for label, ids in groups:
+                for tid in ids:
+                    t = self.f.table(f"bossdmg_{fid}_{tid}", fid, "DamageDone", target_id=tid)
+                    for e in t.get("entries", []):
+                        if e["name"] in self.players:
+                            per[e["name"]][label] += e.get("total", 0)
+        return {"per": per, "secs": secs}
 
     # ---- heavy damage spans ----
 
@@ -797,6 +826,8 @@ class Analysis:
         dtps = self.dtps(heavy)
         split = self.split()
 
+        boss_dmg = self.boss_damage()
+
         overall = defaultdict(float)
         for fid in self.ids:
             for e in self.damage_table(fid).get("entries", []):
@@ -830,6 +861,13 @@ class Analysis:
                     "wave_pulls": len(w["pulls"]) if w else 0,
                     "wave_dmg": round(w["taken"]) if w else 0,
                     "wave_raw": round(w["raw"]) if w else 0,
+                    "boss_ulatek": round(boss_dmg["per"][p]["ulatek"]),
+                    "boss_gore": round(boss_dmg["per"][p]["gore"]),
+                    "boss_heart": round(boss_dmg["per"][p]["heart"]),
+                    "boss_total": round(sum(boss_dmg["per"][p].values())),
+                    "boss_dps": round(sum(boss_dmg["per"][p].values()) / boss_dmg["secs"])
+                    if boss_dmg["secs"]
+                    else 0,
                     "wave_hits_p1": w["hits_p1"] if w else 0,
                     "wave_hits_p2": w["hits_p2"] if w else 0,
                     "wave_dmg_p1": round(w["taken_p1"]) if w else 0,
