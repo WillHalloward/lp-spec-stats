@@ -18,7 +18,8 @@ python -m report_builders.ulatek.build --report <code> ... --publish
 the first rather than over it — pass `--slug` to overwrite an existing page.
 
 Other flags: `--encounter` and `--difficulty` if the report holds more than one
-boss or difficulty (otherwise the most-pulled one wins).
+boss or difficulty (otherwise the most-pulled one wins), `--title` and
+`--summary` to write the reports-index row yourself.
 
 ## What it does
 
@@ -30,6 +31,16 @@ boss or difficulty (otherwise the most-pulled one wins).
    the heart), the burn split between the heart and the boss, wave hits, heavy
    damage spans, defensive and consumable use, per-second damage taken, and the
    two split-phase teams (read off player coordinates).
+
+   Two things the page follows the log on rather than assuming:
+
+   - **However many heart windows a pull reached.** A pull that lives long
+     enough opens a third; the charts, the table columns and the prose all
+     count what is there. `--s1`/`--s2`/`--s3` is one hue per window.
+   - **Waves belong to a phase.** `Analysis.phases()` dates the split phase off
+     the coordinates, and `waves()` calls everything before it phase one and
+     everything after it phase two. The boss throws them on two different
+     patterns, so a single wave count hides more than it tells.
 3. `render.py` fills `template.html`: five JSON payloads for the charts, and one
    token per number the prose says out loud, so the sentences describe *this*
    night rather than the first one.
@@ -54,6 +65,10 @@ in a patch) only needs adding there.
 
 - Boss-specific: it assumes this encounter's shape — an exposed heart, waves, a
   two-sided split phase. Another boss needs another template.
+- A pull that wipes before the split phase has no phase of its own to date, so
+  the wave split falls back to the night's median phase start. If no pull all
+  night reached the phase there is no boundary at all, and every wave counts as
+  phase two.
 - The split phase is detected geometrically (two clusters of players thousands of
   units apart). A fight without one yields an empty section rather than an error.
 - Health at use subtracts the effective heal from the cast event's hitPoints,

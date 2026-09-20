@@ -69,6 +69,7 @@ class Analysis:
             a["name"]: a for a in self.actors.values() if a["type"] == "Player" and a["name"] in self.role
         }
         self.tanks = sorted(p for p in self.players if self.role[p] == "tank")
+        self._phases: tuple[dict, dict] | None = None
 
     # ---- small helpers ----
 
@@ -220,15 +221,49 @@ class Analysis:
     # ---- caustic waves ----
 
     def waves(self) -> dict:
+        """Wave casts, hits and deaths, each one dated to a phase.
+
+        The boss throws waves on two different patterns either side of the split
+        phase, so a night's wave count is really two counts. Everything before
+        the split is phase one, everything after it phase two; a wave inside the
+        phase itself would count as phase two, but none has been seen.
+
+        A pull that wipes before the phase has no phase of its own to date, and
+        every wave in it is a phase one wave. The night's median start stands in
+        for the boundary there: the phase opens at the same point every pull, so
+        a pull that ended before it never reached phase two.
+        """
         dmg_ids = self.ids_named(spells.WAVE)
-        per_player = defaultdict(lambda: {"hits": 0, "pulls": set(), "taken": 0.0, "raw": 0.0})
+        _, phases = self.phases()
+        seen = [w[0] for w in phases.values() if w]
+        fallback = statistics.median(seen) if seen else None
+        per_player = defaultdict(
+            lambda: {
+                "hits": 0,
+                "pulls": set(),
+                "taken": 0.0,
+                "raw": 0.0,
+                "hits_p1": 0,
+                "hits_p2": 0,
+                "taken_p1": 0.0,
+                "taken_p2": 0.0,
+            }
+        )
         per_pull, deaths = {}, []
         for fid in self.ids:
+
+            def phase_of(ts, fid=fid) -> int:
+                win = phases.get(fid)
+                edge = win[0] if win else fallback
+                return 1 if edge is not None and self.rel(fid, ts) < edge else 2
+
             hits = defaultdict(list)
             for e in self.taken(fid):
                 if e.get("abilityGameID") in dmg_ids and self.player_of(e.get("targetID")):
                     hits[self.player_of(e["targetID"])].append(e)
             tank = nontank = 0
+            tank_ph = {1: 0, 2: 0}
+            nontank_ph = {1: 0, 2: 0}
             for p, evs in hits.items():
                 evs.sort(key=lambda x: x["timestamp"])
                 groups = []
@@ -241,23 +276,65 @@ class Analysis:
                 per_player[p]["pulls"].add(fid)
                 per_player[p]["taken"] += sum(_amount(x) for x in evs)
                 per_player[p]["raw"] += sum(x.get("unmitigatedAmount") or _amount(x) for x in evs)
-                if self.role.get(p) == "tank":
-                    tank += len(groups)
-                else:
-                    nontank += len(groups)
-            casts = sum(
-                1
+                for g in groups:
+                    ph = phase_of(g[0]["timestamp"])
+                    per_player[p][f"hits_p{ph}"] += 1
+                    per_player[p][f"taken_p{ph}"] += sum(_amount(x) for x in g)
+                    if self.role.get(p) == "tank":
+                        tank += 1
+                        tank_ph[ph] += 1
+                    else:
+                        nontank += 1
+                        nontank_ph[ph] += 1
+            # "cast" only: the log carries a begincast for the same wave, and
+            # counting both doubles every wave the page reports
+            cast_ts = sorted(
+                e["timestamp"]
                 for e in self.enemy_casts(fid)
-                if e.get("abilityGameID") in dmg_ids
-                or self.ability.get(e.get("abilityGameID")) == spells.WAVE
+                if e.get("type") == "cast"
+                and (
+                    e.get("abilityGameID") in dmg_ids
+                    or self.ability.get(e.get("abilityGameID")) == spells.WAVE
+                )
             )
+            casts = len(cast_ts)
+            casts_ph = {1: 0, 2: 0}
+            volleys_ph = {1: 0, 2: 0}
+            last = None
+            for ts in cast_ts:
+                ph = phase_of(ts)
+                casts_ph[ph] += 1
+                # casts land in volleys a few seconds wide; a fresh volley is a
+                # gap of more than ten seconds
+                if last is None or ts - last > 10000:
+                    volleys_ph[ph] += 1
+                last = ts
             for d in self.deaths(fid):
                 if self.ability.get(d.get("killingAbilityGameID")) == spells.WAVE:
                     p = self.player_of(d.get("targetID"))
                     if p:
-                        deaths.append({"fight": self.pull_no[fid], "player": p})
+                        deaths.append(
+                            {
+                                "fight": self.pull_no[fid],
+                                "player": p,
+                                "phase": phase_of(d["timestamp"]),
+                            }
+                        )
             instances = len({e.get("targetInstance", 1) for e in self.vipers(fid)})
-            per_pull[fid] = {"casts": casts, "tank": tank, "nontank": nontank, "vipers": instances}
+            per_pull[fid] = {
+                "casts": casts,
+                "tank": tank,
+                "nontank": nontank,
+                "vipers": instances,
+                "casts_p1": casts_ph[1],
+                "casts_p2": casts_ph[2],
+                "volleys_p1": volleys_ph[1],
+                "volleys_p2": volleys_ph[2],
+                "tank_p1": tank_ph[1],
+                "tank_p2": tank_ph[2],
+                "nontank_p1": nontank_ph[1],
+                "nontank_p2": nontank_ph[2],
+            }
         return {"per_player": per_player, "per_pull": per_pull, "deaths": deaths}
 
     # ---- heavy damage spans ----
@@ -471,6 +548,7 @@ class Analysis:
             pulls[self.pull_no[fid]] = {
                 "dur": dur,
                 "boss_pct": self.fight[fid]["bossPercentage"],
+                "kill": self.fight[fid]["kill"],
                 "raid": [round(v / 1000) for v in raid],
                 "taken": [[round(v / 1000) for v in r] for r in taken],
                 "absorb": [[round(v / 1000) for v in r] for r in absorb],
@@ -487,9 +565,16 @@ class Analysis:
 
     # ---- the split phase ----
 
-    def split(self) -> dict:
-        """Two teams, read off the coordinates: while the phase runs the raid sits
-        in two clusters thousands of units apart, everywhere else it doesn't."""
+    def phases(self) -> tuple[dict, dict]:
+        """Cast positions per pull, and the seconds the split phase runs.
+
+        The raid sits in two clusters thousands of units apart only while the
+        phase runs, so the coordinates date it without a phase-change event. The
+        result is cached because both the split section and the wave split
+        (phase one waves before it, phase two waves after) read it.
+        """
+        if self._phases is not None:
+            return self._phases
         tracks, phases = {}, {}
         for fid in self.ids:
             pos = defaultdict(list)
@@ -512,6 +597,12 @@ class Analysis:
                 if gap > SPLIT_GAP and s[0] < -CENTRE and s[-1] > CENTRE:
                     split_buckets.append(b)
             phases[fid] = (min(split_buckets) * 5, max(split_buckets) * 5 + 5) if split_buckets else None
+        self._phases = (tracks, phases)
+        return self._phases
+
+    def split(self) -> dict:
+        """The two teams either side of the split phase, and how each side did."""
+        tracks, phases = self.phases()
 
         votes = defaultdict(Counter)
         per_pull = {}
@@ -714,6 +805,10 @@ class Analysis:
                     "wave_pulls": len(w["pulls"]) if w else 0,
                     "wave_dmg": round(w["taken"]) if w else 0,
                     "wave_raw": round(w["raw"]) if w else 0,
+                    "wave_hits_p1": w["hits_p1"] if w else 0,
+                    "wave_hits_p2": w["hits_p2"] if w else 0,
+                    "wave_dmg_p1": round(w["taken_p1"]) if w else 0,
+                    "wave_dmg_p2": round(w["taken_p2"]) if w else 0,
                 }
             )
 
@@ -731,6 +826,14 @@ class Analysis:
                     "wave_casts": wp["casts"],
                     "wave_hits_tank": wp["tank"],
                     "wave_hits_nontank": wp["nontank"],
+                    "wave_casts_p1": wp["casts_p1"],
+                    "wave_casts_p2": wp["casts_p2"],
+                    "wave_volleys_p1": wp["volleys_p1"],
+                    "wave_volleys_p2": wp["volleys_p2"],
+                    "wave_hits_nontank_p1": wp["nontank_p1"],
+                    "wave_hits_nontank_p2": wp["nontank_p2"],
+                    "wave_hits_tank_p1": wp["tank_p1"],
+                    "wave_hits_tank_p2": wp["tank_p2"],
                     "vipers": wp["vipers"],
                     "deaths": len(self.deaths(fid)),
                 }

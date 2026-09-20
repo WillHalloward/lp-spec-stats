@@ -71,6 +71,7 @@ def main() -> None:
     ap.add_argument(
         "--team", help="team name, added to the index title and summary when two teams raid the same night"
     )
+    ap.add_argument("--summary", help="summary line for the reports index (default: the standard one)")
     ap.add_argument("--encounter", type=int, help="encounter id, if the report holds more than one boss")
     ap.add_argument("--difficulty", type=int, help="3 normal, 4 heroic, 5 mythic")
     ap.add_argument("--out", type=Path, help="write the HTML here instead of publishing")
@@ -102,7 +103,8 @@ def main() -> None:
             "title": args.title or f"{tok['boss']} {tok['difficulty']}{team_bit} — the prog night in numbers",
             "date": date,
             "kind": "prog night",
-            "summary": (
+            "summary": args.summary
+            or (
                 (f"{args.team}, " if args.team else "")
                 + f"{tok['pulls']} pulls at {tok['difficulty'].lower()} {tok['boss']}: "
                 "burn-window damage on the Venomous Heart and the boss beside it, the two "

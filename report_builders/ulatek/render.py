@@ -64,10 +64,28 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     burn, waves, heavy = raw["burn"], raw["waves"], raw["heavy"]
 
     wins = data["windows"]
-    w1 = [w for w in wins if w["idx"] == 1]
-    w2 = [w for w in wins if w["idx"] == 2]
+    max_idx = max((w["idx"] for w in wins), default=1)
+    by_idx = {i: [w for w in wins if w["idx"] == i] for i in range(1, max_idx + 1)}
+    w1, w2 = by_idx.get(1, []), by_idx.get(2, [])
     w1_avg = statistics.mean(w["dmg"] for w in w1) if w1 else 0
     w2_avg = statistics.mean(w["dmg"] for w in w2) if w2 else 0
+    # a window the pull ended inside is short because the pull ended, not because
+    # the raid lost it; the page says which rather than claiming "always full"
+    full_len = max((w["dur"] for w in wins), default=0)
+    cut = [w for w in wins if w["dur"] < full_len - 1]
+    ordinals = {1: "First", 2: "Second", 3: "Third", 4: "Fourth", 5: "Fifth"}
+    avg_bits = []
+    for i in range(1, max_idx + 1):
+        group = by_idx.get(i) or []
+        if not group:
+            continue
+        avg = statistics.mean(w["dmg"] for w in group) / 1e6
+        avg_bits.append(
+            f"{ordinals.get(i, str(i))} windows landed {avg:.1f}M on average"
+            if not avg_bits
+            else f"{ordinals.get(i, str(i)).lower()} windows {avg:.1f}M"
+        )
+    windows_avgs = ", ".join(avg_bits) + "."
 
     # lust, measured against the first exposure
     lust_ids = set()
@@ -146,6 +164,25 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
                 continue
             no_consum += sum(1 for d in a.deaths(fid) if a.player_of(d.get("targetID")) == p)
 
+    # the boss throws waves on two patterns, before and after the split phase
+    wv = {
+        k: sum(f[k] for f in fights)
+        for k in (
+            "wave_casts_p1",
+            "wave_casts_p2",
+            "wave_volleys_p1",
+            "wave_volleys_p2",
+            "wave_hits_nontank_p1",
+            "wave_hits_nontank_p2",
+            "wave_hits_tank_p1",
+            "wave_hits_tank_p2",
+        )
+    }
+    p1_pulls = sum(1 for f in fights if f["wave_casts_p1"])
+    p2_pulls = sum(1 for f in fights if f["wave_casts_p2"])
+    wave_deaths_p1 = sum(1 for d in data["wave_deaths"] if d.get("phase") == 1)
+    wave_deaths_p2 = sum(1 for d in data["wave_deaths"] if d.get("phase") == 2)
+
     expose_casts = 0
     for fid in a.ids:
         expose_casts += sum(
@@ -153,6 +190,8 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
             for e in a.enemy_casts(fid)
             if a.ability.get(e.get("abilityGameID")) == spells.EXPOSE and e.get("type") == "cast"
         )
+
+    kill_pull = next((f["pull"] for f in fights if f["kill"]), 0)
 
     t = {
         "report": a.code,
@@ -164,6 +203,23 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
             f"{'s' if sum(1 for f in fights if f['kill']) != 1 else ''}"
         ),
         "deep_pull": min(fights, key=lambda f: f["boss_pct"])["pull"] if fights else 1,
+        # a night that ends in a kill leads with the kill; a night that does not
+        # leads with how close it got, so the same template reads right either way
+        "kill_pull": kill_pull,
+        "best_line": (
+            f"Killed on pull {kill_pull} of {meta['pulls']}"
+            if kill_pull
+            else f"Best pull: {meta['best_pct']:.2f}% remaining"
+            if meta["best_pct"] is not None
+            else "Best pull: n/a"
+        ),
+        "tile_best_n": str(kill_pull) if kill_pull else f"{meta['best_pct']:.2f}<small>%</small>",
+        "tile_best_lab": "the pull it died on" if kill_pull else "best pull, boss left",
+        "pulls_caption_lead": (
+            f"Boss health remaining at the wipe, and pull {kill_pull}, which finished it."
+            if kill_pull
+            else "Boss health remaining at the wipe."
+        ),
         "boss": a.fights[0]["name"] if a.fights else "the boss",
         "difficulty": spells.DIFFICULTY.get(a.difficulty, str(a.difficulty)),
         "date_long": date_long,
@@ -181,6 +237,40 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "heart_pct": round(100 * meta["total_heart"] / meta["total_burn"]) if meta["total_burn"] else 0,
         "boss_share_pct": round(100 * meta["total_boss"] / meta["total_burn"]) if meta["total_burn"] else 0,
         "w1_avg": f"{w1_avg / 1e6:.1f}",
+        "max_windows": max_idx,
+        "max_windows_word": word(max_idx),
+        "window_avgs": windows_avgs,
+        "window_full_note": (
+            f"Every one ran the full {round(full_len)} seconds, so the raid never lost a window early."
+            if not cut
+            else (
+                f"{word(len(cut)).capitalize()} of them ran short, at "
+                + names(f"{w['dur']:.0f} seconds" for w in sorted(cut, key=lambda w: w["dur"]))
+                + ", because the pull ended inside the window rather than because the raid lost it."
+            )
+        ),
+        "third_window_note": (
+            ""
+            if max_idx < 3
+            else (
+                f" {word(len(by_idx.get(3, []))).capitalize()} pull"
+                f"{'s' if len(by_idx.get(3, [])) != 1 else ''} lived long enough for a third window "
+                f"({names('pull ' + str(w['fight']) for w in by_idx.get(3, []))}), and that window is where "
+                "the boss actually falls: short, with nothing left on cooldown, so it reads low and "
+                "should."
+            )
+        ),
+        # legends are built from the windows the night reached, not assumed
+        "pull_legend": "".join(
+            f'<span><i style="background:var(--s{i})"></i>'
+            f'{word(i)} heart window{"s" if i != 1 else ""}</span>'
+            for i in range(1, max_idx + 1)
+        ),
+        "window_legend": "".join(
+            f'<span><i style="background:var(--s{i})"></i>window {i}: heart</span>'
+            f'<span><i style="background:var(--s{i});opacity:.45"></i>window {i}: Ula&#39;tek</span>'
+            for i in range(1, max_idx + 1)
+        ),
         "w2_avg": f"{w2_avg / 1e6:.1f}",
         "drop_pct": round(100 * (1 - w2_avg / w1_avg)) if w1_avg else 0,
         "lust_lo": round(min(lust)) if lust else 0,
@@ -194,6 +284,38 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "wave_hits": sum(p["wave_hits"] for p in players),
         "wave_nontank": sum(p["wave_hits"] for p in players if p["role"] != "tank"),
         "wave_deaths": len(data["wave_deaths"]),
+        "wave_casts_p1": wv["wave_casts_p1"],
+        "wave_casts_p2": wv["wave_casts_p2"],
+        "wave_nontank_p1": wv["wave_hits_nontank_p1"],
+        "wave_nontank_p2": wv["wave_hits_nontank_p2"],
+        "wave_tank_p1": wv["wave_hits_tank_p1"],
+        "wave_tank_p2": wv["wave_hits_tank_p2"],
+        "wave_deaths_p1": wave_deaths_p1,
+        "wave_deaths_p2": wave_deaths_p2,
+        "wave_p1_pulls_word": word(p1_pulls),
+        "wave_p2_pulls_word": word(p2_pulls),
+        "wave_volleys_p1_typical": (
+            round(statistics.median([f["wave_volleys_p1"] for f in fights if f["wave_volleys_p1"]]))
+            if p1_pulls
+            else 0
+        ),
+        "wave_volleys_p2_max": max((f["wave_volleys_p2"] for f in fights), default=0),
+        "wave_per_volley_p1": (
+            f"{wv['wave_casts_p1'] / sum(f['wave_volleys_p1'] for f in fights):.0f}"
+            if sum(f["wave_volleys_p1"] for f in fights)
+            else "0"
+        ),
+        "wave_per_volley_p2": (
+            f"{wv['wave_casts_p2'] / sum(f['wave_volleys_p2'] for f in fights):.0f}"
+            if sum(f["wave_volleys_p2"] for f in fights)
+            else "0"
+        ),
+        "wave_miss_rate_p1": (
+            round(100 * wv["wave_hits_nontank_p1"] / wv["wave_casts_p1"]) if wv["wave_casts_p1"] else 0
+        ),
+        "wave_miss_rate_p2": (
+            round(100 * wv["wave_hits_nontank_p2"] / wv["wave_casts_p2"]) if wv["wave_casts_p2"] else 0
+        ),
         "split_start_lo": min(phase_starts) if phase_starts else 0,
         "split_start_hi": max(phase_starts) if phase_starts else 0,
         "split_dur_lo": min(phase_durs) if phase_durs else 0,
