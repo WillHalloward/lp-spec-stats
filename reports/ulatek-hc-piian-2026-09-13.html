@@ -247,6 +247,16 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <figcaption id="raid-ratio"></figcaption>
 </section>
 <section>
+  <div class="head"><h2>Best heart windows</h2>
+  <p>Each player&#39;s highest window 1, highest window 2, and highest combined pull, with the pull
+  each came from. Third windows are excluded, since only the deepest pulls have one and it runs
+  short. The point is the pull number: open that pull in the chart above, or in the log, to see
+  what the player did in it.</p></div>
+  <div class="tblwrap"><table id="t-best"><thead><tr>
+    <th>Player</th><th>Spec</th><th>Best window 1</th><th>Best window 2</th>
+    <th title="best window 1 and window 2 added together within a single pull">Best pull, both windows</th></tr></thead><tbody></tbody></table></div>
+</section>
+<section>
   <div class="head"><h2>Who burns the window</h2>
   <p>Damage per player across the 537 seconds of exposure: solid onto the heart at double damage, pale into Ula&#39;tek, beside their share of the night&#39;s damage. A positive delta means a bigger share of the burn than of the night, which is burst rather than sustained output. Heart share across the damage dealers runs 87% down to 68%.</p></div>
   <figure>
@@ -488,6 +498,34 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
     txt(s,xb+8,yy+12,`${fmtM(d.burn_dmg)} \u00b7 ${(d.burn_dps/1e3).toFixed(0)}k dps`,{size:11});});
   txt(s,L,H-4,'0',{});txt(s,W-R,H-4,fmtM(max),{anchor:'end'});
+})();
+
+/* best heart windows per player, read off the same bins the timeline uses */
+(function(){
+  const WB=JSON.parse(document.getElementById('bins').textContent);
+  const pulls=Object.keys(WB).map(Number).sort((a,b)=>a-b);
+  const add=r=>r?r.h.reduce((a,b)=>a+b,0)+r.b.reduce((a,b)=>a+b,0):0;
+  const rows=D.players.map(d=>{
+    /* windows 1 and 2 only: a third exists on the deepest pulls and runs short */
+    const best=[{v:0,pull:null},{v:0,pull:null}], both={v:0,pull:null};
+    pulls.forEach(n=>{
+      const w=WB[n]; let sum=0;
+      for(let k=0;k<2;k++){
+        const v=add((w[k]||{})[d.player]);
+        sum+=v;
+        if(v>best[k].v) best[k]={v,pull:n};}
+      if(sum>both.v){both.v=sum;both.pull=n;}});
+    return {d,w1:best[0],w2:best[1],both};});
+  rows.sort((a,b)=>b.both.v-a.both.v);
+  const cell=c=>c.pull==null||!c.v
+    ? '<span style="color:var(--muted)">\u2014</span>'
+    : `${fmtM(c.v)} <span style="color:var(--muted)">pull ${c.pull}</span>`;
+  const tb=document.querySelector('#t-best tbody');
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.d.player}${r.d.role!=='dps'?` <span class="chip">${r.d.role}</span>`:''}</td>
+      <td>${r.d.spec}</td><td>${cell(r.w1)}</td><td>${cell(r.w2)}</td><td>${cell(r.both)}</td>`;
+    tb.appendChild(tr);});
 })();
 
 /* chart 3b - the shared health pool, whole night or one pull */
