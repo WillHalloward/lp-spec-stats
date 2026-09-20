@@ -234,8 +234,6 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <div class="controls">
     <label class="ctl"><span class="lab">Pull</span>
       <select id="boss-sel"></select></label>
-    <div class="ctl"><span class="lab">Measure</span>
-      <div class="seg-ctl" id="boss-mode"></div></div>
   </div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>Ula&#39;tek</span><span><i style="background:var(--s3)"></i>Venomous Heart</span><span><i style="background:var(--s4)"></i>Gore Rattle</span></div>
@@ -465,16 +463,12 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   const pulls=Object.keys(B.pulls).map(Number).sort((a,b)=>a-b);
   const byName={}; D.players.forEach(p=>byName[p.player]=p);
   const PARTS=[[0,'var(--s1)',"Ula\u2019tek"],[1,'var(--s3)','Venomous Heart'],[2,'var(--s4)','Gore Rattle']];
-  let pull=0, mode='total';   /* pull 0 = the whole night */
+  let pull=0;   /* pull 0 = the whole night */
 
   const sel=document.getElementById('boss-sel');
   [['0','Whole night'],...pulls.map(n=>[String(n),`Pull ${n} (${B.durs[n]}s)`])]
     .forEach(([v,l])=>{const o=document.createElement('option');o.value=v;o.textContent=l;sel.appendChild(o);});
   sel.addEventListener('change',()=>{pull=Number(sel.value);draw();});
-  const modeBox=document.getElementById('boss-mode');
-  [['total','total damage'],['dps','per second']].forEach(([v,l])=>{
-    const b=document.createElement('button');b.type='button';b.className='seg';b.textContent=l;
-    b.dataset.v=v;b.addEventListener('click',()=>{mode=v;draw();});modeBox.appendChild(b);});
 
   /* rows for the current selection: [ulatek, heart, gore] per player */
   function rowsFor(n){
@@ -507,16 +501,14 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   })();
 
   function draw(){
-    [...modeBox.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===mode));
     while(s.firstChild)s.removeChild(s.firstChild);
     const rows=rowsFor(pull), secs=secsFor(pull);
-    const val=v=>mode==='dps'?v/secs:v;
     const p=[...D.players].map(d=>({d,r:rows[d.player],tot:rows[d.player].reduce((a,b)=>a+b,0)}))
       .sort((a,b)=>b.tot-a.tot);
     const rh=24, H=T+p.length*rh+20;
     s.setAttribute('viewBox',`0 0 ${W} ${H}`);
     const raid=p.reduce((a,d)=>a+d.tot,0)||1;
-    const max=Math.max(1,...p.map(d=>val(d.tot))), x=v=>L+val(v)/max*(W-L-R);
+    const max=Math.max(1,...p.map(d=>d.tot)), x=v=>L+v/max*(W-L-R);
     p.forEach((row,i)=>{
       const d=row.d, yy=T+i*rh, bh=15;
       const tip=`<b>${d.player}</b> &middot; ${d.spec} ${d.class}${d.role!=='dps'?` (${d.role})`:''}<br>`+
@@ -533,7 +525,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
       txt(s,Math.max(at,L+2)+8,yy+12,
         `${fmtM(row.tot)} \u00b7 ${(row.tot/secs/1e3).toFixed(0)}k dps`,{size:11});});
     txt(s,L,H-4,'0',{});
-    txt(s,W-R,H-4,mode==='dps'?fmtM(max)+'/s':fmtM(max),{anchor:'end'});
+    txt(s,W-R,H-4,fmtM(max),{anchor:'end'});
 
     document.getElementById('boss-cap').textContent = pull
       ? `Pull ${pull}, ${secs} seconds: ${fmtM(raid)} into the pool, ${fmtM(raid/secs)} a second. `
