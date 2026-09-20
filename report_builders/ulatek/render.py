@@ -54,6 +54,37 @@ def names(items) -> str:
     return ", ".join(items[:-1]) + " and " + items[-1]
 
 
+def _wave_phase_note(wv: dict, deaths1: int, deaths2: int, p2_pulls: int, fights) -> str:
+    """Wave counts per phase, and which phase does the damage.
+
+    Which phase carries the hits is not fixed: a night that rarely reaches the
+    second phase barely sees its waves, so the conclusion is read off the counts.
+    """
+    c1, c2 = wv["wave_casts_p1"], wv["wave_casts_p2"]
+    h1, h2 = wv["wave_hits_nontank_p1"], wv["wave_hits_nontank_p2"]
+    if not (c1 or c2):
+        return "No waves were cast."
+    v1 = sum(f["wave_volleys_p1"] for f in fights)
+    per1 = word(round(c1 / v1)) if v1 else "no"
+    def rate(hits: int, casts: int) -> str:
+        return f"{hits / casts:.2f} a cast" if casts else "no casts"
+    out = (
+        f"The boss throws them in two phases. Phase one is {word(round(v1 / len(fights)))} volleys "
+        f"of about {per1} waves a pull, {c1} casts across the night, catching non-tanks {h1} times, "
+        f"{rate(h1, c1)}. Phase two is {c2} casts on the {word(p2_pulls)} "
+        f"pull{'s' if p2_pulls != 1 else ''} that reached it, {h2} hits, {rate(h2, c2)}. "
+        f"Deaths split {deaths1} to {deaths2}."
+    )
+    hits, deaths = h1 + h2, deaths1 + deaths2
+    if hits:
+        heavy, hh, hd = ("one", h1, deaths1) if h1 >= h2 else ("two", h2, deaths2)
+        out += (
+            f" Phase {heavy} accounts for {hh} of the {hits} non-tank hits"
+            + (f" and {hd} of the {deaths} deaths." if deaths else ".")
+        )
+    return out
+
+
 def _split_damage_note(sides: dict, split: dict, pulls: int) -> str:
     """The paragraph about comparing the two sides on damage.
 
@@ -78,9 +109,9 @@ def _split_damage_note(sides: dict, split: dict, pulls: int) -> str:
     )
     if not lopsided:
         return (
-            f"The two sides were handed much the same work this night, {wa} adds against {ea}, "
-            f"{round(wa / pulls)} a pull against {round(ea / pulls)}, so the {shares} damage split "
-            f"is a fair comparison between them. It sits against {night} across the night as a whole."
+            f"Both sides were handed much the same work this night, {wa} adds against {ea}, "
+            f"{round(wa / pulls)} a pull against {round(ea / pulls)}, so the {shares} phase damage "
+            f"split is a fair comparison. Night-wide the two are {night}."
         )
 
     name = split.get("add_name", "")
@@ -89,22 +120,21 @@ def _split_damage_note(sides: dict, split: dict, pulls: int) -> str:
     if name and per_side:
         plural = name if name.endswith("s") else name + "s"
         one_add = (
-            f" Most of the difference is one add: {heavy} takes {per_side.get(heavy, 0)} {plural} "
-            f"to {light}'s {per_side.get(light, 0)}."
+            f" Most of the difference is one add: {heavy} takes {per_side.get(heavy, 0)} {plural} to "
+            f"{light}'s {per_side.get(light, 0)}."
         )
     reversal = ""
     bigger, smaller = (per_w, per_e) if per_w >= per_e else (per_e, per_w)
     if smaller and bigger / smaller >= 1.15:
         richer = "west" if per_w > per_e else "east"
         reversal = (
-            f" Per add the order reverses, {per_w:.1f}M west against {per_e:.1f}M east, "
-            f"{richer}'s being the larger targets."
+            f" Per add the order reverses, {per_w:.1f}M west against {per_e:.1f}M east, because "
+            f"{richer}'s are the larger targets."
         )
     return (
-        "The two sides are not comparable on damage this night, and the numbers below say why "
-        f"rather than pretending otherwise. {counts}{one_add} That is what the {shares} damage split "
-        f"measures, against a much closer {night} across the night as a whole.{reversal} "
-        "Read the sides on deaths and on getting back to the middle, not on damage."
+        f"The sides are not comparable on damage this night. {counts}{one_add} The {shares} phase "
+        f"damage split measures that workload, not throughput: night-wide the two sides are "
+        f"{night}.{reversal} Compare them on deaths and on getting back to the middle instead."
     )
 
 
@@ -254,21 +284,17 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     elif not big:
         worst = abs(shifts[0][0])
         boss_vs_burn = (
-            " It puts the damage dealers in nearly the order the burn windows do this night &mdash; "
-            f"nobody moves more than {word(worst)} place{'s' if worst != 1 else ''} &mdash; so neither "
-            "chart is flattering anyone."
+            " The damage dealers land in nearly the burn-window order this night, nobody moving more "
+            f"than {word(worst)} place{'s' if worst != 1 else ''}."
             if worst
-            else " It puts the damage dealers in exactly the order the burn windows do this night."
+            else " The damage dealers land in exactly the burn-window order this night."
         )
     else:
         bits = names(
             f"{p} {word(abs(d))} place{'s' if abs(d) != 1 else ''} {'higher' if d > 0 else 'lower'}"
             for d, p in big[:3]
         )
-        boss_vs_burn = (
-            f" A player can carry a window and still be thin across a fight, and the two orders differ "
-            f"here: {bits} than the burn windows put them."
-        )
+        boss_vs_burn = f" The order differs from the burn windows: {bits} than the windows put them."
 
     expose_casts = 0
     for fid in a.ids:
@@ -303,7 +329,7 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "tile_best_n": str(kill_pull) if kill_pull else f"{meta['best_pct']:.2f}<small>%</small>",
         "tile_best_lab": "the pull it died on" if kill_pull else "best pull, boss left",
         "pulls_caption_lead": (
-            f"Boss health remaining at the wipe, and pull {kill_pull}, which finished it."
+            f"Boss health remaining at the end of each pull. Pull {kill_pull} was the kill."
             if kill_pull
             else "Boss health remaining at the wipe."
         ),
@@ -328,12 +354,12 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "max_windows_word": word(max_idx),
         "window_avgs": windows_avgs,
         "window_full_note": (
-            f"Every one ran the full {round(full_len)} seconds, so the raid never lost a window early."
+            f"Every one ran the full {round(full_len)} seconds; no window was lost early."
             if not cut
             else (
                 f"{word(len(cut)).capitalize()} of them ran short, at "
                 + names(f"{w['dur']:.0f} seconds" for w in sorted(cut, key=lambda w: w["dur"]))
-                + ", because the pull ended inside the window rather than because the raid lost it."
+                + ", because the pull ended inside the window rather than the raid losing it."
             )
         ),
         "third_window_note": (
@@ -341,10 +367,9 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
             if max_idx < 3
             else (
                 f" {word(len(by_idx.get(3, []))).capitalize()} pull"
-                f"{'s' if len(by_idx.get(3, [])) != 1 else ''} lived long enough for a third window "
-                f"({names('pull ' + str(w['fight']) for w in by_idx.get(3, []))}), and that window is where "
-                "the boss actually falls: short, with nothing left on cooldown, so it reads low and "
-                "should."
+                f"{'s' if len(by_idx.get(3, [])) != 1 else ''} reached a third window "
+                f"({names('pull ' + str(w['fight']) for w in by_idx.get(3, []))}). It is the window the "
+                "boss dies in, and it reads low because it runs short with nothing left on cooldown."
             )
         ),
         # legends are built from the windows the night reached, not assumed
@@ -383,6 +408,7 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "wave_hits": sum(p["wave_hits"] for p in players),
         "wave_nontank": sum(p["wave_hits"] for p in players if p["role"] != "tank"),
         "wave_deaths": len(data["wave_deaths"]),
+        "wave_phase_note": _wave_phase_note(wv, wave_deaths_p1, wave_deaths_p2, p2_pulls, fights),
         "wave_casts_p1": wv["wave_casts_p1"],
         "wave_casts_p2": wv["wave_casts_p2"],
         "wave_nontank_p1": wv["wave_hits_nontank_p1"],
@@ -417,6 +443,20 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         ),
         "split_start_lo": min(phase_starts) if phase_starts else 0,
         "split_start_hi": max(phase_starts) if phase_starts else 0,
+        "split_start_range": (
+            f"{min(phase_starts)}s"
+            if phase_starts and min(phase_starts) == max(phase_starts)
+            else f"{min(phase_starts)} to {max(phase_starts)}s"
+            if phase_starts
+            else "n/a"
+        ),
+        "split_dur_range": (
+            f"{min(phase_durs)}s"
+            if phase_durs and min(phase_durs) == max(phase_durs)
+            else f"{min(phase_durs)} to {max(phase_durs)} seconds"
+            if phase_durs
+            else "n/a"
+        ),
         "split_dur_lo": min(phase_durs) if phase_durs else 0,
         "split_dur_hi": max(phase_durs) if phase_durs else 0,
         "split_pulls_word": word(len(split_rows)),

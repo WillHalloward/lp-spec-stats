@@ -193,7 +193,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <div class="lab">Warcraft Logs 8Tt6dBX3GkZwNC4Y &middot; Heroic</div>
   <h1>Ula'tek, 21 pulls,<br>one heart to open.</h1>
   <div class="rule"></div>
-  <p>What the venom did to us and what we did to the Venomous Heart, pull by pull, on the Ragz Raiders progression night of 10 September.</p>
+  <p>Damage, deaths and cooldown use, pull by pull. Ragz Raiders progression night, 10 September.</p>
   <div class="meta" style="margin-top:14px">
     <span>The Venomous Abyss &middot; Heroic</span><span>20 raiders</span>
     <span>Best pull: 16.31% remaining</span>
@@ -205,7 +205,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>The night, pull by pull</h2>
-  <p>Boss health remaining at the wipe. Bars are coloured by how many heart windows the pull reached. Pulls that lived long enough for a second window are the ones that broke past the 46% shelf; everything else died in the first cycle.</p></div>
+  <p>Boss health remaining at the wipe. Bar colour is the number of heart windows the pull reached. Reaching a second window means getting past the 46% shelf.</p></div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>one heart window</span><span><i style="background:var(--s2)"></i>two heart windows</span></div>
     <svg id="c-pulls" viewBox="0 0 900 300" role="img" aria-label="Boss health remaining per pull"></svg>
@@ -215,17 +215,17 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>The burn windows</h2>
-  <p>Rage of the Shackled exposed the Venomous Heart 28 times across the night. Every one ran the full 20 seconds, so the raid never lost a window early. Everything the raid puts out in those 20 seconds counts, because the boss stays cleavable: the heart takes double damage, Ula&#39;tek herself takes normal damage, and both are part of the burn. Across the night that split is 77% heart, 23% boss. First windows landed 207.2M on average, second windows 137.6M. That 34% gap between the first two is mostly bought, not earned: the lust went out 4 to 19 seconds before the first exposure on every pull that reached one, and nothing is up for the second. A player&#39;s own drop is only worth reading against the raid&#39;s, which is what the table further down does.</p></div>
+  <p>Rage of the Shackled exposed the Venomous Heart 28 times. Every one ran the full 20 seconds; no window was lost early. The boss stays cleavable through an exposure, so both targets count: the heart takes double damage, Ula&#39;tek takes normal. Across the night the split is 77% heart, 23% boss. First windows landed 207.2M on average, second windows 137.6M. The 34% drop from the first window to the second tracks lust, which went out 4 to 19 seconds before the first exposure on every pull that reached one and is not up again for the second.</p></div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>window 1: heart</span><span><i style="background:var(--s1);opacity:.45"></i>window 1: Ula&#39;tek</span><span><i style="background:var(--s2)"></i>window 2: heart</span><span><i style="background:var(--s2);opacity:.45"></i>window 2: Ula&#39;tek</span></div>
     <svg id="c-windows" viewBox="0 0 900 300" role="img" aria-label="Damage to the Venomous Heart per exposure window per pull"></svg>
-    <figcaption>Damage in millions per 20-second exposure. The solid part of each bar landed on the heart, the pale part on Ula&#39;tek herself. Adds are not counted in either, since they die to splash and are not the target that matters here.</figcaption>
+    <figcaption>Damage in millions per 20-second exposure, solid onto the heart and pale onto Ula&#39;tek. Adds are excluded.</figcaption>
   </figure>
 </section>
 
 <section>
   <div class="head"><h2>Inside the window</h2>
-  <p>A running total of burn damage, the heart plus Ula&#39;tek herself, second by second, each window laid end to end. The target switch splits it apart when you want one or the other. Pick a pull and any number of players: the slope is output, and the gap between lines at any second is who is actually ahead. Switch the running total to reset at each window to compare a player&#39;s first burn against their second, remembering that window 1 carries the lust.</p></div>
+  <p>A running total of burn damage, heart plus Ula&#39;tek, second by second, each window laid end to end. The target switch isolates one or the other. Slope is output; the gap between two lines at a given second is the difference between those players. Resetting the total at each window compares a player&#39;s windows against each other, with window 1 carrying the lust.</p></div>
   <div class="controls">
     <label class="ctl"><span class="lab">Pull</span>
       <select id="pull-sel"></select></label>
@@ -248,10 +248,10 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 </section>
 <section>
   <div class="head"><h2>Who burns the window</h2>
-  <p>Everything a player put out across the 559 seconds of exposure, the solid part of the bar onto the heart at double damage and the rest into Ula'tek herself, next to their share of the raid's damage across the whole night. The delta is the honest read on burst: positive means they bring more to the window than their ordinary output would suggest.</p></div>
+  <p>Damage per player across the 559 seconds of exposure: solid onto the heart at double damage, pale into Ula&#39;tek, beside their share of the night&#39;s damage. A positive delta means a bigger share of the burn than of the night, which is burst rather than sustained output. Heart share across the damage dealers runs 86% down to 69%.</p></div>
   <figure>
     <svg id="c-heart" viewBox="0 0 900 520" role="img" aria-label="Damage to the Venomous Heart by player"></svg>
-    <figcaption>Bars are total burn damage, heart first then Ula&#39;tek; the number beside each is damage per second of exposure. Heart share across the damage dealers runs from 86% down to 69%.</figcaption>
+    <figcaption>Bars are total burn damage, heart first then Ula&#39;tek; the number beside each is damage per second of exposure.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-heart"><thead><tr>
     <th>Player</th><th>Spec</th><th>Burn damage</th><th>Heart</th><th>Ula&#39;tek</th><th>On heart</th><th>Burn DPS</th><th>Share</th><th>Night share</th><th>&Delta;</th></tr></thead><tbody></tbody></table></div>
@@ -259,11 +259,11 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>Damage onto the boss</h2>
-  <p>Ula'tek, Gore Rattle and the Venomous Heart share one health bar, so the only number that decides whether she dies is the sum of the three. This is every pull of the night, start to finish, not the 559 seconds of exposure the burn charts measure. 11.83B went into the pool across 21 pulls: 55% into Ula'tek herself, 34% into the heart, 11.4% into Gore Rattle. Caynlock led it with 998M. A player can carry a window and still be thin across a fight, and the two orders differ here: Galnasven six places higher and Iamstabby three places lower than the burn windows put them.</p></div>
+  <p>Ula&#39;tek, Gore Rattle and the Venomous Heart share one health bar, so progress on the boss is the sum of the three. This counts every pull start to finish, not only the 559 seconds of exposure the burn charts measure. 11.83B went into the pool across 21 pulls: 55% Ula&#39;tek, 34% heart, 11.4% Gore Rattle. Caynlock led it with 998M. The order differs from the burn windows: Galnasven six places higher and Iamstabby three places lower than the windows put them.</p></div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>Ula&#39;tek</span><span><i style="background:var(--s3)"></i>Venomous Heart</span><span><i style="background:var(--s4)"></i>Gore Rattle</span></div>
     <svg id="c-boss-pulls" viewBox="0 0 900 260" role="img" aria-label="Damage to the boss health pool per pull"></svg>
-    <figcaption id="boss-pulls-cap">The raid's damage into the pool, pull by pull. Click a bar to read that pull below.</figcaption>
+    <figcaption id="boss-pulls-cap">Raid damage into the pool, per pull. Click a bar to load that pull below.</figcaption>
   </figure>
   <div class="controls">
     <label class="ctl"><span class="lab">Pull</span>
@@ -274,7 +274,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>Ula&#39;tek</span><span><i style="background:var(--s3)"></i>Venomous Heart</span><span><i style="background:var(--s4)"></i>Gore Rattle</span></div>
     <svg id="c-boss" viewBox="0 0 900 520" role="img" aria-label="Damage to the boss health pool by player"></svg>
-    <figcaption id="boss-cap">Each bar is one player's whole night, split by target. The number beside it is the total and damage per second of pull time, so a player who sat a pull is measured on the same clock as everyone else.</figcaption>
+    <figcaption id="boss-cap">Each bar is one player's whole night, split by target. Beside it: total damage, then damage per second of pull time.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-boss"><thead><tr>
     <th>Player</th><th>Spec</th><th>Ula&#39;tek</th><th>Heart</th><th>Gore Rattle</th><th>Total</th><th>DPS</th><th>Share</th></tr></thead><tbody></tbody></table></div>
@@ -283,11 +283,11 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 <section>
   <div class="head"><h2>Caustic Waves</h2>
   <p>207 waves went out; 133 of them clipped somebody, and 17 of those hits killed. Tank contacts are the cost of holding Ula'tek in melee; the other 89 are the avoidable ones.</p>
-  <p>The boss throws them on two patterns, and they are worth reading apart. Before the split phase it is 2 volleys of about 4 waves, every pull, 168 casts across the night, and they caught non-tanks 42 times &mdash; 25% of casts. After it the volleys come about every fifty seconds, up to 4 of them on the longest pulls, about 3 waves each, 39 casts on the six pulls that got that far, catching non-tanks 47 times, or 121% of casts. Deaths follow the same shape: 2 in the first phase, 15 in the second. No wave has ever landed during the split phase itself.</p></div>
+  <p>The boss throws them in two phases. Phase one is two volleys of about four waves a pull, 168 casts across the night, catching non-tanks 42 times, 0.25 a cast. Phase two is 39 casts on the six pulls that reached it, 47 hits, 1.21 a cast. Deaths split 2 to 15. Phase two accounts for 47 of the 89 non-tank hits and 15 of the 17 deaths.</p></div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>hit in phase one</span><span><i style="background:var(--s2)"></i>hit in phase two</span><span><i style="background:var(--fatal)"></i>hits that killed</span><span class="chip">hatched = tank</span></div>
     <svg id="c-waves" viewBox="0 0 900 520" role="img" aria-label="Caustic Waves hits taken by player"></svg>
-    <figcaption>One hit = one wave contact, ticks within two seconds grouped. Each bar runs phase one then phase two, in that order, and the pair in brackets is the same split as numbers. Damage shown is after absorbs and mitigation.</figcaption>
+    <figcaption>One hit = one wave contact, ticks within two seconds grouped. Bars run phase one then phase two; the pair in brackets is the same split as numbers. Damage is after absorbs and mitigation.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-pulls"><thead><tr>
     <th>Pull</th><th>Length</th><th>Boss left</th><th title="waves cast before the split phase">P1 cast</th><th title="waves cast after the split phase">P2 cast</th><th title="non-tank hits before the split phase">P1 hits</th><th title="non-tank hits after the split phase">P2 hits</th><th>Hits (tank)</th><th>Non&#8209;tank per wave</th><th>Vipers</th><th>Burn dmg</th></tr></thead><tbody></tbody></table></div>
@@ -295,14 +295,14 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>Left and right</h2>
-  <p>Ten seconds after the first heart closes, the raid splits: two groups, one to each side of the platform, thousands of units apart in the log's coordinates and unmistakable in the position data. The phase opens at 165&ndash;170s on every pull and runs 45 to 110 seconds, and the boss cannot be touched until about 110s into it, which is the only deadline that matters for getting back. Across the nineteen pulls that reached it the sides were west 10 (1 tank, 2 healers, 7 damage) and east 10 (1 tank, 2 healers, 7 damage). Nobody changed sides all night. One pull had somebody on the far side of their own assignment (pull 12), which is what a wrong turn looks like. Deaths out there are listed per player: that is the list to read when deciding who needs an external or a cooldown call.</p>
-  <p>The two sides are not comparable on damage this night, and the numbers below say why rather than pretending otherwise. West is handed 130 adds across the night against east's 253, 7 a pull against 13. Most of the difference is one add: east takes 158 Blightscale Rawlings to west's 52. That is what the 42.6/57.4 damage split measures, against a much closer 47.8/52.2 across the night as a whole. Per add the order reverses, 10.7M west against 7.4M east, west's being the larger targets. Read the sides on deaths and on getting back to the middle, not on damage.</p></div>
+  <p>The raid splits ten seconds after the first heart closes, into two groups either side of the platform, thousands of coordinate units apart. The phase opens at 165 to 170s on every pull and runs 45 to 110 seconds; the boss is untargetable until about 110s in, which is the deadline for getting back. Across the nineteen pulls that reached it the sides were west 10 (1 tank, 2 healers, 7 damage) and east 10 (1 tank, 2 healers, 7 damage). Nobody changed sides all night. One pull had somebody on the far side of their own assignment (pull 12), which is what a wrong turn looks like. Deaths inside the phase are listed per player.</p>
+  <p>The sides are not comparable on damage this night. West is handed 130 adds across the night against east's 253, 7 a pull against 13. Most of the difference is one add: east takes 158 Blightscale Rawlings to west's 52. The 42.6/57.4 phase damage split measures that workload, not throughput: night-wide the two sides are 47.8/52.2. Per add the order reverses, 10.7M west against 7.4M east, because west's are the larger targets. Compare them on deaths and on getting back to the middle instead.</p></div>
   <div class="teams" id="split-teams"></div>
   <div class="tiles" id="split-tiles"></div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>west: Backtospawn&#39;s side</span><span><i style="background:var(--s2)"></i>east: Throatclogga&#39;s side</span></div>
     <svg id="c-split-dps" viewBox="0 0 900 280" role="img" aria-label="Damage per second by side during the split phase, per pull"></svg>
-    <figcaption>Damage per second inside the phase. West runs higher on every pull, but the two sides are not doing the same job: west is handed 7 adds a pull against east&#39;s 13, so the gap is what each side was given rather than how hard it hit.</figcaption>
+    <figcaption>Damage per second inside the phase. The sides are handed different amounts of work, 7 adds a pull west against 13 east, so most of any gap here is workload rather than throughput.</figcaption>
   </figure>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>west, first to last back</span><span><i style="background:var(--s2)"></i>east, first to last back</span><span><i style="background:var(--crit)"></i>boss takes damage again</span></div>
@@ -332,7 +332,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 </section>
 <section>
   <div class="head"><h2>Damage taken, second by second</h2>
-  <p>Incoming damage on the raid across a whole pull, tanks excluded since their intake is the job and would bury everyone else. The axis is fixed at 571 seconds, the length of the longest attempt, so every pull is read against the same clock. Drag the two handles to a stretch of the fight and everything below recalculates for that window: what the raid ate, how much of it was mitigated, and every cooldown, stone and potion spent inside it.</p></div>
+  <p>Incoming damage on the raid across a pull, tanks excluded, since their intake is the job and would bury everyone else. The axis is fixed at 571 seconds, the longest attempt, so every pull reads against the same clock. Drag the handles to a stretch of the fight and everything below recalculates for it: damage taken, how much was mitigated, and every cooldown, stone and potion spent inside it.</p></div>
   <div class="controls">
     <label class="ctl"><span class="lab">Pull</span><select id="dt-pull"></select></label>
     <div class="ctl grow"><span class="lab">Window <em id="dt-range"></em>
@@ -353,7 +353,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 </section>
 <section>
   <div class="head"><h2>Defensives in the heavy seconds</h2>
-  <p>The log's own damage curve marks the dangerous parts of a pull: 121 spans across the night where raid damage taken ran at twice the pull's median or more. They are 12% of the time on the boss and 22% of the damage. This is who pressed something in them.</p></div>
+  <p>121 spans across the night ran at twice the pull&#39;s median damage taken or more. They are 12% of the time on the boss and 22% of the damage. This is who pressed something in them.</p></div>
   <div class="tiles" id="tiles-mit"></div>
   <figure>
     <svg id="c-cover" viewBox="0 0 900 520" role="img" aria-label="Share of heavy damage spans covered by a major personal defensive, per player"></svg>
