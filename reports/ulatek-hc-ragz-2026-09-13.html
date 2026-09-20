@@ -473,7 +473,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
       hook(rd,`<b>${d.player}</b><br>${dk} wave hit${dk>1?'s':''} killed them`);}
     txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
     txt(s,L+w+8,yy+12,`${d.wave_hits} hits (${d.wave_hits_p1}+${d.wave_hits_p2}) \u00b7 ${fmtM(d.wave_dmg)} taken${dk?` \u00b7 ${dk} fatal`:''}`,{size:11});});
-  txt(s,L,10,'hits taken across 21 pulls',{size:10});
+  txt(s,L,10,'hits taken across 16 pulls',{size:10});
 })();
 
 /* chart 5 - inside the window (interactive) */
