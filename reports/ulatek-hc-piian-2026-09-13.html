@@ -248,9 +248,9 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <p>195 waves went out; 92 of them clipped somebody, and 9 of those hits killed. Tank contacts are the cost of holding Ula'tek in melee; the other 65 are the avoidable ones.</p>
   <p>The boss throws them on two patterns, and they are worth reading apart. Before the split phase it is 2 volleys of about 4 waves, every pull, 192 casts across the night, and they caught non-tanks 63 times &mdash; 33% of casts. After it the volleys come about every fifty seconds, up to 1 of them on the longest pulls, about 3 waves each, 3 casts on the one pulls that got that far, catching non-tanks 2 times, or 67% of casts. Deaths follow the same shape: 8 in the first phase, 1 in the second. No wave has ever landed during the split phase itself.</p></div>
   <figure>
-    <div class="legend"><span><i style="background:var(--s1)"></i>hits taken</span><span><i style="background:var(--crit)"></i>hits that killed</span><span class="chip">hatched = tank</span></div>
+    <div class="legend"><span><i style="background:var(--s1)"></i>hit in phase one</span><span><i style="background:var(--s2)"></i>hit in phase two</span><span><i style="background:var(--crit)"></i>hits that killed</span><span class="chip">hatched = tank</span></div>
     <svg id="c-waves" viewBox="0 0 900 520" role="img" aria-label="Caustic Waves hits taken by player"></svg>
-    <figcaption>One hit = one wave contact, ticks within two seconds grouped. The pair in brackets is phase one plus phase two. Damage shown is after absorbs and mitigation.</figcaption>
+    <figcaption>One hit = one wave contact, ticks within two seconds grouped. Each bar runs phase one then phase two, in that order, and the pair in brackets is the same split as numbers. Damage shown is after absorbs and mitigation.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-pulls"><thead><tr>
     <th>Pull</th><th>Length</th><th>Boss left</th><th title="waves cast before the split phase">P1 cast</th><th title="waves cast after the split phase">P2 cast</th><th title="non-tank hits before the split phase">P1 hits</th><th title="non-tank hits after the split phase">P2 hits</th><th>Hits (tank)</th><th>Non&#8209;tank per wave</th><th>Vipers</th><th>Burn dmg</th></tr></thead><tbody></tbody></table></div>
@@ -455,22 +455,40 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
 
 /* chart 4 \u2014 wave hits */
 (function(){
-  const s=document.getElementById('c-waves'),W=900,L=150,R=170,T=20;
+  const s=document.getElementById('c-waves'),W=900,L=150,R=265,T=20;
   const defs=mk(s,'defs',{});
-  const pat=mk(defs,'pattern',{id:'hatch',width:6,height:6,patternTransform:'rotate(45)',patternUnits:'userSpaceOnUse'});
-  mk(pat,'rect',{width:6,height:6,fill:'var(--s1)'});
-  mk(pat,'line',{x1:0,y1:0,x2:0,y2:6,stroke:'var(--surface)','stroke-width':2.5});
-  const deaths={};D.wave_deaths.forEach(d=>deaths[d.player]=(deaths[d.player]||0)+1);
+  ['1','2'].forEach(n=>{
+    const pat=mk(defs,'pattern',{id:'hatch'+n,width:6,height:6,patternTransform:'rotate(45)',patternUnits:'userSpaceOnUse'});
+    mk(pat,'rect',{width:6,height:6,fill:'var(--s'+n+')'});
+    mk(pat,'line',{x1:0,y1:0,x2:0,y2:6,stroke:'var(--surface)','stroke-width':2.5});});
+  /* deaths are phase-tagged too, so the fatal slice sits inside the phase it happened in */
+  const deaths={},deathsPh={};
+  D.wave_deaths.forEach(d=>{
+    deaths[d.player]=(deaths[d.player]||0)+1;
+    const k=d.player+'|'+(d.phase||2); deathsPh[k]=(deathsPh[k]||0)+1;});
   const p=[...D.players].sort((a,b)=>b.wave_hits-a.wave_hits), rh=24, H=T+p.length*rh+20;
   s.setAttribute('viewBox',`0 0 ${W} ${H}`);
   const max=Math.max(...p.map(d=>d.wave_hits)), x=v=>L+v/max*(W-L-R);
   p.forEach((d,i)=>{
     const yy=T+i*rh, bh=15, dk=deaths[d.player]||0, w=Math.max(2,x(d.wave_hits)-L);
-    const dw=d.wave_hits?w*dk/d.wave_hits:0;
-    const r=mk(s,'rect',{x:L,y:yy,width:w,height:bh,fill:d.role==='tank'?'url(#hatch)':'var(--s1)',rx:3});
-    hook(r,`<b>${d.player}</b> &middot; ${d.spec} ${d.class}${d.role==='tank'?' (tank)':''}<br>${d.wave_hits} hits on ${d.wave_pulls} pulls (${d.wave_hits_p1} in phase 1, ${d.wave_hits_p2} in phase 2)<br>${d.wave_dmg.toLocaleString()} taken, ${d.wave_raw.toLocaleString()} before mitigation<br>${dk} fatal`);
-    if(dk){const rd=mk(s,'rect',{x:L+w-dw,y:yy,width:dw,height:bh,fill:'var(--crit)',rx:3});
-      hook(rd,`<b>${d.player}</b><br>${dk} wave hit${dk>1?'s':''} killed them`);}
+    /* the whole bar is clipped to one rounded outline, so the phase divide is a
+       clean edge rather than two pills with a notch between them */
+    const clip=mk(defs,'clipPath',{id:'wbar'+i});
+    mk(clip,'rect',{x:L,y:yy,width:w,height:bh,rx:3});
+    const seg=(from,hits,ph)=>{
+      if(!hits) return from;
+      const sw=w*hits/d.wave_hits;
+      mk(s,'rect',{x:from,y:yy,width:sw,height:bh,'clip-path':`url(#wbar${i})`,
+        fill:d.role==='tank'?`url(#hatch${ph})`:`var(--s${ph})`});
+      const fatal=deathsPh[d.player+'|'+ph]||0;
+      if(fatal) mk(s,'rect',{x:from+sw-sw*fatal/hits,y:yy,width:sw*fatal/hits,height:bh,
+        'clip-path':`url(#wbar${i})`,fill:'var(--crit)'});
+      return from+sw;};
+    const afterP1=seg(L,d.wave_hits_p1,1);
+    seg(afterP1,d.wave_hits_p2,2);
+    /* a transparent rect over the whole bar carries the tooltip */
+    const r=mk(s,'rect',{x:L,y:yy,width:w,height:bh,fill:d.wave_hits?'transparent':'var(--s1)',rx:3});
+    hook(r,`<b>${d.player}</b> &middot; ${d.spec} ${d.class}${d.role==='tank'?' (tank)':''}<br>${d.wave_hits} hits on ${d.wave_pulls} pulls (${d.wave_hits_p1} in phase 1, ${d.wave_hits_p2} in phase 2)<br>${d.wave_dmg.toLocaleString()} taken, ${d.wave_raw.toLocaleString()} before mitigation<br>${dk} fatal${dk?` (${deathsPh[d.player+'|1']||0} in phase 1, ${deathsPh[d.player+'|2']||0} in phase 2)`:''}`);
     txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
     txt(s,L+w+8,yy+12,`${d.wave_hits} hits (${d.wave_hits_p1}+${d.wave_hits_p2}) \u00b7 ${fmtM(d.wave_dmg)} taken${dk?` \u00b7 ${dk} fatal`:''}`,{size:11});});
   txt(s,L,10,'hits taken across 25 pulls',{size:10});
