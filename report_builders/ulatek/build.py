@@ -11,7 +11,10 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import html
 import json
+import os
+import re
 from pathlib import Path
 
 from .analyze import Analysis
@@ -19,6 +22,9 @@ from .render import render, tokens
 
 REPO = Path(__file__).resolve().parents[2]
 REPORTS = REPO / "reports"
+
+# Where the pages are served from, for the absolute URLs link previews need.
+SITE = os.environ.get("REPORT_SITE_URL", "https://low-pressure-stats.halloward.com").rstrip("/")
 
 NAV = """<nav class="report-nav">
   <a href="/reports">&larr; Reports</a>
@@ -38,14 +44,47 @@ NAV_CSS = """<style>
 """
 
 
-def standalone(inner: str, code: str) -> str:
+def social(title: str, description: str, url: str) -> str:
+    """OpenGraph tags, so a pasted link unfurls into something readable.
+
+    Discord, Slack and the rest read these out of the served markup and run no
+    JavaScript, so everything they show has to be here. `theme-color` is what
+    Discord draws the coloured stripe from.
+    """
+
+    def esc(v: str) -> str:
+        return html.escape(v, quote=True)
+
+    tags = [
+        ("og:type", "article"),
+        ("og:site_name", "Low Pressure"),
+        ("og:title", title),
+        ("og:description", description),
+        ("og:url", url),
+        ("twitter:card", "summary"),
+        ("twitter:title", title),
+        ("twitter:description", description),
+    ]
+    out = f"<title>{esc(title)}</title>\n"
+    out += f'<meta name="description" content="{esc(description)}">\n'
+    out += '<meta name="theme-color" content="#e0a526">\n'
+    for key, value in tags:
+        attr = "property" if key.startswith("og:") else "name"
+        out += f'<meta {attr}="{key}" content="{esc(value)}">\n'
+    return out + f'<link rel="canonical" href="{esc(url)}">\n'
+
+
+def standalone(inner: str, code: str, *, title: str, description: str, url: str) -> str:
     """Wrap the page body in a document the site can serve directly."""
     cut = inner.index('<div class="wrap">')
     head, body = inner[:cut], inner[cut:]
+    # the template carries a fixed <title>; this report's own name replaces it
+    head = re.sub(r"<title>.*?</title>\n?", "", head, count=1, flags=re.S)
     return (
         '<!doctype html>\n<html lang="en" data-theme="dark">\n<head>\n'
         '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'
         '<link rel="icon" type="image/svg+xml" href="/favicon.svg">\n'
+        + social(title, description, url)
         + head
         + "<style>img{max-width:100%}[hidden]{display:none!important}</style>\n"
         + NAV_CSS
@@ -86,31 +125,40 @@ def main() -> None:
     date = args.date or start.strftime("%Y-%m-%d")
     date_long = dt.datetime.strptime(date, "%Y-%m-%d").strftime("%-d %B")
     tok = tokens(a, built, date_long=date_long, night_title=args.night)
-    html = render(built["payloads"], tok)
+    page_html = render(built["payloads"], tok)
 
     boss_slug = "".join(c.lower() if c.isalnum() else "-" for c in tok["boss"]).strip("-")
     slug = args.slug or f"{boss_slug}-{tok['difficulty'].lower()}-prog-{date}"
-    doc = standalone(html, args.report)
+    # the page and the index row say the same thing, so a link preview and the
+    # reports list cannot drift apart
+    team_bit = f" — {args.team}" if args.team else ""
+    row_title = args.title or f"{tok['boss']} {tok['difficulty']}{team_bit} — the prog night in numbers"
+    row_summary = args.summary or (
+        (f"{args.team}, " if args.team else "")
+        + f"{tok['pulls']} pulls at {tok['difficulty'].lower()} {tok['boss']}: "
+        "burn-window damage on the Venomous Heart and the boss beside it, the two "
+        "split-phase teams side by side, who ate waves, defensive cooldowns through "
+        "the heavy damage, and where the healthstones went."
+    )
+    doc = standalone(
+        page_html,
+        args.report,
+        title=row_title,
+        description=row_summary,
+        url=f"{SITE}/reports/{slug}",
+    )
 
     if args.publish:
         path = REPORTS / f"{slug}.html"
         path.write_text(doc, encoding="utf-8")
         index_path = REPORTS / "index.json"
         rows = json.loads(index_path.read_text(encoding="utf-8")) if index_path.exists() else []
-        team_bit = f" — {args.team}" if args.team else ""
         row = {
             "slug": slug,
-            "title": args.title or f"{tok['boss']} {tok['difficulty']}{team_bit} — the prog night in numbers",
+            "title": row_title,
             "date": date,
             "kind": "prog night",
-            "summary": args.summary
-            or (
-                (f"{args.team}, " if args.team else "")
-                + f"{tok['pulls']} pulls at {tok['difficulty'].lower()} {tok['boss']}: "
-                "burn-window damage on the Venomous Heart and the boss beside it, the two "
-                "split-phase teams side by side, who ate waves, defensive cooldowns through "
-                "the heavy damage, and where the healthstones went."
-            ),
+            "summary": row_summary,
             "source": f"https://www.warcraftlogs.com/reports/{args.report}",
         }
         rows = [r for r in rows if r.get("slug") != slug]

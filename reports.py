@@ -13,6 +13,7 @@ Index entry shape:
 from __future__ import annotations
 
 import json
+import os
 from html import escape
 from pathlib import Path
 
@@ -55,6 +56,11 @@ def _card(r: dict) -> str:
     </a>"""
 
 
+# Absolute URL the pages are served from, for link previews.
+SITE = os.environ.get("REPORT_SITE_URL", "https://low-pressure-stats.halloward.com").rstrip("/")
+_INDEX_BLURB = "Prog-night reports for the Low Pressure raid teams: what the numbers say about each night."
+
+
 def index_page() -> str:
     rows = load_index()
     cards = "".join(_card(r) for r in rows) or (
@@ -67,6 +73,14 @@ def index_page() -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reports &mdash; Low Pressure</title>
+<meta name="description" content="{_INDEX_BLURB}">
+<meta name="theme-color" content="#e0a526">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Low Pressure">
+<meta property="og:title" content="Reports &mdash; Low Pressure">
+<meta property="og:description" content="{_INDEX_BLURB}">
+<meta property="og:url" content="{SITE}/reports">
+<meta name="twitter:card" content="summary">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
