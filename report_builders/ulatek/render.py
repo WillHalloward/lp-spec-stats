@@ -54,6 +54,60 @@ def names(items) -> str:
     return ", ".join(items[:-1]) + " and " + items[-1]
 
 
+def _split_damage_note(sides: dict, split: dict, pulls: int) -> str:
+    """The paragraph about comparing the two sides on damage.
+
+    Some nights hand the sides the same number of adds and some do not, and the
+    direction is not fixed either, so every claim here is checked against the
+    numbers before it is made.
+    """
+    w, e = sides.get("west", {}), sides.get("east", {})
+    wa, ea = w.get("adds", 0), e.get("adds", 0)
+    if not (wa or ea) or not pulls:
+        return ""
+    shares = f"{w.get('phase_share', 0):.1f}/{e.get('phase_share', 0):.1f}"
+    night = f"{w.get('night_share', 0):.1f}/{e.get('night_share', 0):.1f}"
+    per_w, per_e = w.get("dmg_per_add", 0) / 1e6, e.get("dmg_per_add", 0) / 1e6
+    heavy, light = ("west", "east") if wa >= ea else ("east", "west")
+    hi, lo = max(wa, ea), min(wa, ea)
+    lopsided = lo and hi / lo >= 1.25
+
+    counts = (
+        f"West is handed {wa} adds across the night against east's {ea}, "
+        f"{round(wa / pulls)} a pull against {round(ea / pulls)}."
+    )
+    if not lopsided:
+        return (
+            f"The two sides were handed much the same work this night, {wa} adds against {ea}, "
+            f"{round(wa / pulls)} a pull against {round(ea / pulls)}, so the {shares} damage split "
+            f"is a fair comparison between them. It sits against {night} across the night as a whole."
+        )
+
+    name = split.get("add_name", "")
+    per_side = split.get("add_split", {}) or {}
+    one_add = ""
+    if name and per_side:
+        plural = name if name.endswith("s") else name + "s"
+        one_add = (
+            f" Most of the difference is one add: {heavy} takes {per_side.get(heavy, 0)} {plural} "
+            f"to {light}'s {per_side.get(light, 0)}."
+        )
+    reversal = ""
+    bigger, smaller = (per_w, per_e) if per_w >= per_e else (per_e, per_w)
+    if smaller and bigger / smaller >= 1.15:
+        richer = "west" if per_w > per_e else "east"
+        reversal = (
+            f" Per add the order reverses, {per_w:.1f}M west against {per_e:.1f}M east, "
+            f"{richer}'s being the larger targets."
+        )
+    return (
+        "The two sides are not comparable on damage this night, and the numbers below say why "
+        f"rather than pretending otherwise. {counts}{one_add} That is what the {shares} damage split "
+        f"measures, against a much closer {night} across the night as a whole.{reversal} "
+        "Read the sides on deaths and on getting back to the middle, not on damage."
+    )
+
+
 def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
     """One entry per {{token}} in the template."""
     P = built["payloads"]
@@ -333,6 +387,29 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "west_tank_class": a.players.get(west_tank, {}).get("subType", ""),
         "east_phase_share": f"{sides.get('east', {}).get('phase_share', 0):.1f}",
         "east_night_share": f"{sides.get('east', {}).get('night_share', 0):.1f}",
+        "west_phase_share": f"{sides.get('west', {}).get('phase_share', 0):.1f}",
+        "west_night_share": f"{sides.get('west', {}).get('night_share', 0):.1f}",
+        # the sides are handed different amounts of work, so the damage split is
+        # reported next to the add count that causes it
+        "west_adds": sides.get("west", {}).get("adds", 0),
+        "east_adds": sides.get("east", {}).get("adds", 0),
+        "west_adds_per_pull": (
+            round(sides.get("west", {}).get("adds", 0) / len(split_rows)) if split_rows else 0
+        ),
+        "east_adds_per_pull": (
+            round(sides.get("east", {}).get("adds", 0) / len(split_rows)) if split_rows else 0
+        ),
+        "west_per_add": f"{sides.get('west', {}).get('dmg_per_add', 0) / 1e6:.1f}",
+        "east_per_add": f"{sides.get('east', {}).get('dmg_per_add', 0) / 1e6:.1f}",
+        # whether the sides can be compared on damage at all depends on whether
+        # they were handed the same work, which varies night to night, so the
+        # paragraph is built from the numbers rather than asserting last night's
+        "split_damage_note": _split_damage_note(sides, split, len(split_rows)),
+        "split_add_name": (
+            split.get("add_name", "side adds") + ("" if split.get("add_name", "s").endswith("s") else "s")
+        ),
+        "split_add_west": split.get("add_split", {}).get("west", 0),
+        "split_add_east": split.get("add_split", {}).get("east", 0),
         "split_clean_word": word(split.get("clean", 0)),
         "split_dead_word": word(len(split_rows) - split.get("clean", 0)),
         # the phase is reported, not policed: one side ran short, and the page says

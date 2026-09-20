@@ -37,6 +37,12 @@ boss or difficulty (otherwise the most-pulled one wins), `--title` and
    - **However many heart windows a pull reached.** A pull that lives long
      enough opens a third; the charts, the table columns and the prose all
      count what is there. `--s1`/`--s2`/`--s3` is one hue per window.
+   - **The two split sides are not handed the same work.** Each add in the
+     phase is assigned to the side that did 75%+ of the damage to it, and the
+     counts come out lopsided on most nights — in either direction, varying by
+     night. Side damage totals therefore measure add supply, not throughput, so
+     `render._split_damage_note` checks the counts before making any claim and
+     says plainly when the sides *are* comparable.
    - **Waves belong to a phase.** `Analysis.phases()` dates the split phase off
      the coordinates, and `waves()` calls everything before it phase one and
      everything after it phase two. The boss throws them on two different

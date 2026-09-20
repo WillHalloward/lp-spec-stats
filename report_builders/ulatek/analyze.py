@@ -621,6 +621,7 @@ class Analysis:
         team = {p: c.most_common(1)[0][0] for p, c in votes.items()}
 
         rows, wrong = [], []
+        add_names: dict = defaultdict(Counter)
         for fid, v in sorted(per_pull.items()):
             if not v:
                 continue
@@ -638,6 +639,7 @@ class Analysis:
                     "reduced": 0.0,
                     "deaths": 0,
                     "iso": 0,
+                    "adds": 0,
                 }
                 for s in ("west", "east")
             }
@@ -649,6 +651,28 @@ class Analysis:
                 s = team.get(e["name"])
                 if s:
                     agg[s]["heal"] += e["total"]
+            # How many adds each side was handed. The two sides do not get the
+            # same number, so their damage totals are not comparable until this
+            # is known: an add belongs to the side that did most of the damage
+            # to it, and the ownership is near-total in practice.
+            per_inst: dict = defaultdict(Counter)
+            for e in self.f.events(
+                f"split_ev_{fid}", fid, "DamageDone", start=start_ms, end=end_ms, hostility="Friendlies"
+            ):
+                side = team.get(self.name(e.get("sourceID")))
+                tgt = self.actors.get(e.get("targetID")) or {}
+                if not side or tgt.get("type") == "Player":
+                    continue
+                per_inst[(tgt.get("name"), e.get("targetInstance", 1))][side] += _amount(e)
+            for (add_name, _instance), counts in per_inst.items():
+                total = counts["west"] + counts["east"]
+                if total <= 0:
+                    continue
+                owner = "west" if counts["west"] >= counts["east"] else "east"
+                if counts[owner] / total >= 0.75:
+                    agg[owner]["adds"] += 1
+                    add_names[add_name][owner] += 1
+
             for e in self.taken(fid):
                 if not (start_ms <= e["timestamp"] <= end_ms):
                     continue
@@ -754,6 +778,7 @@ class Analysis:
                     }
                 )
         return {
+            "add_names": {k: dict(v) for k, v in add_names.items()},
             "team": team,
             "rows": rows,
             "wrong": wrong,
@@ -935,6 +960,8 @@ class Analysis:
                 "absorbed": 100 * t["absorb"] / inc if inc else 0,
                 "deaths": int(t["deaths"]),
                 "iso_deaths": int(t["iso"]),
+                "adds": int(t["adds"]),
+                "dmg_per_add": t["dmg"] / t["adds"] if t["adds"] else 0,
                 "night_share": 100 * sum(overall.get(p, 0) for p in mem) / night_tot if night_tot else 0,
                 "phase_share": 100 * t["dmg"] / phase_tot if phase_tot else 0,
             }
@@ -953,6 +980,7 @@ class Analysis:
                 ret = r["ret"].get(s)
                 row[s] = {
                     "dps": r["agg"][s]["dmg"] / r["dur"],
+                    "adds": r["agg"][s]["adds"],
                     "hps": r["agg"][s]["heal"] / r["dur"],
                     "deaths": r["agg"][s]["deaths"],
                     "first": round(ret["first"] - r["window"][0], 1) if ret else None,
@@ -973,8 +1001,17 @@ class Analysis:
         for s in ("west", "east"):
             sides[s]["roles"] = Counter(self.role.get(p, "dps") for p in sides[s]["members"])
         sizes = [(r["sizes"]["west"], r["sizes"]["east"]) for r in split["rows"]]
+        # the add whose ownership is most lopsided, named so the prose can say it
+        lop = None
+        if split.get("add_names"):
+            lop = max(
+                split["add_names"].items(),
+                key=lambda kv: abs(kv[1].get("west", 0) - kv[1].get("east", 0)),
+            )[0]
         return {
             "sides": sides,
+            "add_name": lop or "side adds",
+            "add_split": split.get("add_names", {}).get(lop, {}),
             "pulls": pulls,
             "secs": secs,
             "first": first,

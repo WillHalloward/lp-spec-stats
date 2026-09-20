@@ -238,13 +238,14 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>Left and right</h2>
-  <p>Ten seconds after the first heart closes, the raid splits: two groups, one to each side of the platform, thousands of units apart in the log's coordinates and unmistakable in the position data. The phase opens at {{split_start_lo}}&ndash;{{split_start_hi}}s on every pull and runs {{split_dur_lo}} to {{split_dur_hi}} seconds, and the boss cannot be touched until about {{boss_back_avg}}s into it, which is the only deadline that matters for getting back. Across the {{split_pulls_word}} pulls that reached it the sides were {{split_shape}}. {{split_change_sentence}} Deaths out there are listed per player: that is the list to read when deciding who needs an external or a cooldown call.</p></div>
+  <p>Ten seconds after the first heart closes, the raid splits: two groups, one to each side of the platform, thousands of units apart in the log's coordinates and unmistakable in the position data. The phase opens at {{split_start_lo}}&ndash;{{split_start_hi}}s on every pull and runs {{split_dur_lo}} to {{split_dur_hi}} seconds, and the boss cannot be touched until about {{boss_back_avg}}s into it, which is the only deadline that matters for getting back. Across the {{split_pulls_word}} pulls that reached it the sides were {{split_shape}}. {{split_change_sentence}} Deaths out there are listed per player: that is the list to read when deciding who needs an external or a cooldown call.</p>
+  <p>{{split_damage_note}}</p></div>
   <div class="teams" id="split-teams"></div>
   <div class="tiles" id="split-tiles"></div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>west: {{west_tank}}&#39;s side</span><span><i style="background:var(--s2)"></i>east: {{east_tank}}&#39;s side</span></div>
     <svg id="c-split-dps" viewBox="0 0 900 280" role="img" aria-label="Damage per second by side during the split phase, per pull"></svg>
-    <figcaption>Damage per second inside the phase. East carries {{east_night_share}}% of the night&#39;s damage and {{east_phase_share}}% of the phase&#39;s.</figcaption>
+    <figcaption>Damage per second inside the phase. West runs higher on every pull, but the two sides are not doing the same job: west is handed {{west_adds_per_pull}} adds a pull against east&#39;s {{east_adds_per_pull}}, so the gap is what each side was given rather than how hard it hit.</figcaption>
   </figure>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>west, first to last back</span><span><i style="background:var(--s2)"></i>east, first to last back</span><span><i style="background:var(--crit)"></i>boss takes damage again</span></div>
@@ -679,6 +680,8 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   const w=X.sides.west, e=X.sides.east;
   document.getElementById('split-tiles').innerHTML=[
     [`${(w.dps/1e6).toFixed(2)}<small>M</small> / ${(e.dps/1e6).toFixed(2)}<small>M</small>`,'damage per second, west / east'],
+    [`${w.adds} <small>vs</small> ${e.adds}`,'adds handed to each side'],
+    [`${(w.dmg_per_add/1e6).toFixed(1)}<small>M</small> / ${(e.dmg_per_add/1e6).toFixed(1)}<small>M</small>`,'damage per add'],
     [`${(w.hps/1e6).toFixed(2)}<small>M</small> / ${(e.hps/1e6).toFixed(2)}<small>M</small>`,'healing per second'],
     [`${Math.round(w.taken_ps/1e3)}<small>k</small> / ${Math.round(e.taken_ps/1e3)}<small>k</small>`,'damage taken per second'],
     [`${Math.round(w.reduced+w.absorbed)}<small>%</small> / ${Math.round(e.reduced+e.absorbed)}<small>%</small>`,'mitigated before it landed'],
@@ -751,7 +754,8 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   X.pulls.forEach(p=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${p.pull}</td><td>${p.start}s +${p.dur}s</td>
-      <td>${fmtM(p.west.dps)}</td><td>${fmtM(p.east.dps)}</td>
+      <td>${fmtM(p.west.dps)} <span style="color:var(--muted)">${p.west.adds} adds</span></td>
+      <td>${fmtM(p.east.dps)} <span style="color:var(--muted)">${p.east.adds} adds</span></td>
       <td>${fmtM(p.west.hps)}</td><td>${fmtM(p.east.hps)}</td>
       <td class="${p.west.slack<0?'neg':''}">${p.west.back==null?'\u2014':'+'+p.west.back+'s'}
         <span style="color:var(--muted)">${p.west.last==null?'':'last +'+p.west.last+'s'}</span></td>
