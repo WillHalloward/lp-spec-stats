@@ -228,8 +228,19 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <p>Ula'tek, Gore Rattle and the Venomous Heart share one health bar, so the only number that decides whether she dies is the sum of the three. This is every pull of the night, start to finish, not the {{window_secs}} seconds of exposure the burn charts measure. {{boss_dmg_total}} went into the pool across {{pulls}} pulls: {{boss_ulatek_pct}}% into Ula'tek herself, {{boss_heart_pct}}% into the heart, {{boss_gore_pct}}% into Gore Rattle. {{boss_top}} led it with {{boss_top_dmg}}.{{boss_vs_burn}}</p></div>
   <figure>
     <div class="legend"><span><i style="background:var(--s1)"></i>Ula&#39;tek</span><span><i style="background:var(--s3)"></i>Venomous Heart</span><span><i style="background:var(--s4)"></i>Gore Rattle</span></div>
+    <svg id="c-boss-pulls" viewBox="0 0 900 260" role="img" aria-label="Damage to the boss health pool per pull"></svg>
+    <figcaption id="boss-pulls-cap">The raid's damage into the pool, pull by pull. Click a bar to read that pull below.</figcaption>
+  </figure>
+  <div class="controls">
+    <label class="ctl"><span class="lab">Pull</span>
+      <select id="boss-sel"></select></label>
+    <div class="ctl"><span class="lab">Measure</span>
+      <div class="seg-ctl" id="boss-mode"></div></div>
+  </div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s1)"></i>Ula&#39;tek</span><span><i style="background:var(--s3)"></i>Venomous Heart</span><span><i style="background:var(--s4)"></i>Gore Rattle</span></div>
     <svg id="c-boss" viewBox="0 0 900 520" role="img" aria-label="Damage to the boss health pool by player"></svg>
-    <figcaption>Each bar is one player's whole night, split by target. The number beside it is the total and damage per second of pull time, so a player who sat a pull is measured on the same clock as everyone else.</figcaption>
+    <figcaption id="boss-cap">Each bar is one player's whole night, split by target. The number beside it is the total and damage per second of pull time, so a player who sat a pull is measured on the same clock as everyone else.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-boss"><thead><tr>
     <th>Player</th><th>Spec</th><th>Ula&#39;tek</th><th>Heart</th><th>Gore Rattle</th><th>Total</th><th>DPS</th><th>Share</th></tr></thead><tbody></tbody></table></div>
@@ -348,6 +359,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 <script id="mit" type="application/json">__PAYLOAD_MIT__</script>
 <script id="dtps" type="application/json">__PAYLOAD_DTPS__</script>
 <script id="split" type="application/json">__PAYLOAD_SPLIT__</script>
+<script id="bosspulls" type="application/json">__PAYLOAD_BOSSPULLS__</script>
 <script id="data" type="application/json">__PAYLOAD_DATA__</script>
 <script>
 const D=JSON.parse(document.getElementById('data').textContent);
@@ -446,40 +458,99 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   txt(s,L,H-4,'0',{});txt(s,W-R,H-4,fmtM(max),{anchor:'end'});
 })();
 
-/* chart 3b - the shared health pool, whole fight */
+/* chart 3b - the shared health pool, whole night or one pull */
 (function(){
+  const B=JSON.parse(document.getElementById('bosspulls').textContent);
   const s=document.getElementById('c-boss'),W=900,L=150,R=185,T=8;
-  const p=[...D.players].sort((a,b)=>b.boss_total-a.boss_total), rh=24, H=T+p.length*rh+20;
-  s.setAttribute('viewBox',`0 0 ${W} ${H}`);
-  const raid=p.reduce((a,d)=>a+d.boss_total,0)||1;
-  const max=Math.max(...p.map(d=>d.boss_total))||1, x=v=>L+v/max*(W-L-R);
-  const PARTS=[['boss_ulatek','var(--s1)',"Ula\u2019tek"],['boss_heart','var(--s3)','Venomous Heart'],
-               ['boss_gore','var(--s4)','Gore Rattle']];
-  p.forEach((d,i)=>{
-    const yy=T+i*rh, bh=15;
-    const tip=`<b>${d.player}</b> &middot; ${d.spec} ${d.class}${d.role!=='dps'?` (${d.role})`:''}<br>`+
-      PARTS.map(([k,,lab])=>`${lab} ${fmtM(d[k])}`).join('<br>')+
-      `<br><b>${fmtM(d.boss_total)}</b> total &middot; ${(d.boss_dps/1e3).toFixed(0)}k dps`+
-      `<br>${(100*d.boss_total/raid).toFixed(1)}% of the raid's boss damage`;
-    let at=L;
-    PARTS.forEach(([k,col])=>{
-      const wseg=x(d[k])-L;
-      if(wseg<=0) return;
-      const r=mk(s,'rect',{x:at,y:yy,width:Math.max(1,wseg),height:bh,fill:col,rx:2});
-      hook(r,tip); at+=wseg;});
-    txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
-    txt(s,x(d.boss_total)+8,yy+12,
-      `${fmtM(d.boss_total)} \u00b7 ${(d.boss_dps/1e3).toFixed(0)}k dps`,{size:11});});
-  txt(s,L,H-4,'0',{});txt(s,W-R,H-4,fmtM(max),{anchor:'end'});
+  const pulls=Object.keys(B.pulls).map(Number).sort((a,b)=>a-b);
+  const byName={}; D.players.forEach(p=>byName[p.player]=p);
+  const PARTS=[[0,'var(--s1)',"Ula\u2019tek"],[1,'var(--s3)','Venomous Heart'],[2,'var(--s4)','Gore Rattle']];
+  let pull=0, mode='total';   /* pull 0 = the whole night */
 
-  const tb=document.querySelector('#t-boss tbody');
-  p.forEach(d=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${d.player}${d.role!=='dps'?` <span class="chip">${d.role}</span>`:''}</td>
-      <td>${d.spec}</td><td>${fmtM(d.boss_ulatek)}</td><td>${fmtM(d.boss_heart)}</td>
-      <td>${fmtM(d.boss_gore)}</td><td>${fmtM(d.boss_total)}</td>
-      <td>${(d.boss_dps/1e3).toFixed(0)}k</td><td>${(100*d.boss_total/raid).toFixed(1)}%</td>`;
-    tb.appendChild(tr);});
+  const sel=document.getElementById('boss-sel');
+  [['0','Whole night'],...pulls.map(n=>[String(n),`Pull ${n} (${B.durs[n]}s)`])]
+    .forEach(([v,l])=>{const o=document.createElement('option');o.value=v;o.textContent=l;sel.appendChild(o);});
+  sel.addEventListener('change',()=>{pull=Number(sel.value);draw();});
+  const modeBox=document.getElementById('boss-mode');
+  [['total','total damage'],['dps','per second']].forEach(([v,l])=>{
+    const b=document.createElement('button');b.type='button';b.className='seg';b.textContent=l;
+    b.dataset.v=v;b.addEventListener('click',()=>{mode=v;draw();});modeBox.appendChild(b);});
+
+  /* rows for the current selection: [ulatek, heart, gore] per player */
+  function rowsFor(n){
+    const out={};
+    D.players.forEach(p=>{
+      if(n) out[p.player]=(B.pulls[n]||{})[p.player]||[0,0,0];
+      else out[p.player]=[p.boss_ulatek,p.boss_heart,p.boss_gore];});
+    return out;}
+  const secsFor=n=>n?B.durs[n]:pulls.reduce((a,k)=>a+B.durs[k],0);
+
+  /* raid damage per pull, and the click target for picking one */
+  (function(){
+    const c=document.getElementById('c-boss-pulls'),H=260,L2=54,R2=12,T2=14,B2=34;
+    const tot=pulls.map(n=>{let v=0;const r=B.pulls[n]||{};for(const p in r)v+=r[p][0]+r[p][1]+r[p][2];return v;});
+    const max=Math.max(1,...tot), y=v=>T2+(1-v/max)*(H-T2-B2);
+    const iw=(W-L2-R2)/pulls.length, bw=Math.min(34,iw-6);
+    const mag=Math.pow(10,Math.floor(Math.log10(max))), step=mag*(max/mag>5?2:max/mag>2?1:.5);
+    for(let v=0;v<=max*1.001;v+=step){
+      mk(c,'line',{x1:L2,x2:W-R2,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+      txt(c,L2-8,y(v)+4,(v/1e6).toFixed(0)+'M',{anchor:'end'});}
+    pulls.forEach((n,i)=>{
+      const x=L2+i*iw+(iw-bw)/2, yy=y(tot[i]);
+      const r=mk(c,'rect',{x,y:yy,width:bw,height:y(0)-yy,fill:'var(--s1)',rx:3});
+      r.style.cursor='pointer';
+      hook(r,`<b>Pull ${n}</b><br>${fmtM(tot[i])} into the pool<br>${B.durs[n]}s &middot; ${fmtM(tot[i]/B.durs[n])} a second`);
+      r.addEventListener('click',()=>{pull=n;sel.value=String(n);draw();});
+      txt(c,x+bw/2,yy-5,(tot[i]/1e6).toFixed(0),{anchor:'middle',size:9.5});
+      txt(c,x+bw/2,H-20,n,{anchor:'middle',size:10});});
+    txt(c,W-R2,H-4,'pull number',{anchor:'end',size:10});
+  })();
+
+  function draw(){
+    [...modeBox.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===mode));
+    while(s.firstChild)s.removeChild(s.firstChild);
+    const rows=rowsFor(pull), secs=secsFor(pull);
+    const val=v=>mode==='dps'?v/secs:v;
+    const p=[...D.players].map(d=>({d,r:rows[d.player],tot:rows[d.player].reduce((a,b)=>a+b,0)}))
+      .sort((a,b)=>b.tot-a.tot);
+    const rh=24, H=T+p.length*rh+20;
+    s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    const raid=p.reduce((a,d)=>a+d.tot,0)||1;
+    const max=Math.max(1,...p.map(d=>val(d.tot))), x=v=>L+val(v)/max*(W-L-R);
+    p.forEach((row,i)=>{
+      const d=row.d, yy=T+i*rh, bh=15;
+      const tip=`<b>${d.player}</b> &middot; ${d.spec} ${d.class}${d.role!=='dps'?` (${d.role})`:''}<br>`+
+        PARTS.map(([k,,lab])=>`${lab} ${fmtM(row.r[k])}`).join('<br>')+
+        `<br><b>${fmtM(row.tot)}</b> ${pull?`on pull ${pull}`:'across the night'} &middot; `+
+        `${(row.tot/secs/1e3).toFixed(0)}k dps<br>${(100*row.tot/raid).toFixed(1)}% of the raid's`;
+      let at=L;
+      PARTS.forEach(([k,col])=>{
+        const wseg=x(row.r[k])-L;
+        if(wseg<=0) return;
+        const r=mk(s,'rect',{x:at,y:yy,width:Math.max(1,wseg),height:bh,fill:col,rx:2});
+        hook(r,tip); at+=wseg;});
+      txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
+      txt(s,Math.max(at,L+2)+8,yy+12,
+        `${fmtM(row.tot)} \u00b7 ${(row.tot/secs/1e3).toFixed(0)}k dps`,{size:11});});
+    txt(s,L,H-4,'0',{});
+    txt(s,W-R,H-4,mode==='dps'?fmtM(max)+'/s':fmtM(max),{anchor:'end'});
+
+    document.getElementById('boss-cap').textContent = pull
+      ? `Pull ${pull}, ${secs} seconds: ${fmtM(raid)} into the pool, ${fmtM(raid/secs)} a second. `
+        +'Bars are split by target and ordered by damage on this pull.'
+      : "Each bar is one player's whole night, split by target. The number beside it is the total and "
+        +'damage per second of pull time, so a player who sat a pull is measured on the same clock.';
+
+    const tb=document.querySelector('#t-boss tbody'); tb.innerHTML='';
+    p.forEach(row=>{
+      const d=row.d, tr=document.createElement('tr');
+      tr.innerHTML=`<td>${d.player}${d.role!=='dps'?` <span class="chip">${d.role}</span>`:''}</td>
+        <td>${d.spec}</td><td>${fmtM(row.r[0])}</td><td>${fmtM(row.r[1])}</td>
+        <td>${fmtM(row.r[2])}</td><td>${fmtM(row.tot)}</td>
+        <td>${(row.tot/secs/1e3).toFixed(0)}k</td><td>${(100*row.tot/raid).toFixed(1)}%</td>`;
+      tb.appendChild(tr);});
+  }
+  draw();
 })();
 
 /* chart 4 \u2014 wave hits */

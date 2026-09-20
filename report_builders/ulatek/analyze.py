@@ -355,16 +355,26 @@ class Analysis:
             ("heart", [self.heart_id] if self.heart_id else []),
         ]
         per: dict = defaultdict(lambda: defaultdict(float))
+        per_pull: dict = {}
+        durs: dict = {}
         secs = 0.0
         for fid in self.ids:
-            secs += (self.fight[fid]["endTime"] - self.fight[fid]["startTime"]) / 1000
+            dur = (self.fight[fid]["endTime"] - self.fight[fid]["startTime"]) / 1000
+            secs += dur
+            n = self.pull_no[fid]
+            durs[n] = round(dur)
+            rows: dict = defaultdict(lambda: defaultdict(float))
             for label, ids in groups:
                 for tid in ids:
                     t = self.f.table(f"bossdmg_{fid}_{tid}", fid, "DamageDone", target_id=tid)
                     for e in t.get("entries", []):
                         if e["name"] in self.players:
                             per[e["name"]][label] += e.get("total", 0)
-        return {"per": per, "secs": secs}
+                            rows[e["name"]][label] += e.get("total", 0)
+            per_pull[n] = {
+                p: [round(v["ulatek"]), round(v["heart"]), round(v["gore"])] for p, v in rows.items()
+            }
+        return {"per": per, "secs": secs, "per_pull": per_pull, "durs": durs}
 
     # ---- heavy damage spans ----
 
@@ -959,6 +969,11 @@ class Analysis:
                 "mit": {"players": mit_players, "total_spans": mit["total_spans"]},
                 "dtps": dtps,
                 "split": split_payload,
+                "bosspulls": {
+                    "pulls": boss_dmg["per_pull"],
+                    "durs": boss_dmg["durs"],
+                    "targets": ["Ula\u2019tek", "Venomous Heart", "Gore Rattle"],
+                },
             },
             "raw": {
                 "burn": burn,
