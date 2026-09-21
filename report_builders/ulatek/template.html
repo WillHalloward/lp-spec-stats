@@ -210,7 +210,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     <svg id="c-timeline" viewBox="0 0 900 340" role="img" aria-label="Damage to the heart per second during each exposure window"></svg>
     <figcaption id="win-cap">Cumulative burn damage. Each divider marks the end of one window and the start of the next.</figcaption>
   </figure>
-  <div class="tblwrap"><table id="t-window"><thead><tr></tr></thead><tbody></tbody></table></div>
+  <div class="tblwrap"><table id="t-window"><thead><tr></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
   <figcaption id="raid-ratio"></figcaption>
 </section>
 <section>
@@ -707,6 +707,19 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   const W=900,H=340,L=64,T=16,B=42;
   const EMPTY={h:new Array(20).fill(0),b:new Array(20).fill(0)};
   function winsOf(p){return WB[pull].map(w=>(w&&w[p])||EMPTY);}
+  /* the same ceiling the best-windows table reports: every player's best window
+     1 plus their best window 2, wherever each came from */
+  const CEILING=(()=>{
+    const sum=r=>r?r.h.reduce((a,b)=>a+b,0)+r.b.reduce((a,b)=>a+b,0):0;
+    let total=0;
+    D.players.forEach(d=>{
+      let b1=0,b2=0;
+      pulls.forEach(n=>{
+        const w=WB[n];
+        b1=Math.max(b1,sum((w[0]||{})[d.player]));
+        b2=Math.max(b2,sum((w[1]||{})[d.player]));});
+      total+=b1+b2;});
+    return total;})();
   function pick(row,i){return src==='heart'?row.h[i]:src==='boss'?row.b[i]:row.h[i]+row.b[i];}
   function perSecond(p){
     const out=[];
@@ -800,6 +813,7 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
       + '<th>On heart</th><th>Pull total</th>';
     const tb=document.querySelector('#t-window tbody'); tb.innerHTML='';
     const ORD={dps:0,healer:1,tank:2};
+    const foot={per:new Array(nw).fill(0),heart:0,total:0};
     data.slice().sort((a,b)=>(ORD[a.d.role]-ORD[b.d.role]) || a.p.localeCompare(b.p)).forEach(d=>{
       const add=r=>r.reduce((a,b)=>a+b,0);
       const rowsW=winsOf(d.p);
@@ -815,7 +829,19 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
         <td class="${rel==null?'':rel>=0?'pos':'neg'}">${rel==null?'\u2014':(rel>0?'+':'')+Math.round(rel)+' pp'}</td>
         <td>${total?Math.round(100*heart/total)+'%':'\u2014'}</td>
         <td>${fmtM(total)}</td>`;
+      per.forEach((v,k)=>{foot.per[k]+=v;});
+      foot.heart+=heart; foot.total+=total;
       tb.appendChild(tr);});
+
+    /* totals for the rows actually shown, so the count is stated */
+    const fRatio=two&&foot.per[0]?100*foot.per[1]/foot.per[0]:null;
+    const tf=document.querySelector('#t-window tfoot');
+    tf.innerHTML=`<tr><td>Totals <span style="color:var(--muted)">${data.length} shown</span></td>
+      ${foot.per.map(v=>`<td>${fmtM(v)}</td>`).join('')}
+      <td>${fRatio==null?'\u2014':Math.round(fRatio)+'%'}</td>
+      <td>\u2014</td>
+      <td>${foot.total?Math.round(100*foot.heart/foot.total):'\u2014'}%</td>
+      <td>${fmtM(foot.total)}</td></tr>`;
     document.getElementById('raid-ratio').innerHTML = two
       ? `Raid as a whole this pull: ${raidW.map(fmtM).join(' then ')}, so the raid\u2019s second window came to `
         + `<b>${Math.round(raidRatio)}%</b> of its first. \u201cW2 vs W1\u201d is the same sum for one player; `
@@ -824,6 +850,9 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
         + `0 means they fell off exactly as much as everyone else.`
         + (nw>2?` The third window is the one that finishes the boss and it runs short, so it is `
           + `listed but left out of the comparison.`:'')
+        + (CEILING?` Windows 1 and 2 this pull came to ${fmtM(raidW[0]+(raidW[1]||0))} across the `
+          + `whole raid, against a ceiling of ${fmtM(CEILING)} if every player repeated their own `
+          + `best of each, so ${Math.round(100*(raidW[0]+(raidW[1]||0))/CEILING)}% of it.`:'')
       : 'One window only, so there is nothing to compare against.';
   }
   render();
