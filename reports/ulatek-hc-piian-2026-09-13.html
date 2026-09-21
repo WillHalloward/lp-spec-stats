@@ -118,6 +118,7 @@ th:first-child,td:first-child{text-align:left}
 td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
 tr:last-child td{border-bottom:0}
 tbody tr:hover td{background:var(--surface-2)}
+tfoot td{border-top:2px solid var(--rule);border-bottom:0;font-weight:600;background:var(--surface-2)}
 .chip{font-family:"Barlow Condensed",sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
   border:1px solid var(--rule);padding:1px 6px;color:var(--muted)}
 .pos{color:var(--s3)} .neg{color:var(--crit)}
@@ -251,10 +252,13 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <p>Each player&#39;s highest window 1, highest window 2, and highest combined pull, with the pull
   each came from. Third windows are excluded, since only the deepest pulls have one and it runs
   short. The point is the pull number: open that pull in the chart above, or in the log, to see
-  what the player did in it.</p></div>
+  what the player did in it. Theoretical best adds the two best windows together even when they
+  came from different pulls, so it is a ceiling nobody hit rather than a pull that happened. The
+  totals row adds each column down the roster, on the same terms.</p></div>
   <div class="tblwrap"><table id="t-best"><thead><tr>
     <th>Player</th><th>Spec</th><th>Best window 1</th><th>Best window 2</th>
-    <th title="best window 1 and window 2 added together within a single pull">Best pull, both windows</th></tr></thead><tbody></tbody></table></div>
+    <th title="the best single pull, both windows added">Best pull, both windows</th>
+    <th title="best window 1 plus best window 2, which may come from different pulls">Theoretical best</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
 </section>
 <section>
   <div class="head"><h2>Who burns the window</h2>
@@ -517,15 +521,31 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
       if(sum>both.v){both.v=sum;both.pull=n;}});
     return {d,w1:best[0],w2:best[1],both};});
   rows.sort((a,b)=>b.both.v-a.both.v);
-  const cell=c=>c.pull==null||!c.v
-    ? '<span style="color:var(--muted)">\u2014</span>'
+  const dash='<span style="color:var(--muted)">\u2014</span>';
+  const cell=c=>c.pull==null||!c.v ? dash
     : `${fmtM(c.v)} <span style="color:var(--muted)">pull ${c.pull}</span>`;
+  /* the two best windows can come from one pull or from two; say which */
+  const theoCell=r=>{
+    const v=r.w1.v+r.w2.v;
+    if(!v) return dash;
+    const at=r.w1.pull&&r.w2.pull
+      ? (r.w1.pull===r.w2.pull?`pull ${r.w1.pull}`:`pulls ${r.w1.pull} + ${r.w2.pull}`)
+      : `pull ${r.w1.pull||r.w2.pull}`;
+    return `${fmtM(v)} <span style="color:var(--muted)">${at}</span>`;};
   const tb=document.querySelector('#t-best tbody');
   rows.forEach(r=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${r.d.player}${r.d.role!=='dps'?` <span class="chip">${r.d.role}</span>`:''}</td>
-      <td>${r.d.spec}</td><td>${cell(r.w1)}</td><td>${cell(r.w2)}</td><td>${cell(r.both)}</td>`;
+      <td>${r.d.spec}</td><td>${cell(r.w1)}</td><td>${cell(r.w2)}</td><td>${cell(r.both)}</td>
+      <td>${theoCell(r)}</td>`;
     tb.appendChild(tr);});
+  const sum=f=>rows.reduce((a,r)=>a+f(r),0);
+  const tf=document.querySelector('#t-best tfoot');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td>Totals</td><td><span style="color:var(--muted)">${rows.length} players</span></td>
+    <td>${fmtM(sum(r=>r.w1.v))}</td><td>${fmtM(sum(r=>r.w2.v))}</td>
+    <td>${fmtM(sum(r=>r.both.v))}</td><td>${fmtM(sum(r=>r.w1.v+r.w2.v))}</td>`;
+  tf.appendChild(tr);
 })();
 
 /* chart 3b - the shared health pool, whole night or one pull */
