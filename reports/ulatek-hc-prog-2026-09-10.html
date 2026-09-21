@@ -272,6 +272,24 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 </section>
 
 <section>
+  <div class="head"><h2>Consistency in the heart windows</h2>
+  <p>One dot per window, placed at what that window was worth against the player&#39;s own best window
+  of the same number. A player whose dots sit together near the right repeats their ceiling; dots
+  strung out to the left mean the best pull was the exception. Measuring each window against the
+  best of its own number keeps the lust out of it, since window 1 and window 2 are not comparable
+  on this fight. Typical is the median of a player&#39;s dots, not the average, so one bad pull does
+  not set it.</p>
+  <p>Windows worth under a fifth of a player&#39;s own best are counted as missed rather than low and
+  left out of the median: those are pulls they were dead or absent for, which is worth knowing but
+  is not the same as uneven output. Healers are left out of this chart, since their window damage is
+  small enough that ordinary noise swamps the signal.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s1)"></i>window 1</span><span><i style="background:var(--s2)"></i>window 2</span><span class="chip">tick = median</span></div>
+    <svg id="c-consistency" viewBox="0 0 900 520" role="img" aria-label="Spread of each player's heart window damage against their own best"></svg>
+    <figcaption id="consistency-cap">Every dot is one window on one pull. Hover a dot for the pull number.</figcaption>
+  </figure>
+</section>
+<section>
   <div class="head"><h2>Damage onto the boss</h2>
   <p>Ula&#39;tek, Gore Rattle and the Venomous Heart share one health bar, so progress on the boss is the sum of the three. This counts every pull start to finish, not only the 559 seconds of exposure the burn charts measure. 11.83B went into the pool across 21 pulls: 55% Ula&#39;tek, 34% heart, 11.4% Gore Rattle. Caynlock led it with 998M. The order differs from the burn windows: Galnasven six places higher and Iamstabby three places lower than the windows put them.</p></div>
   <figure>
@@ -546,6 +564,56 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
     <td>${fmtM(sum(r=>r.w1.v))}</td><td>${fmtM(sum(r=>r.w2.v))}</td>
     <td>${fmtM(sum(r=>r.both.v))}</td><td>${fmtM(sum(r=>r.w1.v+r.w2.v))}</td>`;
   tf.appendChild(tr);
+})();
+
+/* consistency: every window against that player's own best of the same number */
+(function(){
+  const WB=JSON.parse(document.getElementById('bins').textContent);
+  const pulls=Object.keys(WB).map(Number).sort((a,b)=>a-b);
+  const sum=r=>r?r.h.reduce((a,b)=>a+b,0)+r.b.reduce((a,b)=>a+b,0):0;
+  const MISSED=0.20;   /* below this much of their own best, they were not there */
+  const med=v=>{const q=[...v].sort((a,b)=>a-b),m=q.length>>1;
+    return q.length%2?q[m]:(q[m-1]+q[m])/2;};
+
+  const rows=[];
+  D.players.filter(d=>d.role!=='healer').forEach(d=>{
+    const dots=[]; let missed=0;
+    for(let k=0;k<2;k++){
+      const vals=pulls.filter(n=>WB[n].length>k).map(n=>({n,v:sum((WB[n][k]||{})[d.player])}));
+      const mx=Math.max(0,...vals.map(x=>x.v));
+      if(mx<=0) continue;
+      vals.forEach(x=>{
+        const r=x.v/mx;
+        if(r<MISSED){missed++;return;}
+        dots.push({r,pull:x.n,win:k+1,v:x.v});});}
+    if(dots.length<4) return;
+    const rs=dots.map(x=>x.r);
+    rows.push({d,dots,missed,typ:med(rs),worst:Math.min(...rs)});});
+  rows.sort((a,b)=>b.typ-a.typ);
+
+  const s=document.getElementById('c-consistency');
+  const W=900,L=150,R=258,T=26,rh=24,H=T+rows.length*rh+26;
+  s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const x=r=>L+r*(W-L-R);
+  [0,.25,.5,.75,1].forEach(g=>{
+    mk(s,'line',{x1:x(g),x2:x(g),y1:T-8,y2:H-24,stroke:'var(--grid)','stroke-width':1});
+    txt(s,x(g),T-14,Math.round(g*100)+'%',{anchor:'middle',size:10});});
+  txt(s,L,H-6,'share of that player\u2019s own best window',{size:10});
+
+  rows.forEach((row,i)=>{
+    const yy=T+i*rh+rh/2;
+    txt(s,L-10,yy+4,row.d.player,{anchor:'end',fill:'var(--ink)',size:12});
+    mk(s,'line',{x1:x(Math.min(...row.dots.map(p=>p.r))),x2:x(1),y1:yy,y2:yy,
+      stroke:'var(--rule)','stroke-width':1});
+    row.dots.forEach(p=>{
+      const c=mk(s,'circle',{cx:x(p.r),cy:yy,r:4,fill:WCOL[p.win-1],opacity:.72});
+      hook(c,`<b>${row.d.player}</b> &middot; pull ${p.pull}, window ${p.win}<br>`+
+        `${fmtM(p.v)}, ${Math.round(p.r*100)}% of their best window ${p.win}`);});
+    /* the median tick, which is the number in the label */
+    mk(s,'line',{x1:x(row.typ),x2:x(row.typ),y1:yy-8,y2:yy+8,stroke:'var(--ink)','stroke-width':2});
+    txt(s,W-R+12,yy+4,
+      `typical ${Math.round(row.typ*100)}% \u00b7 worst ${Math.round(row.worst*100)}%`
+      + (row.missed?` \u00b7 ${row.missed} missed`:''),{size:11});});
 })();
 
 /* chart 3b - the shared health pool, whole night or one pull */
