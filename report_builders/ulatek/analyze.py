@@ -18,7 +18,15 @@ HEAVY_FACTOR = 2  # a heavy second is this many times the pull's median rate
 HEAVY_MIN_LEN = 3  # seconds; shorter spikes are noise
 SPLIT_GAP = 5000  # coordinate units between the two halves during the split
 CENTRE = 3000  # inside this of the middle counts as "back"
-EARLY_DEATH = 15_000  # ms before the pull's last death for a death to be "isolated"
+# A death counts as solo when the raid was still standing and nobody went down
+# beside them. Timing against the pull's last death does not work: a wipe called
+# quickly after a death hides it, and a tank who takes half a minute to fall
+# makes every death before it look isolated.
+SOLO_CLUSTER = 3_000  # ms either side; deaths this close together are one event
+SOLO_MASS = 3  # that many in the window means a mechanic killed them, not a mistake
+SOLO_ALIVE = 0.70  # this much of the roster still up, or the raid is already going
+SPIRIT_OF_REDEMPTION = 27827.0  # holy priest: the death that does not log a death
+SPIRIT_GRACE = 5_000  # ms after the buff drops that a logged death is the same one
 
 
 def _amount(e: dict) -> float:
@@ -220,6 +228,53 @@ class Analysis:
         }
 
     # ---- caustic waves ----
+
+    def downs(self, fid: int) -> list[dict]:
+        """Every time a player went down in a pull, in order.
+
+        Spirit of Redemption is the reason this is not just the death log. A holy
+        priest who dies enters it, and the log records a death only when the buff
+        runs out; when the pull ends first, as it does on seven of this night's
+        twelve, no death is ever written and the priest reads as having survived.
+        Entering it is the moment they went down, so that is what counts, and a
+        logged death inside the same window is that one incident rather than a
+        second.
+        """
+        spans, out = [], []
+        for e in self.f.events(f"sor_{fid}", fid, "Buffs", ability_id=SPIRIT_OF_REDEMPTION):
+            p = self.player_of(e.get("targetID"))
+            if not p:
+                continue
+            if e.get("type") == "applybuff":
+                spans.append([p, e["timestamp"], None])
+                out.append({"player": p, "t": e["timestamp"], "spirit": True})
+            elif e.get("type") == "removebuff":
+                for span in spans:
+                    if span[0] == p and span[2] is None:
+                        span[2] = e["timestamp"]
+        for d in self.deaths(fid):
+            p = self.player_of(d.get("targetID"))
+            if not p:
+                continue
+            if any(
+                sp == p and start <= d["timestamp"] <= (end or start) + SPIRIT_GRACE
+                for sp, start, end in spans
+            ):
+                continue
+            out.append({"player": p, "t": d["timestamp"], "spirit": False})
+        return sorted(out, key=lambda x: x["t"])
+
+    def solo_downs(self, fid: int) -> list[dict]:
+        """The ones that were not the raid falling over."""
+        ds = self.downs(fid)
+        roster = len(self.players) or 1
+        out = []
+        for i, d in enumerate(ds):
+            together = sum(1 for o in ds if abs(o["t"] - d["t"]) <= SOLO_CLUSTER)
+            gone = len({o["player"] for o in ds[:i]})
+            if together < SOLO_MASS and (roster - gone) / roster >= SOLO_ALIVE:
+                out.append(d)
+        return out
 
     def waves(self) -> dict:
         """Wave casts, hits and deaths, each one dated to a phase.
@@ -465,6 +520,8 @@ class Analysis:
                 "deaths": 0,
                 "early": 0,
                 "early_no_def": 0,
+                "spirit": 0,
+                "early_spirit": 0,
                 "pulls_consum": set(),
             }
         )
@@ -525,17 +582,17 @@ class Analysis:
                 per[p]["taken"] += _amount(e)
                 if span_of(e["timestamp"]) is not None:
                     per[p]["taken_heavy"] += _amount(e)
-            ds = sorted(self.deaths(fid), key=lambda d: d["timestamp"])
-            last = ds[-1]["timestamp"] if ds else 0
-            for d in ds:
-                p = self.player_of(d.get("targetID"))
-                if not p:
-                    continue
-                per[p]["deaths"] += 1
-                if last - d["timestamp"] > EARLY_DEATH:
-                    per[p]["early"] += 1
-                    if not any(0 <= d["timestamp"] - t <= 10000 for t in majors_by_player[p]):
-                        per[p]["early_no_def"] += 1
+            for d in self.downs(fid):
+                per[d["player"]]["deaths"] += 1
+                if d["spirit"]:
+                    per[d["player"]]["spirit"] += 1
+            for d in self.solo_downs(fid):
+                p = d["player"]
+                per[p]["early"] += 1
+                if d["spirit"]:
+                    per[p]["early_spirit"] += 1
+                if not any(0 <= d["t"] - t <= 10000 for t in majors_by_player[p]):
+                    per[p]["early_no_def"] += 1
         return {"per": per, "heavy": heavy, "total_spans": total_spans, "stones": stones}
 
     # ---- damage taken, per second and per five-second bucket ----
@@ -720,17 +777,18 @@ class Analysis:
                     agg[s]["taken"] += e.get("amount", 0)
                     agg[s]["absorb"] += e.get("absorbed") or 0
                     agg[s]["reduced"] += e.get("mitigated") or 0
-            ds = [d for d in self.deaths(fid) if start_ms <= d["timestamp"] <= end_ms]
-            last = max((d["timestamp"] for d in ds), default=0)
+            solo = {(d["player"], d["t"]) for d in self.solo_downs(fid)}
             iso_players = Counter()
-            for d in ds:
-                s = team.get(self.player_of(d.get("targetID")))
+            for d in self.downs(fid):
+                if not (start_ms <= d["t"] <= end_ms):
+                    continue
+                s = team.get(d["player"])
                 if not s:
                     continue
                 agg[s]["deaths"] += 1
-                if last - d["timestamp"] > EARLY_DEATH:
+                if (d["player"], d["t"]) in solo:
                     agg[s]["iso"] += 1
-                    iso_players[self.player_of(d["targetID"])] += 1
+                    iso_players[d["player"]] += 1
             # the boss is untargetable through the phase; the first hit on it
             # afterwards is the moment being back actually starts to matter
             boss_again = None
@@ -939,6 +997,8 @@ class Analysis:
                     "deaths": v["deaths"],
                     "early_deaths": v["early"],
                     "early_no_def": v["early_no_def"],
+                    "spirit": v["spirit"],
+                    "early_spirit": v["early_spirit"],
                     "top_spells": v["spells"].most_common(4),
                     "top_minor": v["minor_spells"].most_common(1),
                 }

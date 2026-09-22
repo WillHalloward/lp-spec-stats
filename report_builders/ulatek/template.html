@@ -367,9 +367,10 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
     <figcaption>Bars count uses across the night; the marker on the right is the average health the player was sitting at when they pressed it, measured before the heal landed.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-mit"><thead><tr>
-    <th>Player</th><th>Spec</th><th>Majors</th><th>In heavy</th><th>Coverage</th><th>Minor / rotational</th><th>Externals given</th><th>Stones</th><th>Potions</th><th>HP at use</th><th>Early deaths</th><th>&hellip;with nothing pressed</th></tr></thead><tbody></tbody></table></div>
+    <th>Player</th><th>Majors</th><th>In heavy</th><th>Coverage</th><th>Minor / rotational</th><th>Externals given</th><th>Stones</th><th>Potions</th><th>HP at use</th><th title="deaths with the raid still up and nobody going down beside them">Solo deaths</th><th>&hellip;with nothing pressed</th></tr></thead><tbody></tbody></table></div>
   <div class="note">
-    <p><b>Early deaths</b> are the {{early_deaths}} deaths that landed more than 15 seconds before the pull's last death, meaning someone dying alone rather than in the wipe. {{early_no_def}} of them had no major defensive in the ten seconds before, and {{deaths_no_consum}} deaths happened in pulls where that player never used a stone or a potion.</p>
+    <p><b>Solo deaths</b> are the {{early_deaths}} deaths where the raid was still standing, at least 70% of it alive, and fewer than three people went down within three seconds. Everything else is the raid falling over, whether that is a mechanic killing half the room at once or the last tank dropping a minute after everyone else. {{early_no_def}} of the solo deaths had no major defensive in the ten seconds before, and {{deaths_no_consum}} deaths happened in pulls where that player never used a stone or a potion.</p>
+    {{spirit_note}}
     <p><b>Heavy spans</b> are computed, not hand-picked: raid damage taken binned per second, and every run of three or more seconds at twice the pull's median rate or above. Necrotic Vapors, Blight Vein and Acidic Expulsion dominate them. <b>Majors</b> are personal cooldowns ({{major_list}}). <b>Minor</b> covers the spammables: {{minor_list}}. <b>Stones and potions</b> are counted from the cast, not the heal, so an overheal still counts as a use. Health at use is the value before the heal landed: WCL stamps the health on both the cast and the heal event as the figure <i>after</i> healing (casts that read 100% health while reporting real, non-overhealed healing give it away), so the effective heal is subtracted back off. <b>Externals</b> are the ones cast on somebody else: {{external_list}}.</p>
   </div>
 </section>
@@ -1206,12 +1207,12 @@ document.getElementById('tiles').innerHTML=tiles.map(([n,l])=>
   const tb=document.querySelector('#t-mit tbody');
   [...P].sort((a,b)=>b.coverage-a.coverage).forEach(d=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${d.player}${d.role!=='dps'?` <span class="chip">${d.role}</span>`:''}</td>
-      <td style="text-align:left;color:var(--muted)">${d.spec} ${d.class}</td>
+    /* the class carries the spec column's information in the name's colour */
+    tr.innerHTML=`<td><span style="color:var(--cls-${d.class})" title="${d.spec} ${d.class}">${d.player}</span>${d.role!=='dps'?` <span class="chip">${d.role}</span>`:''}</td>
       <td>${d.maj}</td><td>${d.maj_heavy}</td><td>${d.coverage}%</td><td>${d.minor}</td><td>${d.ext}</td>
       <td${d.hs?'':' class="neg"'}>${d.hs}</td><td>${d.pot}</td>
       <td${d.hp_at_use<25?' class="neg"':''}>${d.hp_at_use!=null?d.hp_at_use+'%':'\u2014'}</td>
-      <td>${d.early_deaths}</td><td>${d.early_no_def}</td>`;
+      <td title="${d.spirit?`went down ${d.spirit}\u00d7 into Spirit of Redemption across the night`:''}">${d.early_deaths}${d.early_spirit?` <span style="color:var(--muted)">(${d.early_spirit} sp)</span>`:''}</td><td>${d.early_no_def}</td>`;
     tb.appendChild(tr);});
 })();
 

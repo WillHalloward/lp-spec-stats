@@ -238,6 +238,18 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         return ", ".join(bits)
 
     early = sum(p["early_deaths"] for p in mit["players"])
+    spirit_total = sum(p.get("spirit", 0) for p in mit["players"])
+    spirit_lost = 0
+    for fid in a.ids:
+        for d in a.downs(fid):
+            if not d["spirit"]:
+                continue
+            # no logged death for that player anywhere after it in the pull
+            if not any(
+                a.player_of(x.get("targetID")) == d["player"] and x["timestamp"] >= d["t"]
+                for x in a.deaths(fid)
+            ):
+                spirit_lost += 1
     early_nodef = sum(p["early_no_def"] for p in mit["players"])
     no_consum = 0
     for p in a.players:
@@ -563,6 +575,27 @@ def tokens(a, built: dict, *, date_long: str, night_title: str) -> dict:
         "stone_breakdown": names(f"{v} {k}" for k, v in stones.most_common() if k in spells.HEALTHSTONES),
         "potion_breakdown": names(f"{v} {k}" for k, v in stones.most_common() if k in spells.HEALTH_POTIONS),
         "early_deaths": early,
+        # how many times a priest went down with no death ever written to the log
+        # only worth explaining on a night that had a holy priest in it
+        "spirit_note": (
+            ""
+            if not spirit_total
+            else (
+                "<p><b>Spirit of Redemption</b> is counted as the death it is. A holy priest who "
+                "dies enters it and the log writes a death only when the buff expires"
+                + (
+                    f", so on the {word(spirit_lost)} pull{'s' if spirit_lost != 1 else ''} here "
+                    "that ended first, no death was recorded at all and the priest read as having "
+                    "survived"
+                    if spirit_lost
+                    else ""
+                )
+                + ". The buff going up is the moment they went down; a logged death inside that "
+                "window is the same incident, not a second one. Where a solo death was one of "
+                'these, the table marks it <span style="color:var(--muted)">(n sp)</span>, and the '
+                "cell&#39;s tooltip gives the player&#39;s total across the night.</p>"
+            )
+        ),
         "early_no_def": early_nodef,
         "deaths_no_consum": no_consum,
         "expose_casts": expose_casts,

@@ -49,6 +49,12 @@ boss or difficulty (otherwise the most-pulled one wins), `--title` and
      (the table rolls pets into their owner's total). That is a different
      question from the burn-window charts, and `render` checks whether the two
      orders actually differ before saying so.
+   - **A death is not the same as a player going down.** `Analysis.downs()`
+     counts Spirit of Redemption as the moment a holy priest died, because the
+     log writes a death only when the buff expires and writes none at all when
+     the pull ends first. `solo_downs()` then keeps the ones where the raid was
+     still standing (70%+ alive, fewer than 3 going down within 3s), which is
+     what the page calls a solo death.
    - **Waves belong to a phase.** `Analysis.phases()` dates the split phase off
      the coordinates, and `waves()` calls everything before it phase one and
      everything after it phase two. The boss throws them on two different
