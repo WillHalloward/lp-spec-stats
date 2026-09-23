@@ -2,7 +2,7 @@ import "./style.css";
 import { fetchEvents, fetchBosses } from "./api";
 import { normalizeEvents, attendingSignups, SEASONS, PATCHES, RAIDS, raidForEncounter, registerAutoRaids } from "./normalize";
 import { filterStore } from "./state";
-import { CLASS_COLORS, ROLE_COLORS } from "./theme";
+import { CLASS_COLORS, ROLE_COLORS, DIFFICULTY_COLORS } from "./theme";
 import { classIconUrl, indexSpecIcons } from "./icons";
 import { renderClassDistribution } from "./charts/classDistribution";
 import { renderSignupsOverTime } from "./charts/signupsOverTime";
@@ -25,6 +25,7 @@ import { renderBossProgression, renderFirstKillTimeline, renderBossCellDetail } 
 import type { Event, Role } from "./types";
 
 const ROLE_ORDER: Role[] = ["Tank", "Healer", "Melee DPS", "Ranged DPS"];
+const DIFFICULTY_ORDER = ["LFR", "Normal", "Heroic", "Mythic"];
 
 const ICONS = {
   swords: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" y1="14" x2="9" y2="18"/><line x1="7" y1="17" x2="4" y2="20"/><line x1="3" y1="19" x2="5" y2="21"/></svg>',
@@ -169,6 +170,10 @@ function renderGlobalFilters(events: Event[], bosses: { encounterID: number }[])
     </details>`;
   }).join("");
 
+  const difficultyChips = DIFFICULTY_ORDER.map(d =>
+    `<button class="chip difficulty" data-difficulty="${d}" style="--chip-color:${DIFFICULTY_COLORS[d]}"><span class="swatch"></span>${d}</button>`
+  ).join("");
+
   const roleChips = ROLE_ORDER.map(r =>
     `<button class="chip role" data-role="${r}" style="--chip-color:${ROLE_COLORS[r]}"><span class="swatch"></span>${r}</button>`
   ).join("");
@@ -198,6 +203,7 @@ function renderGlobalFilters(events: Event[], bosses: { encounterID: number }[])
 
   const bodyHtml = chipsRow("Season", seasonChips, "seasons")
     + chipsRow("Patch", patchChips, "patches")
+    + chipsRow("Difficulty", difficultyChips, "difficulties")
     + (raidChips ? chipsRow("Raid", raidChips, "raids") : "")
     + (seriesChips ? chipsRow("Series", seriesChips, "raidSeries") : "")
     + chipsRow("Role", roleChips, "roles")
@@ -244,6 +250,9 @@ function renderGlobalFilters(events: Event[], bosses: { encounterID: number }[])
       el.querySelectorAll<HTMLDetailsElement>(".series-dd[open]").forEach(d => { d.open = false; });
     }
   });
+  el.querySelectorAll<HTMLButtonElement>(".chip.difficulty").forEach(btn => {
+    btn.addEventListener("click", () => filterStore.toggleDifficulty(btn.dataset.difficulty!));
+  });
   el.querySelectorAll<HTMLButtonElement>(".chip.role").forEach(btn => {
     btn.addEventListener("click", () => filterStore.toggleRole(btn.dataset.role as Role));
   });
@@ -254,6 +263,7 @@ function renderGlobalFilters(events: Event[], bosses: { encounterID: number }[])
     btn.addEventListener("click", () => {
       const which = btn.dataset.reset;
       if (which === "roles") filterStore.clearRoles();
+      else if (which === "difficulties") filterStore.clearDifficulties();
       else if (which === "classes") filterStore.clearClasses();
       else if (which === "seasons") filterStore.clearSeasons();
       else if (which === "patches") filterStore.clearPatches();
@@ -281,6 +291,8 @@ function renderGlobalFilters(events: Event[], bosses: { encounterID: number }[])
       badge.hidden = n === 0;
       dd.classList.toggle("active", n > 0);
     });
+    el.querySelectorAll<HTMLButtonElement>(".chip.difficulty").forEach(c =>
+      c.classList.toggle("active", state.difficulties.has(c.dataset.difficulty!)));
     el.querySelectorAll<HTMLButtonElement>(".chip.role").forEach(c =>
       c.classList.toggle("active", state.roles.has(c.dataset.role as Role)));
     el.querySelectorAll<HTMLButtonElement>(".chip.class").forEach(c =>

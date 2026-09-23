@@ -12,11 +12,17 @@ function fmtDate(ms: number | null): string {
 }
 
 function applyRaidFilter(bosses: BossStat[], state?: FilterState): BossStat[] {
-  if (!state || state.raids.size === 0) return bosses;
-  return bosses.filter(b => {
-    const raid = raidForEncounter(b.encounterID);
-    return raid ? state.raids.has(raid.id) : false;
-  });
+  if (!state) return bosses;
+  if (state.raids.size > 0) {
+    bosses = bosses.filter(b => {
+      const raid = raidForEncounter(b.encounterID);
+      return raid ? state.raids.has(raid.id) : false;
+    });
+  }
+  if (state.difficulties.size > 0) {
+    bosses = bosses.filter(b => state.difficulties.has(b.difficulty));
+  }
+  return bosses;
 }
 
 
