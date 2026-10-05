@@ -1,0 +1,1276 @@
+<title>Entombed Sentinels Prog Ledger</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root{
+  --ground:#eaeee6; --surface:#f7faf3; --surface-2:#eef2e8;
+  --ink:#131c17; --ink-2:#3c4c42; --muted:#63735f; --rule:#cdd6c6;
+  --accent:#5f7a0d;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --crit:#c93b3a;
+  --fatal:#4b0a17;
+  --breath:#1d9a5c; --blood:#c0392f; --inter:#9aa595;
+  --cls-DeathKnight:#a81833;
+  --cls-DemonHunter:#8a26aa;
+  --cls-Druid:#b45900;
+  --cls-Evoker:#237567;
+  --cls-Hunter:#5f8a24;
+  --cls-Mage:#1a7f9e;
+  --cls-Monk:#00875a;
+  --cls-Paladin:#c05286;
+  --cls-Rogue:#867700;
+  --cls-Shaman:#0059b0;
+  --cls-Warlock:#5d60c8;
+  --cls-Priest:#4a4a4a;
+  --cls-Warrior:#856436;
+  --grid:#d7dfd0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0e1411; --surface:#151d18; --surface-2:#1b241d;
+  --ink:#e9efe5; --ink-2:#c3cfbe; --muted:#93a397; --rule:#2b3830;
+  --accent:#a9c93c;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
+  --fatal:#ffc2cd;
+  --breath:#3cc47d; --blood:#ec5a4c; --inter:#4d5a50;
+  --cls-DeathKnight:#c41e3a;
+  --cls-DemonHunter:#a330c9;
+  --cls-Druid:#ff7c0a;
+  --cls-Evoker:#33937f;
+  --cls-Hunter:#aad372;
+  --cls-Mage:#3fc7eb;
+  --cls-Monk:#00ff98;
+  --cls-Paladin:#f48cba;
+  --cls-Rogue:#fff468;
+  --cls-Shaman:#0070dd;
+  --cls-Warlock:#8788ee;
+  --cls-Priest:#ffffff;
+  --cls-Warrior:#c69b6d;
+  --grid:#26312a;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ground:#0e1411; --surface:#151d18; --surface-2:#1b241d;
+  --ink:#e9efe5; --ink-2:#c3cfbe; --muted:#93a397; --rule:#2b3830;
+  --accent:#a9c93c;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
+  --fatal:#ffc2cd;
+  --breath:#3cc47d; --blood:#ec5a4c; --inter:#4d5a50;
+  --cls-DeathKnight:#c41e3a;
+  --cls-DemonHunter:#a330c9;
+  --cls-Druid:#ff7c0a;
+  --cls-Evoker:#33937f;
+  --cls-Hunter:#aad372;
+  --cls-Mage:#3fc7eb;
+  --cls-Monk:#00ff98;
+  --cls-Paladin:#f48cba;
+  --cls-Rogue:#fff468;
+  --cls-Shaman:#0070dd;
+  --cls-Warlock:#8788ee;
+  --cls-Priest:#ffffff;
+  --cls-Warrior:#c69b6d;
+  --grid:#26312a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:1060px;margin:0 auto;padding-inline:20px;padding-block:40px 72px;
+  display:flex;flex-direction:column;gap:44px}
+h1,h2,h3,.lab{font-family:"Barlow Condensed","Arial Narrow",sans-serif;margin:0}
+h1{font-size:clamp(38px,7vw,60px);font-weight:700;line-height:.98;letter-spacing:.01em;text-wrap:balance}
+h2{font-size:26px;font-weight:600;letter-spacing:.02em}
+h3{font-size:17px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.lab{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:600;color:var(--muted)}
+p{margin:0;max-width:66ch;color:var(--ink-2)}
+a{color:var(--accent)}
+header .rule{height:3px;background:var(--accent);width:74px;margin:14px 0 18px}
+header .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.tile{background:var(--surface);padding:16px 16px 14px;display:flex;flex-direction:column;gap:4px}
+.tile .n{font-family:"IBM Plex Mono",monospace;font-size:27px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:14px;color:var(--muted);font-weight:400}
+.tile .lab{font-size:11px}
+section{display:flex;flex-direction:column;gap:14px}
+section > .head{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--rule);padding-top:14px}
+figure{margin:0;background:var(--surface);border:1px solid var(--rule);padding:16px 14px 10px}
+figcaption{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);padding-top:6px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2);padding-bottom:8px}
+.legend i{width:11px;height:11px;display:inline-block;margin-right:6px;vertical-align:-1px;border-radius:2px}
+.tblwrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.09em;font-size:12px;
+  text-align:right;color:var(--muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+tfoot td{border-top:2px solid var(--rule);border-bottom:0;font-weight:600;background:var(--surface-2)}
+.chip{font-family:"Barlow Condensed",sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--rule);padding:1px 6px;color:var(--muted)}
+.pos{color:var(--s3)} .neg{color:var(--crit)}
+.note{background:var(--surface-2);border-left:3px solid var(--accent);padding:14px 16px;font-size:14.5px}
+.note p{max-width:78ch}
+.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--ink);color:var(--ground);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;line-height:1.45;padding:7px 9px;z-index:9;max-width:230px}
+.tip b{font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.controls{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-start;background:var(--surface);border:1px solid var(--rule);padding:12px 14px}
+.ctl{display:flex;flex-direction:column;gap:6px}
+.ctl.grow{flex:1 1 420px;min-width:0}
+.ctl em{font-style:normal;color:var(--ink-2);letter-spacing:.06em}
+select{font-family:"IBM Plex Mono",monospace;font-size:13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--rule);padding:6px 8px;min-width:200px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip-btn{font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--surface-2);color:var(--muted);border:1px solid var(--rule);padding:3px 8px;cursor:pointer;line-height:1.5}
+.chip-btn:hover{color:var(--ink)}
+.chip-btn[aria-pressed="true"]{color:var(--ink);border-color:currentColor}
+.chip-btn .sw{display:inline-block;width:8px;height:8px;margin-right:6px;background:currentColor;border-radius:2px}
+.chip-btn[aria-pressed="false"] .sw{background:var(--rule)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.seg-ctl{display:flex;border:1px solid var(--rule);width:max-content}
+.seg{font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--surface-2);color:var(--muted);
+  border:0;border-right:1px solid var(--rule);padding:6px 10px;cursor:pointer}
+.seg:last-child{border-right:0}
+.seg:hover{color:var(--ink)}
+.seg[aria-pressed="true"]{background:var(--ink);color:var(--ground)}
+.role{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;
+  border:1px solid currentColor;padding:0 3px;margin-right:5px;opacity:.75;vertical-align:1px}
+.legend .lg{display:inline-flex;align-items:center;gap:6px}
+.legend .lg svg{overflow:visible}
+.linkish{font-family:"IBM Plex Mono",monospace;font-size:11px;background:none;border:0;border-bottom:1px solid var(--rule);
+  color:var(--muted);cursor:pointer;padding:0 0 1px;margin-left:8px;letter-spacing:0;text-transform:none}
+.linkish:hover{color:var(--ink);border-color:currentColor}
+
+.sliders{display:flex;flex-direction:column;gap:6px;min-width:min(100%,420px)}
+.sliders label{display:flex;align-items:center;gap:10px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.sliders label span{width:32px;text-align:right}
+.sliders input[type=range]{flex:1;accent-color:var(--accent);height:20px}
+
+.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.team{background:var(--surface);padding:16px 18px}
+.team-head{font-family:"Barlow Condensed",sans-serif;font-size:17px;font-weight:600;letter-spacing:.04em;
+  display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.team .dot{width:10px;height:10px;border-radius:2px;display:inline-block}
+.team ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.team li{font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5}
+.muted{color:var(--muted)}
+.bar-key{margin:2px 0 10px;max-width:100%}
+footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
+/* a bar or swatch drawn in the intermission's hatch */
+.hatch-key{background:repeating-linear-gradient(45deg,var(--inter) 0 3px,transparent 3px 6px)!important}
+.tbl-note{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
+td.l,th.l{text-align:left}
+#bal-ctl{flex-wrap:wrap;width:auto;max-width:100%}
+#tiles,#dt-tiles{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+</style>
+<div class="wrap">
+<header>
+  <div class="lab">Warcraft Logs {{report}} &middot; {{difficulty}}</div>
+  <h1>{{boss}}, {{pulls}} pulls,<br>two bosses to keep level.</h1>
+  <div class="rule"></div>
+  <p>The clock, the heal, the two teams, the puzzle and the deaths, pull by pull. {{night_title}}, {{date_long}}.</p>
+  <div class="meta" style="margin-top:14px">
+    <span>{{zone}} &middot; {{difficulty}}</span><span>{{raiders}} raiders</span>
+    <span>{{best_line}}</span>
+    <span><a href="https://www.warcraftlogs.com/reports/{{report}}">open the log</a></span>
+  </div>
+</header>
+
+<div class="tiles" id="tiles"></div>
+
+<section>
+  <div class="head"><h2>The night, pull by pull</h2>
+  <p>{{pulls_caption_lead}} Bar colour is how many intermissions the pull reached. {{berserk_note}}</p></div>
+  <figure>
+    <div class="legend" id="pull-legend"></div>
+    <svg id="c-pulls" viewBox="0 0 900 300" role="img" aria-label="Boss health remaining per pull"></svg>
+    <figcaption>Lower is further. Bar labels show pull length in seconds; a red mark is a pull that reached the berserk.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Seven minutes</h2>
+  <p>Vitriolic Stasis opens at {{first_stasis}} seconds on every pull, and each one after that opens exactly {{stasis_gap}} seconds after the previous one ends. The damage phases are a fixed length. The only part of the clock the raid controls is how long each intermission lasts, and the berserk lands at {{berserk_clock}} regardless.</p>
+  <p>Pull {{deep_pull}} spent {{deep_inter}} seconds in {{deep_n_word}} intermissions. The {{kill_n_word}} kills below spent {{kill_inter_lo}} to {{kill_inter_hi}} seconds in three or four and were finished by {{kill_dur_lo}}&ndash;{{kill_dur_hi}}. Across the night&#39;s {{n_inter}} finished intermissions the median was {{inter_median}} seconds, against {{kill_inter_median}} for the kills, {{inter_typical_note}} {{inter_over20}} ran past twenty seconds, when no kill&#39;s took longer than {{kill_inter_max}}.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s1)"></i>damage phase</span><span><i class="hatch-key"></i>intermission</span><span><i style="background:var(--crit)"></i>berserk, {{berserk_clock}}</span></div>
+    <svg id="c-clock" viewBox="0 0 900 600" role="img" aria-label="Each pull's timeline of damage phases and intermissions against the berserk"></svg>
+    <figcaption>One row per pull, the kills on top for reference. Labels on the right give each pull&#39;s total intermission seconds. Hover a segment for its times.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>What Stasis hands back</h2>
+  <p>During Stasis the lower Sentinel is healed, a tick a second, until it matches the higher one. Any imbalance going in has to be done again. The heal is in the log as Vitriolic Stasis healing on the boss, so this is measured rather than inferred from the health bars.</p>
+  <p>Across the night it handed back {{healed_total}}M, {{healed_bosses}} times the {{max_hp}}M health of one Sentinel. On pull {{deep_pull}} it was {{deep_healed}}M, {{deep_healed_pct}}% of one Sentinel. {{deep_heal_note}} The kills handed back {{kill_healed_lo}}&ndash;{{kill_healed_hi}}M across a whole kill, {{kill_healed_med}}M at the median. Going into an intermission the bosses were {{gap_median}} points apart at the median this night, against {{kill_gap_median}} for the kills, and {{gap_over3}} of the {{n_stasis_full}} intermissions opened more than three points apart.</p></div>
+  <figure>
+    <div class="legend" id="heal-legend"></div>
+    <svg id="c-healed" viewBox="0 0 900 260" role="img" aria-label="Health handed back by Stasis per pull"></svg>
+    <figcaption>Health the Stasis heal gave back on each pull, one segment per intermission. Click a bar to load that pull below.</figcaption>
+  </figure>
+  <div class="controls">
+    <label class="ctl"><span class="lab">Pull</span><select id="race-sel"></select></label>
+  </div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--breath)"></i>Breath of Ula&#39;tek</span><span><i style="background:var(--blood)"></i>Blood of Ula&#39;tek</span><span><i class="hatch-key"></i>Stasis</span></div>
+    <svg id="c-race" viewBox="0 0 900 300" role="img" aria-label="Both bosses' health across the selected pull"></svg>
+    <figcaption id="race-cap">Health from the bosses&#39; own casts, which carry their hit points. The arrow in each Stasis is the heal.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-stasis"><thead><tr>
+    <th>Stasis</th><th>Opens</th><th>Length</th><th>Breath</th><th>Blood</th><th>Gap</th><th>Healed</th><th class="l">Boss healed</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Two teams, and where the gap comes from</h2>
+  <p>Mark of Acid only lands within 40 yards of Breath, and Mark of Blood within 40 yards of Blood, so the marks show where everyone stood without any coordinates. Read that way, the raid is two teams that trade bosses after every intermission, read pull by pull rather than once for the night. Team A ({{a_shape}}, {{a_tank}} tanking) opened every pull on {{a_open}}. Team B ({{b_shape}}, {{b_tank}} tanking) opened on {{b_open}}. {{move_sentence}}</p>
+  <p>{{team_note}} So the heal is not bad luck in one phase: the same team&#39;s boss is low almost every time. The gap can be broken into three parts, read at the median phase. In phase one (over {{bal_p1_n}} pulls), {{bal_p1_sentence}}. In phase two (over {{bal_p2_n}}), with team A on Breath and the slime, {{bal_p2_sentence}}.</p>
+  <p>Cross-room damage is concentrated in two players: {{cross_names}}. No other damage dealer put more than {{cross_rest}}% of their boss damage into the other team&#39;s boss. {{float_sentence}}</p>
+  <p>{{period_note}}</p></div>
+  <div class="tblwrap"><table id="t-periods"><thead><tr>
+    <th class="l">Pulls</th><th class="l">Started with</th><th>Intermissions</th><th>Gap going in</th><th>Healed per intermission</th><th>B&#39;s boss the lower one</th></tr></thead><tbody></tbody></table></div>
+  <div class="teams" id="teams"></div>
+  <div class="controls">
+    <div class="ctl"><span class="lab">Phase</span><div class="seg-ctl" id="bal-ctl"></div></div>
+  </div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s1)"></i>team B over team A, own bosses</span><span><i style="background:var(--s2)"></i>cross-room damage</span><span><i style="background:var(--s4)"></i>damage dealers not placed with a team that pull</span><span><i style="background:var(--ink)"></i>net</span></div>
+    <svg id="c-balance" viewBox="0 0 900 300" role="img" aria-label="Where the gap between the bosses came from, per pull"></svg>
+    <figcaption id="bal-cap">Each pull&#39;s gap at the end of the phase, broken into its three parts, in millions. Above zero, team B&#39;s boss took more and is the one Stasis heals.</figcaption>
+  </figure>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s1)"></i>onto their own team&#39;s boss</span><span><i style="background:var(--s2)"></i>onto the other team&#39;s boss</span></div>
+    <svg id="c-cross" viewBox="0 0 900 520" role="img" aria-label="Each player's boss damage split between their own team's boss and the other team's"></svg>
+    <figcaption>Every phase that ended in an intermission, team members only. The percentage is the share that went across the room.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Damage onto the bosses</h2>
+  <p>Damage onto each Sentinel and the slime across every pull, start to finish, with pets credited to their owners. The pull selector narrows it to one attempt.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--breath)"></i>Breath</span><span><i style="background:var(--blood)"></i>Blood</span><span><i style="background:var(--s4)"></i>Venom Coagulation</span></div>
+    <svg id="c-boss-pulls" viewBox="0 0 900 260" role="img" aria-label="Raid damage onto the bosses per pull"></svg>
+    <figcaption>Raid damage onto the two bosses per pull. Click a bar to load that pull below.</figcaption>
+  </figure>
+  <div class="controls"><label class="ctl"><span class="lab">Pull</span><select id="boss-sel"></select></label></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--breath)"></i>Breath</span><span><i style="background:var(--blood)"></i>Blood</span><span><i style="background:var(--s4)"></i>Venom Coagulation</span></div>
+    <svg id="c-boss" viewBox="0 0 900 520" role="img" aria-label="Damage onto the bosses by player"></svg>
+    <figcaption id="boss-cap"></figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-boss"><thead><tr>
+    <th>Player</th><th class="l">Spec</th><th>Team</th><th>Breath</th><th>Blood</th><th>Slime</th><th>Bosses</th><th>Boss DPS</th><th>Share</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Against the kills</h2>
+  <p>{{kill_n_word_cap}} public Mythic kills measured by the same code: the two earliest in the rankings, at item level {{kill_ilvl_old}}, and four from the last two weeks at {{kill_ilvl_new}}, the same gear as this roster ({{our_ilvl}}). Boss damage per second is counted inside the damage phases only, so a long intermission does not dilute it.</p>
+  <p>Phase one carries the lust ({{lust_note}}) and is close to the kills: {{o1_med}}M a second at the median this night, {{o1_late}}M over the second half of it, against {{k1_lo}}&ndash;{{k1_hi}}M. Phase two is where it falls behind: {{o2_med}}M at the median and {{o2_best}}M at best, against {{k2_lo}}&ndash;{{k2_hi}}M, about {{p2_short}}% short. Pull {{deep_pull}} averaged {{deep_dps}}M through its damage phases, against {{kill_dps_lo}}&ndash;{{kill_dps_hi}}M. With {{deep_phase_secs}} seconds of damage phase before the berserk, pull {{deep_pull}} needed {{need_m}}M (both Sentinels plus what Stasis gave back), which is {{need_dps}}M a second.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--muted)"></i>this night, one dot per pull</span><span><i style="background:var(--s3)"></i>kills</span><span><i style="background:var(--s2)"></i>pull {{deep_pull}}</span></div>
+    <svg id="c-phase" viewBox="0 0 900 300" role="img" aria-label="Boss damage per second by phase, this night against the kills"></svg>
+    <figcaption>Each phase counted only on pulls that lived past it, so a phase a wipe cut short is not in its own column.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-kills"><thead><tr>
+    <th>Raid</th><th>Date</th><th>ilvl</th><th>Length</th><th>Intermissions</th><th>Healed</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th title="deaths in the first 150 seconds">Deaths by 2:30</th><th title="droplets nobody ran over">Missed droplets</th><th>Eruptions</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>The puzzle</h2>
+  <p>Every player gets Helical Toxins with one to three orbs. Two players whose orbs make exactly four clear each other on touch; any other touch merges their stacks without clearing, and spends orbs somebody else needed. A 1 and a 1 become two 2s, a 1 and a 2 two 3s, so every stack increase is a wrong pairing even when it stays under four. Stasis does not wait for the puzzle: the debuff lasts about 28 seconds, runs on after Stasis ends, and whoever still holds it when it runs out takes Cultivated Burst. So a solve is every player clearing before the debuff expires, and the solve time is when the last of them did.</p>
+  <p>Of the night&#39;s {{pz_n}} intermissions, {{pz_solved}} were solved and {{pz_failed}} failed on a wrong pairing ({{pz_wrong_list}}). The other {{pz_broken}} were lost to deaths or a called wipe: {{pz_broken_down}} opened with more than two of the raid already dead, and the rest had a player die holding the debuff, never to be resolved, before anyone paired wrong. A corpse keeps its counter and can still be bumped and cleared, so a death only counts here when the debuff was never resolved. {{pz_broken_called}} of those pulls were over within twenty seconds of the debuff running out. Counting only the {{pz_decided}} the puzzle decided, {{pz_fail_pct}}% failed. {{kill_pz_note}}</p>
+  <p>Wrong pairings are counted two ways. One <b>broke the puzzle</b> when it was the first in an intermission that could still be solved: two or fewer dead going in, and no unresolved death before it. Every other merge is counted as <b>after it was lost</b>. That covers a called wipe, where pairing wrong on purpose ends Stasis so the bosses can be kited out and reset, and a puzzle cascading on its own. The log cannot tell those two apart, so neither is held against anyone. {{pz_after_total}} merges across the night fall in that second group.</p>
+  <p>When it was solved, the solve took {{solve_med}} seconds at the median and {{solve_max}} at the longest, against {{kill_solve_lo}}&ndash;{{kill_solve_hi}} for the kills ({{kill_solve_med}} median). The first pair cleared at {{first_pair_med}} seconds and half the raid by {{half_med}}. Slowest to clear at the median: {{slow_names}}. Most often in the last pair of a solved puzzle: {{last_names}}. Most often in the wrong pairing that broke a puzzle: {{wrong_names}}. A wrong pairing can fail somebody else: when two players spend orbs that a third needed, it is the third who is left without a partner and takes the burst, even if the two who touched later clear each other. Most often left without a partner that way: {{stranded_names}}.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s3)"></i>solved, seconds to the last pair</span><span><i style="background:var(--crit)"></i>failed on a wrong pairing</span><span><i style="background:var(--muted)"></i>deaths / wipe called</span></div>
+    <svg id="c-pz-grid" viewBox="0 0 900 190" role="img" aria-label="Every intermission's outcome, pull by pull"></svg>
+    <figcaption>One square per intermission. Click one to open it below.</figcaption>
+  </figure>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s1)"></i>pair cleared</span><span><i style="background:var(--crit)"></i>wrong pairing (stacks after)</span><span><i style="background:var(--ink)"></i>died holding it, never bumped</span><span><i style="background:var(--s4)"></i>left holding it when it ran out</span></div>
+    <svg id="c-pz-detail" viewBox="0 0 900 300" role="img" aria-label="The selected intermission, pair by pair"></svg>
+    <figcaption id="pz-detail-cap"></figcaption>
+  </figure>
+  <figure>
+    <div class="legend"><span><i style="background:var(--muted)"></i>one solved intermission</span><span><i style="background:var(--s1)"></i>median</span><span><i style="background:var(--s3)"></i>a kill&#39;s solve time</span></div>
+    <svg id="c-pz-curve" viewBox="0 0 900 260" role="img" aria-label="Share of the raid cleared over time in solved intermissions"></svg>
+    <figcaption>Share of the raid cleared, second by second, in every solved intermission. The green ticks along the top are when each kill&#39;s puzzles finished.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-puzzle"><thead><tr>
+    <th>Player</th><th>Cleared</th><th title="median seconds into Stasis">Median clear</th><th title="solved intermissions where this player was in the last pair">In the last pair</th><th title="the first wrong pairing of an intermission that could still be solved">Broke the puzzle</th><th title="wrong pairings in a puzzle already lost: a called wipe or a cascade">After it was lost</th><th title="left holding the debuff after somebody else's wrong pairing used up the orbs they needed">Left without a partner</th><th title="died while still holding the debuff">Died holding</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Toxic Droplets</h2>
+  <p>Breath sprays droplets {{drop_casts}} times across the night. One that nobody runs over goes off as Noxious Blast 14 to 15 seconds after the cast and hits the whole raid for about {{blast_hit}}k each. {{drop_missed_sets}} sets left at least one behind, {{blasts}} blasts in all, on {{blast_pulls_word}} pulls; the kills missed {{kill_blasts}}. {{drop_deaths}} deaths went to the soak itself.</p>
+  <p>Noxious Blast is the killing blow on {{blast_deaths}} deaths. {{blast_standing_sets}} of the {{blast_kill_sets}} sets that killed anyone went off with 70% or more of the raid still up, and those killed {{blast_standing_deaths}} between them. In {{blast_standing_wipes}} of them the pull was over within thirty seconds. {{blast_wipe_note}} The damage comes from sets that leave more than one droplet: {{multi_n}} sets had two or three go off together and they killed {{multi_dead}}.</p>
+  <p>The set that matters is the last one before Stasis, cast about ten seconds before the intermission opens, so it has to be soaked while the raid moves to the middle. {{pre_missed}} of those {{pre_n}} sets ({{pre_pct}}%) left a droplet behind and they killed {{pre_dead}}, against {{rest_missed}} of the other {{rest_n}} ({{rest_pct}}%) and {{rest_dead}} deaths.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s2)"></i>missed, set before Stasis</span><span><i style="background:var(--s4)"></i>missed, any other set</span><span><i style="background:var(--fatal)"></i>deaths to Noxious Blast</span></div>
+    <svg id="c-blasts" viewBox="0 0 900 220" role="img" aria-label="Missed droplets and Noxious Blast deaths per pull"></svg>
+    <figcaption>Per pull. A blast is a cluster of Noxious Blast hits within a tenth of a second; two droplets going off together count as two.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Who soaks</h2>
+  <p>Every set is twenty droplets, and every droplet is accounted for: one player runs it over (one Toxic Droplets hit, never shared) or it goes off. Soaks plus blasts come to {{sk_per_set}} on {{sk_full}} of the night&#39;s {{sk_sets}} complete sets, so the counts below are droplets, not estimates. With twenty players that is one droplet each per set if the load were even.</p>
+  <p>It is not even. {{sk_top4}} took {{sk_top4_pct}}% of the night&#39;s {{sk_total}} soaked droplets between them, {{sk_top4_rate}} a set while alive. The damage dealers taking the fewest per set were {{sk_low}}. The droplets land all over the room, not just around Breath: the team on Breath soaked {{sk_breath_pct}}% of them, the team on Blood {{sk_blood_pct}}% and players not placed with a team that pull {{sk_switch_pct}}%.</p>
+  <p>The set before Stasis is soaked late. Droplets from that set were run over {{sk_pre_med}} seconds after the cast at the median, against {{sk_oth_med}} for every other set, and {{sk_pre_late}}% of them after ten seconds against {{sk_oth_late}}%. They blow at about fourteen and a half seconds, so a late soak in that set is one step from a missed one.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s2)"></i>set before Stasis</span><span><i style="background:var(--s4)"></i>any other set</span></div>
+    <svg id="c-soak" viewBox="0 0 900 520" role="img" aria-label="Droplets soaked per player"></svg>
+    <figcaption>Droplets each player ran over across the night. Beside each bar: droplets per set while alive, and median seconds after the cast.</figcaption>
+  </figure>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s2)"></i>set before Stasis</span><span><i style="background:var(--s4)"></i>any other set</span><span><i style="background:var(--crit)"></i>droplets blow</span></div>
+    <svg id="c-soak-time" viewBox="0 0 900 240" role="img" aria-label="When droplets were soaked, seconds after the cast"></svg>
+    <figcaption>Share of each kind of set&#39;s soaked droplets, by second after the cast. The red band is when an unsoaked droplet goes off.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-soak"><thead><tr>
+    <th>Player</th><th>Team</th><th>Droplets</th><th>Before Stasis</th><th>Other sets</th><th title="sets cast while the player was alive and the pull lasted for them to blow">Sets alive</th><th>Per set</th><th>Median time</th><th title="soaked more than ten seconds after the cast">After 10s</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Living Venom</h2>
+  <p>Breath throws out venom that flies back to the boss four seconds later, hitting anyone in its path. {{lv_hits}} hits landed across the night, counting ticks on one player within a second as one hit. They killed {{living_deaths}}, and {{living_first}} pulls began their death log with one. {{lv_breath_pct}}% of the hits on a player whose side could be read came while they stood on Breath, which is where the venom flies. Per minute of phase, phase one took {{lv_p1_rate}} hits and phase two {{lv_p2_rate}}, {{lv_phase_note}}.</p>
+  <p>Set against time alive in damage phases, the non-tanks hit most often per five minutes were {{lv_rate_top}}; the median non-tank took {{lv_rate_med}}. A hit was followed by that player&#39;s death within five seconds {{lv_then_died}} times, most often for {{lv_died_top}}.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--breath)"></i>hit while on Breath</span><span><i style="background:var(--blood)"></i>while on Blood</span><span><i style="background:var(--muted)"></i>side unknown</span></div>
+    <svg id="c-lv" viewBox="0 0 900 520" role="img" aria-label="Living Venom hits per player"></svg>
+    <figcaption>Hits per player across the night, by the side they stood on. Beside each bar: hits per five minutes alive, and how often a hit came within five seconds of their death.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-lv"><thead><tr>
+    <th>Player</th><th>Team</th><th>Hits</th><th>On Breath</th><th>On Blood</th><th title="minutes alive in damage phases">Minutes alive</th><th>Per 5 min</th><th>Damage taken</th><th title="Living Venom was the killing blow">Killed by it</th><th title="died within five seconds of a hit">Died within 5s</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Shifting Protovenom</h2>
+  <p>{{pv_sets}} sets of marked players went out. Two marked players meeting clear each other; a marked player touching a clean one sets off Protovenom Eruption on everyone within ten yards. Full sets of eight cleared {{pv_pair_rate}} pairs out of four on average, against {{kill_pv_rate}} for the kills, and {{pv_clean}} sets cleared with no eruption. There were {{eruptions}} eruptions in all (the kills had {{kill_eruptions}}), and {{pv_deaths}} deaths went to Protovenom or its eruption.</p>
+  <p>Each eruption is pinned to one carrier and the clean player they touched, using where everyone stood when it went off: {{pv_attr}} of the {{eruptions}} could be pinned, the carrier a median {{pv_dist_med}} yards from the player they touched. The median eruption came {{pv_marked_for_med}} seconds after the carrier was marked, and {{pv_quick_pct}}% within three seconds. {{pv_quick_note}}</p>
+  <p>Most eruptions caused: {{top_carriers}}. As a share of times marked, the highest were {{car_rate}}. Most often the clean player touched: {{top_touched}}. Pairs that happened three times or more: {{repeat_pairs}}.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--crit)"></i>caused, as the carrier</span><span><i style="background:var(--s2)"></i>touched while clean</span><span><i style="background:var(--s4)"></i>caught standing nearby</span></div>
+    <svg id="c-proto" viewBox="0 0 900 520" role="img" aria-label="Protovenom eruptions caused, touched and caught per player"></svg>
+    <figcaption>Per player across the night. Beside each bar: eruptions caused out of times marked.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-proto"><thead><tr>
+    <th class="l">Carrier</th><th class="l">Ran into</th><th>Times</th><th class="l">Pulls</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>The rest of the floor</h2>
+  <p><b>Blood Venom pools</b> were stepped in {{pool_total}} times and killed {{pool_deaths}}. The most frequent were {{pool_top}}, tanks aside. <b>Blighted Blood</b> went out {{bl_n}} times and was dispelled after {{bl_med}} seconds at the median; {{bl_slow}} took longer than eight seconds and {{bl_missed}} were never dispelled. <b>Unstable Miasma</b> went off {{mi_n}} times, shared by {{mi_med}} at the median; {{mi_low_n}} had fewer than six under it and it killed {{mi_deaths}}.</p>
+  <p><b>The marks</b> stack every five seconds for as long as a player stays in range, so they build through a phase to a median peak of {{mark_peak}} stacks. They are {{mark_share}}% of all damage the raid took and the killing blow on {{mark_deaths}} deaths, {{mark_deaths_solo}} of them solo. Only {{mark_deaths_late}} came in the last twenty seconds before an intermission, {{mark_note}}</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s2)"></i>Blood Venom pools stepped in</span></div>
+    <svg id="c-avoid" viewBox="0 0 900 520" role="img" aria-label="Blood Venom pools stepped in per player"></svg>
+  </figure>
+  <div class="tblwrap"><table id="t-avoid"><thead><tr>
+    <th>Player</th><th>Living Venom</th><th>Pools</th><th>Droplet soaks</th><th>Noxious Blast hits</th><th>Eruptions carried</th><th>Eruption hits</th><th>Dispels</th><th>Mark damage</th><th>Peak marks</th><th>Mark deaths</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Marks from the other boss</h2>
+  <p>Stasis does not clear the marks. Each one runs out forty seconds after it was last applied, so after every swap a player carries their old boss&#39;s stacks for twenty-odd seconds into the next phase. That is the fight and is not counted here. What is counted is a new stack from the boss a player&#39;s team was not on that phase, which only lands within forty yards of it. It restarts the old mark&#39;s timer and adds a stack, or starts a second mark alongside the first.</p>
+  <p>{{wm_apps}} stacks went on from the wrong boss across the night: {{wm_walk}} in the first ten seconds after Stasis, while everyone crosses over; {{wm_extended}} later in a phase, extending an old mark that was still running; and {{wm_fresh}} fresh marks picked up from the other boss. The extra damage they did, over what the old stacks would have done if left to run out, came to {{wm_extra}}M, {{wm_pct}}% of all mark damage. The kills lost {{kill_wm_pct_lo}}&ndash;{{kill_wm_pct_hi}}% the same way; per minute of damage phase it was {{wm_rate}}M this night against {{kill_wm_rate_lo}}&ndash;{{kill_wm_rate_hi}}M for them. {{wm_level_note}}</p>
+  <p>Most extra damage: {{wm_top}}. Per minute alive in damage phases that is {{wm_top_rate}}. The top two broke down as {{wm_kinds_top}}. If {{wm_two}} were placed to reach both bosses on purpose, this is the price of that job; if not, it is the most avoidable mark damage on the night. Overall, the most mark damage taken was {{wm_mark_top}}, against a median of {{wm_mark_med}}M.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s4)"></i>walk-out after Stasis</span><span><i style="background:var(--s2)"></i>extending an old mark</span><span><i style="background:var(--crit)"></i>fresh mark from the other boss</span></div>
+    <svg id="c-wrong" viewBox="0 0 900 520" role="img" aria-label="Mark stacks from the other boss, per player"></svg>
+    <figcaption>Stacks from the boss the player&#39;s team was not on, by kind. Beside each bar: extra damage, and its share of the player&#39;s mark damage.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-wrong"><thead><tr>
+    <th>Player</th><th>Team</th><th>Wrong stacks</th><th>Walk-out</th><th>Extending</th><th>Fresh</th><th title="damage phases where it happened">Phases</th><th>Extra damage</th><th>Share of mark damage</th><th title="extra damage per minute alive in damage phases">Per minute</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Deaths</h2>
+  <p>{{deaths_total}} deaths across the night, {{solo_total}} of them solo, meaning the raid was still standing (70% or more alive) and fewer than three people went down within three seconds. The first death of a pull went to {{first_top}}. Among solo deaths the leaders are {{solo_top}}. The solo rule leaves out anything that kills several people in the same instant, however healthy the raid was, so a missed droplet barely registers there; the Toxic Droplets section counts those blasts set by set.</p></div>
+  <figure>
+    <div class="legend" id="death-legend"></div>
+    <svg id="c-deaths" viewBox="0 0 900 280" role="img" aria-label="Deaths per pull by mechanic"></svg>
+    <figcaption>Deaths per pull, coloured by the mechanic behind the killing blow. The outlined segment at the base is the pull&#39;s first death.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-firsts"><thead><tr>
+    <th>Pull</th><th class="l">First death</th><th>At</th><th class="l">Killing blow</th><th>Phase</th><th>Deaths</th><th>Solo</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Damage taken, second by second</h2>
+  <p>Incoming damage on the raid across a pull, tanks excluded, since their intake is the job and would bury everyone else. The axis is fixed at {{maxdur}} seconds, the longest attempt, so every pull reads against the same clock, with each Stasis shaded. Drag the handles to a stretch of the fight and everything below recalculates for it: damage taken, how much was mitigated, and every cooldown, stone and potion spent inside it.</p></div>
+  <div class="controls">
+    <label class="ctl"><span class="lab">Pull</span><select id="dt-pull"></select></label>
+    <div class="ctl grow"><span class="lab">Window <em id="dt-range"></em>
+      <button type="button" class="linkish" id="dt-reset">whole pull</button></span>
+      <div class="sliders">
+        <label><span>from</span><input type="range" id="dt-from" min="0" max="570" step="5" value="0"></label>
+        <label><span>to</span><input type="range" id="dt-to" min="0" max="571" step="5" value="571"></label>
+      </div></div>
+  </div>
+  <figure>
+    <svg id="c-dtps" viewBox="0 0 900 300" role="img" aria-label="Raid damage taken per second across the pull"></svg>
+    <figcaption id="dt-cap"></figcaption>
+  </figure>
+  <div class="tiles" id="dt-tiles"></div>
+  <div class="tblwrap"><table id="t-dtps"><thead><tr>
+    <th>Player</th><th>Damage taken</th><th>Reduced</th><th>Absorbed</th><th>Majors</th><th>Minor</th><th>Externals</th><th>Stones</th><th>Potions</th><th>Deaths</th></tr></thead><tbody></tbody></table></div>
+  <figcaption id="dt-note">{{tank_names}} are left out of this section, chart and table alike; the {{n_nontank}} non-tanks are what you see. Damage taken is health actually lost. Every hit in the log carries what it was worth before mitigation, and the difference splits two ways. <b>Reduced</b> is armour, versatility, class passives and any damage-reduction cooldown that happened to be up; <b>absorbed</b> is shields. The log does not separate passive reduction from a pressed cooldown, so read these as how much of the hit never reached the player, not as a defensive-usage score. For the {{n_nontank}} non-tanks across the night it is {{raid_reduced}}% reduced and {{raid_absorbed}}% absorbed. The curve is a seven-second centred average; the tooltip gives the raw second. Per-player figures bucket in five seconds, which is why the handles move in fives.</figcaption>
+</section>
+
+<section>
+  <div class="head"><h2>Defensives in the heavy seconds</h2>
+  <p>{{n_spans}} spans across the night ran at twice the pull&#39;s median damage taken or more. They are {{heavy_time_pct}}% of the time on the boss and {{heavy_dmg_pct}}% of the damage. This is who pressed something in them.</p></div>
+  <div class="tiles" id="tiles-mit"></div>
+  <figure>
+    <svg id="c-cover" viewBox="0 0 900 520" role="img" aria-label="Share of heavy damage spans covered by a major personal defensive, per player"></svg>
+    <figcaption>Share of the {{n_spans}} heavy spans in which the player used at least one major personal cooldown. Labels give majors used in heavy spans, out of everything they pressed all night.</figcaption>
+  </figure>
+
+  <div class="head" style="border:0;padding-top:8px"><h3>Healthstones &amp; health potions</h3>
+  <p>{{stones}} healthstones and {{potions}} health potions went down across {{pulls}} pulls: {{hp_under40}} of the {{consum_total}} at under 40% health, {{hp_under20}} of those under 20%, {{hp_over80}} above 80%. Average {{hp_avg}}%, median {{hp_median}}%. {{never_hs_word_cap}} of the roster used no healthstone at all ({{never_hs_names}}). Potions: {{potion_breakdown}}. Stones: {{stone_breakdown}}.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s1)"></i>healthstones</span><span><i style="background:var(--s2)"></i>health potions</span><span><i style="background:var(--muted)"></i>average health when used</span><span><i style="background:var(--crit)"></i>under 25%, cutting it fine</span></div>
+    <svg id="c-consum" viewBox="0 0 900 520" role="img" aria-label="Healthstone and health potion use per player"></svg>
+    <figcaption>Bars count uses across the night; the marker on the right is the average health when pressed, measured before the heal landed.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-mit"><thead><tr>
+    <th>Player</th><th>Majors</th><th>In heavy</th><th>Coverage</th><th>Minor / rotational</th><th>Externals given</th><th>Stones</th><th>Potions</th><th>HP at use</th><th title="deaths with the raid still up and nobody going down beside them">Solo deaths</th><th>&hellip;with nothing pressed</th></tr></thead><tbody></tbody></table></div>
+  <div class="note">
+    <p><b>Solo deaths</b> are deaths where the raid was still standing, at least 70% of it alive, and fewer than three people went down within three seconds. {{early_no_def}} of them had no major defensive in the ten seconds before. A holy priest&#39;s Spirit of Redemption counts as the moment they died, because the log writes the death only when the buff runs out.</p>
+    <p><b>Heavy spans</b> are computed, not hand-picked: raid damage taken binned per second, and every run of three or more seconds at twice the pull&#39;s median rate or above. <b>Majors</b> are personal cooldowns ({{major_list}}). <b>Minor</b> covers the spammables: {{minor_list}}. <b>Externals</b> are the ones cast on somebody else: {{external_list}}. Stones and potions are counted from the cast, and health at use is the value before the heal landed.</p>
+  </div>
+</section>
+
+<section>
+  <div class="head"><h3>How this was counted</h3></div>
+  <div class="note">
+    <p><b>Intermissions</b> are the Vitriolic Stasis buff on the bosses, start to end. <b>The heal</b> is every Vitriolic Stasis healing event on either boss inside one. Boss health is read off the bosses&#39; own casts, which carry their hit points; a cast lands every few seconds per boss, so the race chart is a few seconds coarse, but the heal is exact.</p>
+    <p><b>Teams</b> come from the marks. Each player&#39;s side in a phase is the mark they collected most of in it, counted only when three or more stacks and 70% of their applications agree, so the walk across does not count. The two teams are anchored on the players who share a side most often across the night, which fixes which side each team stood on in every phase. Each player is then placed with a team pull by pull, when three in four of their readable phases agree; a change that holds for three pulls or more counts as a move. A player who cannot be placed in a pull, standing between the bosses or collecting both marks, is counted on their own for that pull. <b>Boss damage</b> comes from the damage table, phase by phase, which rolls pets into their owners. Cross-room damage is a team member&#39;s damage onto the boss the other team was standing on in that phase.</p>
+    <p><b>The puzzle</b> is read over the Helical Toxins debuff&#39;s own 28 seconds, not Stasis&#39;s. A clear is two removals within 150 ms before it runs out, which holds for a corpse being bumped as much as for two living players. A wrong pairing is any stack increase, and an intermission is solved when every player, dead or alive, cleared. A failed one is put down to deaths or a called wipe when it opened with more than two dead, or when a player died holding the debuff, never resolved, before the first wrong pairing. <b>Missed droplets</b> are clusters of Noxious Blast hits within 100 ms, matched to the Toxic Droplets cast before them. <b>Protovenom</b> pairs are two marked players&#39; debuffs dropping together; an eruption is a cluster of Protovenom Eruption hits, its carrier the marked player among the targets. <b>Ula&#39;tek&#39;s Dominance</b> (the bosses within 25 yards) went up {{dom_n}} times outside an intermission on {{dom_pulls_word}} pulls, {{dom_secs}} seconds in all: {{dom_walk_n}} of those ({{dom_walk_secs}}s) were the bosses still walking apart after Stasis, {{dom_mid_n}} ({{dom_mid_secs}}s) were mid-phase. The kills had {{kill_dom_secs}} seconds between them. The longest were {{dom_long}}.</p>
+  </div>
+</section>
+
+<footer>Built from the Warcraft Logs v2 API &middot; report {{report}} &middot; {{pulls}} pulls, {{outcome}}.</footer>
+</div>
+<div class="tip" id="tip"></div>
+<script id="health" type="application/json">__PAYLOAD_HEALTH__</script>
+<script id="teams-data" type="application/json">__PAYLOAD_TEAMS__</script>
+<script id="balance" type="application/json">__PAYLOAD_BALANCE__</script>
+<script id="bosspulls" type="application/json">__PAYLOAD_BOSSPULLS__</script>
+<script id="puzzle" type="application/json">__PAYLOAD_PUZZLE__</script>
+<script id="mech" type="application/json">__PAYLOAD_MECH__</script>
+<script id="soak" type="application/json">__PAYLOAD_SOAK__</script>
+<script id="lv" type="application/json">__PAYLOAD_LV__</script>
+<script id="wrong" type="application/json">__PAYLOAD_WRONG__</script>
+<script id="deaths" type="application/json">__PAYLOAD_DEATHS__</script>
+<script id="mit" type="application/json">__PAYLOAD_MIT__</script>
+<script id="dtps" type="application/json">__PAYLOAD_DTPS__</script>
+<script id="data" type="application/json">__PAYLOAD_DATA__</script>
+<script>
+const D=JSON.parse(document.getElementById('data').textContent);
+const J=id=>JSON.parse(document.getElementById(id).textContent);
+const fmtM=v=>(v/1e6).toFixed(1)+'M';
+const tip=document.getElementById('tip');
+function hook(el,html){
+  el.addEventListener('pointerenter',e=>{tip.innerHTML=html;tip.style.opacity=1;});
+  el.addEventListener('pointermove',e=>{
+    const w=tip.offsetWidth,h=tip.offsetHeight;
+    tip.style.left=Math.min(e.clientX+14,innerWidth-w-8)+'px';
+    tip.style.top=Math.max(8,e.clientY-h-12)+'px';});
+  el.addEventListener('pointerleave',()=>tip.style.opacity=0);
+}
+/* one hue per intermission count / Stasis number */
+const WCOL=['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--s5)'];
+const NS='http://www.w3.org/2000/svg';
+function mk(p,t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;}
+function txt(p,x,y,s,o={}){const e=mk(p,'text',Object.assign({x,y,fill:o.fill||'var(--muted)','font-size':o.size||11,
+  'font-family':o.mono===false?'Barlow Condensed, sans-serif':'IBM Plex Mono, monospace','text-anchor':o.anchor||'start',
+  'font-weight':o.weight||400},o.extra||{}));e.textContent=s;return e;}
+function clear(s){while(s.firstChild)s.removeChild(s.firstChild);}
+function hatch(s,id,col){
+  const defs=mk(s,'defs',{});
+  const pat=mk(defs,'pattern',{id,width:6,height:6,patternTransform:'rotate(45)',patternUnits:'userSpaceOnUse'});
+  mk(pat,'rect',{width:6,height:6,fill:'var(--surface)'});
+  mk(pat,'line',{x1:0,y1:0,x2:0,y2:6,stroke:col||'var(--inter)','stroke-width':3});
+  return `url(#${id})`;}
+function niceStep(max){const mag=Math.pow(10,Math.floor(Math.log10(max||1)));return mag*(max/mag>5?2:max/mag>2?1:.5);}
+const mmss=s=>`${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}`;
+const byPull={}; D.fights.forEach(f=>byPull[f.pull]=f);
+const deepPull={{deep_pull}};
+
+/* tiles */
+document.getElementById('tiles').innerHTML=[
+ ['{{pulls}}','{{outcome}}'],['{{tile_best_n}}','{{tile_best_lab}}'],
+ ['{{healed_total}}<small>M</small>','health handed back by Stasis'],
+ ['{{deep_inter}}<small>s</small>','in intermissions on pull {{deep_pull}}'],
+ ['{{blasts}}','droplets nobody ran over'],['{{eruptions}}','Protovenom eruptions'],
+ ['{{deaths_total}}','deaths ({{solo_total}} solo)'],['{{berserk_pulls_n}}','pulls that reached the berserk']]
+ .map(([n,l])=>`<div class="tile"><span class="n">${n}</span><span class="lab">${l}</span></div>`).join('');
+
+/* the night, pull by pull */
+(function(){
+  const s=document.getElementById('c-pulls'),W=900,H=300,L=40,R=10,T=14,B=34;
+  const f=D.fights, n=f.length, iw=(W-L-R)/n, bw=Math.min(30,iw-6);
+  const y=v=>T+(100-v)/100*(H-T-B);
+  const most=Math.max(...f.map(d=>d.stasis.length));
+  document.getElementById('pull-legend').innerHTML=Array.from({length:most+1},(_,k)=>
+    `<span><i style="background:${k?WCOL[(k-1)%WCOL.length]:'var(--muted)'}"></i>${k} intermission${k===1?'':'s'}</span>`).join('');
+  [0,25,50,75,100].forEach(v=>{mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v+'%',{anchor:'end'});});
+  f.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2, yy=y(d.boss_pct), k=d.stasis.length;
+    const r=mk(s,'rect',{x,y:yy,width:bw,height:y(0)-yy,fill:k?WCOL[(k-1)%WCOL.length]:'var(--muted)',rx:3});
+    hook(r,`<b>Pull ${d.pull}</b><br>${d.boss_pct}% left &middot; ${mmss(d.dur)}<br>${k} intermission${k===1?'':'s'}, ${d.inter_secs}s in them<br>${fmtM(d.healed)} handed back<br>${d.deaths} deaths`);
+    txt(s,x+bw/2,yy-5,Math.round(d.dur),{anchor:'middle',size:9.5});
+    if(d.berserk!=null) mk(s,'rect',{x,y:yy-20,width:bw,height:3,fill:'var(--crit)'});
+    txt(s,x+bw/2,H-12,d.pull,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+})();
+
+/* the clock: phases and intermissions against the berserk */
+(function(){
+  const s=document.getElementById('c-clock'),W=900,L=92,R=58,T=22,rh=13,bh=9;
+  const H_=hatch(s,'inter-h');
+  const rows=[...D.kills.map(k=>{
+      /* a kill's intermissions, rebuilt off the same fixed clock: 46s, then 91s after each one ends */
+      const st=[];let at={{first_stasis}};
+      k.solved.forEach(x=>{st.push([at,at+x]);at=at+x+{{stasis_gap}};});
+      return {label:k.guild,sub:`kill ${mmss(k.dur)}`,dur:k.dur,stasis:st,inter:k.inter_secs,kill:true};}),
+    ...D.fights.map(f=>({label:'pull '+f.pull,dur:f.dur,stasis:f.stasis,inter:f.inter_secs,pct:f.boss_pct,berserk:f.berserk,pull:f.pull}))];
+  const H=T+rows.length*rh+30+8;
+  s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const max=Math.max(D.meta.berserk_at+15,...rows.map(r=>r.dur));
+  const x=v=>L+v/max*(W-L-R);
+  for(let v=0;v<=max;v+=60){mk(s,'line',{x1:x(v),x2:x(v),y1:T-4,y2:H-30,stroke:'var(--grid)','stroke-width':1});
+    txt(s,x(v),H-16,mmss(v),{anchor:'middle',size:10});}
+  rows.forEach((r,i)=>{
+    const yy=T+i*rh+(i>=D.kills.length?8:0);
+    txt(s,L-8,yy+bh-1,r.label,{anchor:'end',size:10,fill:r.kill?'var(--s3)':r.pull===deepPull?'var(--ink)':'var(--ink-2)'});
+    let at=0;
+    const seg=(a,b,fill,html)=>{if(b<=a)return;const e=mk(s,'rect',{x:x(a),y:yy,width:Math.max(1,x(b)-x(a)),height:bh,fill});hook(e,html);};
+    r.stasis.forEach(([a,b],k)=>{
+      seg(at,a,r.kill?'var(--s3)':'var(--s1)',`<b>${r.label}</b><br>damage phase ${k+1}: ${mmss(at)}–${mmss(a)}`);
+      seg(a,Math.min(b,r.dur),H_,`<b>${r.label}</b><br>intermission ${k+1}: ${mmss(a)}–${mmss(b)}, ${(b-a).toFixed(1)}s`);
+      at=b;});
+    if(at<r.dur) seg(at,r.dur,r.kill?'var(--s3)':'var(--s1)',`<b>${r.label}</b><br>damage phase ${r.stasis.length+1}: ${mmss(at)}–${mmss(r.dur)}`+(r.pct!=null?`<br>wiped at ${r.pct}%`:''));
+    txt(s,x(r.dur)+4,yy+bh-1,`${Math.round(r.inter)}s`,{size:9.5});});
+  const bx=x(D.meta.berserk_at);
+  mk(s,'line',{x1:bx,x2:bx,y1:T-8,y2:H-30,stroke:'var(--crit)','stroke-width':2});
+  txt(s,bx,T-10,'berserk',{anchor:'middle',size:10,fill:'var(--crit)'});
+})();
+
+/* the heal, per pull and per Stasis */
+const HP=J('health');
+let racePull=deepPull;
+(function(){
+  const s=document.getElementById('c-healed'),W=900,H=260,L=48,R=10,T=14,B=34;
+  const f=D.fights, n=f.length, iw=(W-L-R)/n, bw=Math.min(30,iw-6);
+  const most=Math.max(...f.map(d=>(HP[d.pull]||{stasis:[]}).stasis.length));
+  document.getElementById('heal-legend').innerHTML=Array.from({length:most},(_,k)=>
+    `<span><i style="background:${WCOL[k%WCOL.length]}"></i>Stasis ${k+1}</span>`).join('');
+  const max=Math.max(1,...f.map(d=>d.healed))*1.08, y=v=>T+(1-v/max)*(H-T-B), step=niceStep(max);
+  for(let v=0;v<=max;v+=step){mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,(v/1e6).toFixed(0)+'M',{anchor:'end'});}
+  f.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2; let at=0;
+    (HP[d.pull]||{stasis:[]}).stasis.forEach((st,k)=>{
+      if(!st.healed) return;
+      const r=mk(s,'rect',{x,y:y(at+st.healed),width:bw,height:y(at)-y(at+st.healed),fill:WCOL[k%WCOL.length]});
+      r.style.cursor='pointer';
+      hook(r,`<b>Pull ${d.pull}, Stasis ${k+1}</b><br>Breath ${st.breath}% &middot; Blood ${st.blood}%<br>${st.gap} points apart<br>${fmtM(st.healed)} healed onto ${st.healed_side==='breath'?'Breath':'Blood'}`);
+      r.addEventListener('click',()=>{racePull=d.pull;document.getElementById('race-sel').value=d.pull;drawRace();});
+      at+=st.healed;});
+    if(at) txt(s,x+bw/2,y(at)-5,(at/1e6).toFixed(0),{anchor:'middle',size:9.5});
+    txt(s,x+bw/2,H-12,d.pull,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+})();
+const raceSel=document.getElementById('race-sel');
+D.fights.forEach(f=>{const o=document.createElement('option');o.value=f.pull;
+  o.textContent=`Pull ${f.pull}, ${f.boss_pct}% left, ${fmtM(f.healed)} healed`;raceSel.appendChild(o);});
+raceSel.value=racePull;
+raceSel.addEventListener('change',()=>{racePull=Number(raceSel.value);drawRace();});
+function drawRace(){
+  const s=document.getElementById('c-race'),W=900,H=300,L=44,R=14,T=14,B=30;
+  clear(s); const H_=hatch(s,'race-h');
+  const P=HP[racePull], f=byPull[racePull], dur=f.dur;
+  const lo=Math.max(0,Math.floor(Math.min(...P.samples.breath.map(p=>p[1]),...P.samples.blood.map(p=>p[1]))/10)*10-5);
+  const x=t=>L+t/dur*(W-L-R), y=v=>T+(100-v)/(100-lo)*(H-T-B);
+  P.stasis.forEach(st=>mk(s,'rect',{x:x(st.start),y:T,width:Math.max(1,x(st.end)-x(st.start)),height:H-T-B,fill:H_,opacity:.55}));
+  for(let v=lo;v<=100;v+=10){mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,v+'%',{anchor:'end'});}
+  for(let t=0;t<=dur;t+=60) txt(s,x(t),H-10,mmss(t),{anchor:'middle',size:10});
+  [['breath','var(--breath)','Breath'],['blood','var(--blood)','Blood']].forEach(([k,c,lab])=>{
+    const pts=P.samples[k];
+    mk(s,'polyline',{points:pts.map(p=>`${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join(' '),fill:'none',stroke:c,'stroke-width':2.2,'stroke-linejoin':'round'});
+    pts.forEach(p=>{const c2=mk(s,'circle',{cx:x(p[0]),cy:y(p[1]),r:2.4,fill:c});hook(c2,`<b>${lab}</b> ${p[1]}% at ${mmss(p[0])}`);});});
+  P.stasis.forEach((st,k)=>{
+    if(st.breath==null||st.blood==null||!st.healed) return;
+    const low=Math.min(st.breath,st.blood), high=Math.max(st.breath,st.blood), xm=x((st.start+st.end)/2);
+    const col=st.healed_side==='breath'?'var(--breath)':'var(--blood)';
+    mk(s,'line',{x1:xm,x2:xm,y1:y(low),y2:y(high)+5,stroke:col,'stroke-width':2});
+    mk(s,'path',{d:`M${xm-4},${y(high)+6} L${xm},${y(high)} L${xm+4},${y(high)+6}`,fill:'none',stroke:col,'stroke-width':2});
+    txt(s,xm+6,y(high)-4,`+${fmtM(st.healed)}`,{size:10,fill:col});});
+  document.getElementById('race-cap').textContent=`Pull ${racePull}: ${mmss(dur)}, wiped at ${f.boss_pct}%. `+
+    `${P.stasis.length} Stasis, ${fmtM(f.healed)} handed back. Health is read off the bosses’ own casts, which carry their hit points; the arrow in each Stasis is the heal.`;
+  const tb=document.querySelector('#t-stasis tbody'); tb.innerHTML='';
+  P.stasis.forEach((st,k)=>{const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${k+1}</td><td>${mmss(st.start)}</td><td>${(st.end-st.start).toFixed(1)}s${st.cut_short?' <span class="muted">(wipe)</span>':''}</td>
+      <td>${st.breath??'—'}%</td><td>${st.blood??'—'}%</td><td class="${st.gap>3?'neg':''}">${st.gap??'—'}</td>
+      <td>${fmtM(st.healed)}</td><td class="l">${st.healed?(st.healed_side==='breath'?'Breath':'Blood'):'—'}</td>`;
+    tb.appendChild(tr);});
+}
+drawRace();
+
+/* the teams */
+const TM=J('teams-data');
+(function(){
+  const ROLE={tank:'T',healer:'H',dps:'D'};
+  const card=(title,col,list,note)=>`<div class="team">
+    <div class="team-head"><span class="dot" style="background:${col}"></span>${title} <span class="muted">(${list.length})</span></div>
+    <ul>${list.map(p=>`<li><span class="role">${ROLE[TM.roles[p]]||'D'}</span> ${p} <span class="muted">${TM.spec[p]} ${TM.cls[p]}</span></li>`).join('')}</ul>
+    ${note?`<p class="tbl-note" style="margin-top:8px">${note}</p>`:''}</div>`;
+  const when=(p,t)=>{const sp=(TM.spans||{})[p];if(!sp)return '';
+    return ' <span class="muted">('+sp.filter(x=>x[0]===t).map(x=>x[1]===x[2]?`pull ${x[1]}`:`pulls ${x[1]}\u2013${x[2]}`).join(', ')+')</span>';};
+  const card2=(t,col,note)=>`<div class="team">
+    <div class="team-head"><span class="dot" style="background:${col}"></span>Team ${t} <span class="muted">(${TM.members[t].length})</span></div>
+    <ul>${TM.members[t].map(p=>`<li><span class="role">${ROLE[TM.roles[p]]||'D'}</span> ${p} <span class="muted">${TM.spec[p]} ${TM.cls[p]}</span>${when(p,t)}</li>`).join('')}</ul>
+    <p class="tbl-note" style="margin-top:8px">${note}</p></div>`;
+  document.getElementById('teams').innerHTML=
+    card2('A','var(--s1)','opened every pull on {{a_open}}')+card2('B','var(--s2)','opened every pull on {{b_open}}')+
+    (TM.loose.length?card('Never settled','var(--s4)',TM.loose,'could not be placed with either team on most pulls'):'');
+  const tb=document.querySelector('#t-periods tbody');
+  (TM.periods||[]).forEach(x=>{const tr=document.createElement('tr');
+    const mv=x.moves.length?x.moves.map(m=>`${m.player} ${m.from}\u2192${m.to}`).join(', '):'\u2014';
+    tr.innerHTML=`<td class="l">${x.lo===x.hi?x.lo:x.lo+'\u2013'+x.hi}</td><td class="l muted">${mv}</td><td>${x.n}</td>
+      <td class="${x.gap>3?'neg':''}">${x.gap??'\u2014'}</td><td>${x.healed!=null?fmtM(x.healed):'\u2014'}</td><td>${x.lower_b} of ${x.lower_n}</td>`;
+    tb.appendChild(tr);});
+})();
+
+/* where the gap came from */
+const BAL=J('balance');
+(function(){
+  const phases=[...new Set(BAL.rows.map(r=>r.phase))].sort((a,b)=>a-b);
+  let ph=phases[0];
+  const box=document.getElementById('bal-ctl');
+  phases.forEach(p=>{const b=document.createElement('button');b.type='button';b.className='seg';
+    b.textContent=`phase ${p} (${BAL.rows.filter(r=>r.phase===p).length})`;b.dataset.v=p;
+    b.addEventListener('click',()=>{ph=p;draw();});box.appendChild(b);});
+  const s=document.getElementById('c-balance'),W=900,H=300,L=48,R=10,T=14,B=34;
+  const PARTS=[['teams','var(--s1)','team B over team A'],['cross','var(--s2)','cross-room'],['float','var(--s4)','unplaced']];
+  function draw(){
+    clear(s);
+    [...box.children].forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.v)===ph));
+    const rows=BAL.rows.filter(r=>r.phase===ph);
+    const n=rows.length, iw=(W-L-R)/Math.max(n,1), bw=Math.min(26,iw-6);
+    let hi=1,lo=-1;
+    rows.forEach(r=>{let p=0,q=0;PARTS.forEach(([k])=>{if(r[k]>0)p+=r[k];else q+=r[k];});hi=Math.max(hi,p);lo=Math.min(lo,q);});
+    hi*=1.08; lo*=1.08;
+    const y=v=>T+(hi-v)/(hi-lo)*(H-T-B), step=niceStep(hi-lo);
+    for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step){
+      mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:v===0?'var(--ink-2)':'var(--grid)','stroke-width':1});
+      txt(s,L-8,y(v)+4,(v/1e6).toFixed(0)+'M',{anchor:'end'});}
+    rows.forEach((r,i)=>{
+      const x=L+i*iw+(iw-bw)/2; let up=0,dn=0;
+      const tipTxt=`<b>Pull ${r.pull}, phase ${r.phase}</b> (${r.secs}s)<br>A on ${r.sides.A}, B on ${r.sides.B}`+
+        `<br>teams: B ${fmtM(r.B_own)} vs A ${fmtM(r.A_own)} (${r.teams>0?'+':''}${fmtM(r.teams)})`+
+        `<br>cross-room: A→B ${fmtM(r.A_cross)}, B→A ${fmtM(r.B_cross)} (${r.cross>0?'+':''}${fmtM(r.cross)})`+
+        `<br>unplaced damage dealers: ${fmtM(r.float_B)} on B&#39;s boss, ${fmtM(r.float_A)} on A&#39;s (${r.float>0?'+':''}${fmtM(r.float)})`+
+        `<br><b>net ${fmtM(r.teams+r.cross+r.float)}</b>`;
+      PARTS.forEach(([k,c])=>{
+        const v=r[k]; if(!v) return;
+        const a=v>0?up:dn, b=a+v;
+        const e=mk(s,'rect',{x,y:y(Math.max(a,b)),width:bw,height:Math.abs(y(a)-y(b)),fill:c});
+        hook(e,tipTxt);
+        if(v>0)up=b;else dn=b;});
+      const net=r.teams+r.cross+r.float;
+      mk(s,'rect',{x:x-2,y:y(net)-1.5,width:bw+4,height:3,fill:'var(--ink)'});
+      txt(s,x+bw/2,H-12,r.pull,{anchor:'middle',size:10});
+      const mv=(TM.periods||[]).find(p=>p.lo===r.pull&&p.moves.length);
+      if(mv){mk(s,'line',{x1:x-4,x2:x-4,y1:T,y2:H-B,stroke:'var(--ink-2)','stroke-width':1,'stroke-dasharray':'3 3'});
+        txt(s,x-2,T+10,mv.moves.map(m=>m.player).join(' & ')+' change team',{size:9.5,fill:'var(--ink-2)'});}});
+    txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+    const med=a=>{const q=[...a].sort((x,y)=>x-y),m=q.length>>1;return q.length?(q.length%2?q[m]:(q[m-1]+q[m])/2):0;};
+    document.getElementById('bal-cap').textContent=`Phase ${ph}, ${n} pulls that ended it in an intermission. Median parts: `+
+      `teams ${fmtM(med(rows.map(r=>r.teams)))}, cross-room ${fmtM(med(rows.map(r=>r.cross)))}, unplaced damage dealers ${fmtM(med(rows.map(r=>r.float)))}. `+
+      'Above zero, team B’s boss took more and is the one Stasis heals. The black tick is the net.';
+  }
+  draw();
+})();
+
+/* cross-room damage per player */
+(function(){
+  const s=document.getElementById('c-cross'),W=900,L=150,R=240,T=8;
+  const p=BAL.players.filter(d=>d.own+d.cross>0).sort((a,b)=>b.cross/(b.own+b.cross)-a.cross/(a.own+a.cross));
+  const rh=24,H=T+p.length*rh+20; s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const max=Math.max(...p.map(d=>d.own+d.cross)), x=v=>L+v/max*(W-L-R);
+  p.forEach((d,i)=>{
+    const yy=T+i*rh, pct=100*d.cross/(d.own+d.cross);
+    const tipTxt=`<b>${d.player}</b> &middot; team ${d.team} &middot; ${d.spec} ${d.class}<br>${fmtM(d.own)} onto their team&#39;s boss<br>${fmtM(d.cross)} onto the other team&#39;s (${pct.toFixed(1)}%)`;
+    const r1=mk(s,'rect',{x:L,y:yy,width:Math.max(1,x(d.own)-L),height:15,fill:'var(--s1)',rx:2});hook(r1,tipTxt);
+    if(d.cross>0){const r2=mk(s,'rect',{x:x(d.own)+1,y:yy,width:Math.max(1,x(d.own+d.cross)-x(d.own)-1),height:15,fill:'var(--s2)',rx:2});hook(r2,tipTxt);}
+    txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
+    txt(s,x(d.own+d.cross)+8,yy+12,`${pct.toFixed(1)}% across · ${fmtM(d.cross)} · team ${d.team}`,{size:11,fill:pct>=10?'var(--crit)':'var(--muted)'});});
+})();
+
+/* damage onto the bosses, whole night or one pull */
+(function(){
+  const B=J('bosspulls');
+  const s=document.getElementById('c-boss'),W=900,L=150,R=185,T=8;
+  const pulls=Object.keys(B.pulls).map(Number).sort((a,b)=>a-b);
+  const PARTS=[[0,'var(--breath)','Breath'],[1,'var(--blood)','Blood'],[2,'var(--s4)','Venom Coagulation']];
+  let pull=0;
+  const sel=document.getElementById('boss-sel');
+  [['0','Whole night'],...pulls.map(n=>[String(n),`Pull ${n} (${B.durs[n]}s)`])]
+    .forEach(([v,l])=>{const o=document.createElement('option');o.value=v;o.textContent=l;sel.appendChild(o);});
+  sel.addEventListener('change',()=>{pull=Number(sel.value);draw();});
+  const rowsFor=n=>{const out={};D.players.forEach(p=>{out[p.player]=n?((B.pulls[n]||{})[p.player]||[0,0,0]):[p.breath,p.blood,p.slime];});return out;};
+  const secsFor=n=>n?B.durs[n]:pulls.reduce((a,k)=>a+B.durs[k],0);
+  (function(){
+    const c=document.getElementById('c-boss-pulls'),H=260,L2=54,R2=12,T2=14,B2=34;
+    const tot=pulls.map(n=>{const r=B.pulls[n]||{};let a=0,b=0;for(const p in r){a+=r[p][0];b+=r[p][1];}return [a,b];});
+    const max=Math.max(1,...tot.map(t=>t[0]+t[1])), y=v=>T2+(1-v/max)*(H-T2-B2);
+    const iw=(W-L2-R2)/pulls.length, bw=Math.min(30,iw-6), step=niceStep(max);
+    for(let v=0;v<=max*1.001;v+=step){mk(c,'line',{x1:L2,x2:W-R2,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+      txt(c,L2-8,y(v)+4,(v/1e6).toFixed(0)+'M',{anchor:'end'});}
+    pulls.forEach((n,i)=>{
+      const x=L2+i*iw+(iw-bw)/2, [a,b]=tot[i];
+      const tipTxt=`<b>Pull ${n}</b><br>Breath ${fmtM(a)} &middot; Blood ${fmtM(b)}<br>${B.durs[n]}s`;
+      const r1=mk(c,'rect',{x,y:y(a),width:bw,height:y(0)-y(a),fill:'var(--breath)'});
+      const r2=mk(c,'rect',{x,y:y(a+b),width:bw,height:y(a)-y(a+b),fill:'var(--blood)'});
+      [r1,r2].forEach(r=>{r.style.cursor='pointer';hook(r,tipTxt);r.addEventListener('click',()=>{pull=n;sel.value=String(n);draw();});});
+      txt(c,x+bw/2,H-20,n,{anchor:'middle',size:10});});
+    txt(c,W-R2,H-4,'pull number',{anchor:'end',size:10});
+  })();
+  function draw(){
+    clear(s);
+    const rows=rowsFor(pull), secs=secsFor(pull);
+    const p=D.players.map(d=>({d,r:rows[d.player],boss:rows[d.player][0]+rows[d.player][1],tot:rows[d.player].reduce((a,b)=>a+b,0)})).sort((a,b)=>b.boss-a.boss);
+    const rh=24,H=T+p.length*rh+20; s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    const raid=p.reduce((a,d)=>a+d.boss,0)||1, max=Math.max(1,...p.map(d=>d.tot)), x=v=>L+v/max*(W-L-R);
+    p.forEach((row,i)=>{
+      const d=row.d, yy=T+i*rh; let at=L;
+      const tipTxt=`<b>${d.player}</b> &middot; ${d.spec} ${d.class} &middot; team ${d.team}<br>`+PARTS.map(([k,,lab])=>`${lab} ${fmtM(row.r[k])}`).join('<br>')+
+        `<br><b>${fmtM(row.boss)}</b> onto the bosses, ${(row.boss/secs/1e3).toFixed(0)}k a second`;
+      PARTS.forEach(([k,col])=>{const w=x(row.r[k])-L;if(w<=0)return;const r=mk(s,'rect',{x:at,y:yy,width:Math.max(1,w),height:15,fill:col,rx:2});hook(r,tipTxt);at+=w;});
+      txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
+      txt(s,Math.max(at,L+2)+8,yy+12,`${fmtM(row.boss)} · ${(row.boss/secs/1e3).toFixed(0)}k dps`,{size:11});});
+    document.getElementById('boss-cap').textContent=(pull?`Pull ${pull}, ${secs} seconds: `:'Whole night: ')+
+      `${raid>=1e9?(raid/1e9).toFixed(2)+'B':fmtM(raid)} onto the two bosses. The number beside each bar is boss damage only, total and per second of pull time; the slime is drawn but not counted in it.`;
+    const tb=document.querySelector('#t-boss tbody'); tb.innerHTML='';
+    p.forEach(row=>{const d=row.d,tr=document.createElement('tr');
+      tr.innerHTML=`<td>${d.player}${d.role!=='dps'?` <span class="chip">${d.role}</span>`:''}</td><td class="l muted">${d.spec}</td><td>${d.team==='float'?'switch':d.team}</td>
+        <td>${fmtM(row.r[0])}</td><td>${fmtM(row.r[1])}</td><td>${fmtM(row.r[2])}</td><td>${fmtM(row.boss)}</td>
+        <td>${(row.boss/secs/1e3).toFixed(0)}k</td><td>${(100*row.boss/raid).toFixed(1)}%</td>`;
+      tb.appendChild(tr);});
+  }
+  draw();
+})();
+
+/* against the kills */
+(function(){
+  const s=document.getElementById('c-phase'),W=900,H=300,L=56,R=16,T=16,B=34;
+  const NP=4, cw=(W-L-R)/NP;
+  const ours=D.fights, kills=D.kills;
+  const vals=[...kills.flatMap(k=>k.phase_dps.slice(0,NP)),...ours.flatMap(f=>f.phase_dps.slice(0,f.phase_dps.length-1).slice(0,NP))];
+  const max=Math.max(...vals)*1.06, y=v=>T+(1-v/max)*(H-T-B), step=niceStep(max);
+  for(let v=0;v<=max;v+=step){mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+    txt(s,L-8,y(v)+4,(v/1e6).toFixed(1)+'M',{anchor:'end'});}
+  for(let k=0;k<NP;k++){
+    const cx=L+k*cw+cw/2;
+    txt(s,cx,H-12,`phase ${k+1}`,{anchor:'middle',size:11,fill:'var(--ink-2)'});
+    /* this night: a phase counts only on a pull that lived past it */
+    const mine=ours.filter(f=>f.phase_dps.length>k+1);
+    mine.forEach((f,i)=>{
+      const jitter=((i*37)%23-11)*2.2;
+      const c=mk(s,'circle',{cx:cx-40+jitter,cy:y(f.phase_dps[k]),r:f.pull===deepPull?5:3.5,
+        fill:f.pull===deepPull?'var(--s2)':'var(--muted)',opacity:f.pull===deepPull?1:.6});
+      hook(c,`<b>Pull ${f.pull}</b>, phase ${k+1}<br>${fmtM(f.phase_dps[k])} a second onto the bosses`);});
+    kills.forEach((kk,i)=>{
+      if(kk.phase_dps.length<=k+1&&k>0) return;
+      const c=mk(s,'circle',{cx:cx+30+((i*13)%7-3)*4,cy:y(kk.phase_dps[k]),r:4.5,fill:'var(--s3)'});
+      hook(c,`<b>${kk.guild}</b> (kill, ilvl ${kk.ilvl_median}), phase ${k+1}<br>${fmtM(kk.phase_dps[k])} a second`);});
+    if(k) mk(s,'line',{x1:L+k*cw,x2:L+k*cw,y1:T,y2:H-B,stroke:'var(--rule)','stroke-width':1});}
+  const tb=document.querySelector('#t-kills tbody');
+  const row=(cells,cls='')=>{const tr=document.createElement('tr');if(cls)tr.className=cls;tr.innerHTML=cells.map(c=>`<td>${c}</td>`).join('');tb.appendChild(tr);};
+  const ph=(a,k)=>a[k]!=null?(a[k]/1e6).toFixed(2):'—';
+  kills.forEach(k=>row([`<span style="color:var(--s3)">${k.guild}</span> <span class="muted">${k.region}</span>`,k.date.slice(5),k.ilvl_median,mmss(k.dur),
+    `${k.stasis}, ${Math.round(k.inter_secs)}s`,fmtM(k.healed),ph(k.phase_dps,0),ph(k.phase_dps,1),ph(k.phase_dps,2),ph(k.phase_dps,3),k.deaths_150,k.blasts,k.eruptions]));
+  const best=[...ours].sort((a,b)=>a.boss_pct-b.boss_pct).slice(0,5);
+  best.forEach(f=>row([`<b>pull ${f.pull}</b> <span class="muted">${f.boss_pct}% left</span>`,'','{{our_ilvl}}',mmss(f.dur),
+    `${f.stasis.length}, ${Math.round(f.inter_secs)}s`,fmtM(f.healed),ph(f.phase_dps,0),ph(f.phase_dps,1),ph(f.phase_dps,2),ph(f.phase_dps,3),f.deaths_150,f.blasts,f.eruptions]));
+  const tr=document.createElement('tr');tr.innerHTML=`<td colspan="13" class="l tbl-note">This night&#39;s five deepest pulls below the kills. A phase a pull died in is shown, but read it with care: it ends in the wipe.</td>`;
+  tb.insertBefore(tr,tb.children[kills.length]);
+})();
+
+/* the puzzle */
+(function(){
+  const PZ=J('puzzle');
+  const rows=PZ.rows;
+  const OUT={solved:['solved','var(--s3)'],wrong:['wrong pairing','var(--crit)'],deaths:['deaths / wipe called','var(--muted)'],kill:['kill','var(--s3)']};
+  const key=r=>r.pull+'#'+r.idx;
+  let sel=rows.find(r=>r.outcome==='wrong')||rows[0];
+
+  /* the grid: every intermission at a glance */
+  const g=document.getElementById('c-pz-grid');
+  const pulls=[...new Set(rows.map(r=>r.pull))].sort((a,b)=>a-b);
+  const allPulls=D.fights.map(f=>f.pull);
+  const maxIdx=Math.max(...rows.map(r=>r.idx));
+  const GL=104,GR=8,GT=8,ch=26,gap=3;
+  const cw=(900-GL-GR)/allPulls.length;
+  const GH=GT+maxIdx*(ch+gap)+24;
+  g.setAttribute('viewBox',`0 0 900 ${GH}`);
+  const cells={};
+  for(let k=1;k<=maxIdx;k++) txt(g,GL-8,GT+(k-1)*(ch+gap)+ch/2+4,`intermission ${k}`,{anchor:'end',size:10.5});
+  allPulls.forEach((n,i)=>{
+    const x=GL+i*cw;
+    txt(g,x+cw/2,GH-6,n,{anchor:'middle',size:9.5,fill:n===deepPull?'var(--ink)':'var(--muted)'});
+    for(let k=1;k<=maxIdx;k++){
+      const r=rows.find(q=>q.pull===n&&q.idx===k), y=GT+(k-1)*(ch+gap);
+      if(!r){mk(g,'rect',{x:x+1,y,width:cw-2,height:ch,fill:'none',stroke:'var(--grid)','stroke-width':1,rx:3});continue;}
+      const [lab,col]=OUT[r.outcome]||[r.outcome,'var(--muted)'];
+      const c=mk(g,'rect',{x:x+1,y,width:cw-2,height:ch,fill:col,rx:3,opacity:r.outcome==='deaths'?.55:.9});
+      c.style.cursor='pointer';
+      const mark=r.outcome==='solved'?Math.round(r.solve):r.outcome==='wrong'?'\u2715':'\u2013';
+      const tx=txt(g,x+cw/2,y+ch/2+4,mark,{anchor:'middle',size:10.5,weight:600,fill:'var(--ground)'});
+      tx.style.pointerEvents='none';
+      hook(c,`<b>Pull ${n}, intermission ${k}: ${lab}</b><br>`+(r.solve!=null?`last pair at ${r.solve}s`:`${r.cleared} of ${r.players} cleared`)+
+        (r.broke&&r.broke.length?`<br>broke it: ${r.broke.join(' + ')} at ${r.first_over}s`:''));
+      c.addEventListener('click',()=>{sel=r;drawDetail();});
+      cells[key(r)]=c;}});
+
+  /* the detail: one lane per event in the selected intermission */
+  function drawDetail(){
+    Object.values(cells).forEach(c=>{c.setAttribute('stroke','none');});
+    cells[key(sel)].setAttribute('stroke','var(--ink)');cells[key(sel)].setAttribute('stroke-width','2.5');
+    const s=document.getElementById('c-pz-detail'); clear(s);
+    const r=sel, ev=[];
+    r.pairs.forEach(p=>ev.push({t:p.t,kind:'pair',label:p.players.length>2
+      ? `${p.players.join(', ')} (${p.players.length/2|0} pairs at once, partners not in the log)`
+      : p.players.join(' + ')}));
+    (r.merges||[]).forEach(m=>ev.push({t:m.t,kind:'merge',label:`${m.players.join(' + ')} \u2192 ${m.stack} stacks`}));
+    Object.entries(r.died_t||{}).filter(([p])=>!r.over.includes(p)).forEach(([p,t])=>ev.push({t,kind:'dead',label:`${p} died holding it, never bumped`}));
+    if(r.stranded&&r.stranded.length) ev.push({t:28,kind:'left',label:`${r.stranded.join(', ')} still holding it`});
+    ev.sort((a,b)=>a.t-b.t);
+    /* vertical markers, labelled on as many rows as it takes for no two labels to touch */
+    const marks=[[r.len,'var(--muted)',`Stasis ends ${r.len}s`,'4 3'],[28,'var(--crit)','debuff runs out','2 3']];
+    if(r.solve!=null) marks.push([r.solve,'var(--s3)',`solved ${r.solve}s`,'']);
+    marks.sort((a,b)=>a[0]-b[0]);
+    const L=16,R=250,lh=19;
+    const xs=v=>L+Math.min(v,29)/29*(900-L-R);
+    const rowEnd=[]; const placed=marks.map(m=>{
+      const w=m[2].length*6.2+8, x0=xs(m[0])+4;
+      let row=rowEnd.findIndex(e=>e<x0); if(row<0){row=rowEnd.length;rowEnd.push(0);}
+      rowEnd[row]=x0+w; return {m,row};});
+    const T=14+rowEnd.length*13, H=T+Math.max(1,ev.length)*lh+30;
+    s.setAttribute('viewBox',`0 0 900 ${H}`);
+    const x=xs;
+    for(let v=0;v<=28;v+=4){mk(s,'line',{x1:x(v),x2:x(v),y1:T-6,y2:H-24,stroke:'var(--grid)','stroke-width':1});
+      txt(s,x(v),H-8,v+'s',{anchor:'middle',size:10});}
+    placed.forEach(({m:[v,col,lab,dash],row})=>{
+      const ly=10+row*13;
+      mk(s,'line',{x1:x(v),x2:x(v),y1:ly+3,y2:H-24,stroke:col,'stroke-width':1.5,'stroke-dasharray':dash});
+      txt(s,x(v)+4,ly+1,lab,{size:10,fill:col});});
+    const COL={pair:'var(--s1)',merge:'var(--crit)',dead:'var(--ink)',left:'var(--s4)'};
+    ev.forEach((e,i)=>{
+      const yy=T+i*lh+lh/2;
+      if(i%2) mk(s,'rect',{x:L,y:yy-lh/2,width:900-L-R+R-6,height:lh,fill:'var(--surface-2)',opacity:.5});
+      mk(s,'line',{x1:x(0),x2:x(e.t),y1:yy,y2:yy,stroke:'var(--rule)','stroke-width':1});
+      if(e.kind==='pair') mk(s,'circle',{cx:x(e.t),cy:yy,r:5,fill:COL.pair});
+      else mk(s,'rect',{x:x(e.t)-5,y:yy-5,width:10,height:10,fill:COL[e.kind],rx:e.kind==='left'?5:1});
+      txt(s,x(e.t)+10,yy+4,`${e.t}s  ${e.label}`,{size:11,fill:e.kind==='pair'?'var(--ink-2)':COL[e.kind]==='var(--ink)'?'var(--ink)':COL[e.kind],
+        extra:{stroke:i%2?'var(--surface-2)':'var(--surface)','stroke-width':4,'paint-order':'stroke','stroke-linejoin':'round'}});});
+    const [lab]=OUT[r.outcome]||[r.outcome];
+    document.getElementById('pz-detail-cap').textContent=
+      `Pull ${r.pull}, intermission ${r.idx}: ${lab}. ${r.players} players got the debuff and ${r.cleared} cleared. `+
+      (r.solve!=null?`The last pair cleared at ${r.solve}s; Stasis ended at ${r.len}s.`
+        :(r.broke&&r.broke.length?`${r.broke.join(' and ')} broke it at ${r.first_over}s. `:'')+`Stasis ended at ${r.len}s and the pull was over ${r.pull_end}s after the debuff went out.`)+
+      ' Click another square above to switch.';
+  }
+  drawDetail();
+
+  /* the solve curve: how the raid clears, and how long the tail is */
+  (function(){
+    const s=document.getElementById('c-pz-curve'),W=900,H=260,L=48,R=16,T=22,B=30;
+    const x=v=>L+v/24*(W-L-R), y=v=>T+(1-v)*(H-T-B);
+    [0,.25,.5,.75,1].forEach(v=>{mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});txt(s,L-8,y(v)+4,Math.round(v*100)+'%',{anchor:'end'});});
+    for(let v=0;v<=24;v+=4) txt(s,x(v),H-10,v+'s',{anchor:'middle',size:10});
+    const solved=rows.filter(r=>r.outcome==='solved');
+    const curve=r=>{const ts=r.pairs.flatMap(p=>p.players.map(()=>p.t)).sort((a,b)=>a-b);return t=>ts.filter(v=>v<=t).length/r.players;};
+    const fns=solved.map(curve);
+    solved.forEach((r,i)=>{
+      const pts=[];for(let t=0;t<=24;t+=0.25)pts.push(`${x(t).toFixed(1)},${y(fns[i](t)).toFixed(1)}`);
+      const l=mk(s,'polyline',{points:pts.join(' '),fill:'none',stroke:'var(--muted)','stroke-width':1.2,opacity:.35});
+      hook(l,`<b>Pull ${r.pull}, intermission ${r.idx}</b><br>solved at ${r.solve}s`);});
+    const med=a=>{const q=[...a].sort((x,y)=>x-y),m=q.length>>1;return q.length%2?q[m]:(q[m-1]+q[m])/2;};
+    const mp=[];for(let t=0;t<=24;t+=0.25)mp.push(`${x(t).toFixed(1)},${y(med(fns.map(f=>f(t)))).toFixed(1)}`);
+    mk(s,'polyline',{points:mp.join(' '),fill:'none',stroke:'var(--s1)','stroke-width':3});
+    D.kills.forEach(k=>(k.puzzle_solve||[]).forEach(v=>{if(v==null)return;
+      const m=mk(s,'line',{x1:x(v),x2:x(v),y1:T-14,y2:T-4,stroke:'var(--s3)','stroke-width':2});hook(m,`<b>${k.guild}</b> solved one at ${v}s`);}));
+    txt(s,W-R,T-16,'kills\u2019 solve times',{anchor:'end',size:10,fill:'var(--s3)'});
+  })();
+
+  const tb=document.querySelector('#t-puzzle tbody');
+  Object.entries(PZ.players).sort((a,b)=>b[1].broke-a[1].broke||b[1].after-a[1].after||b[1].median-a[1].median).forEach(([p,v])=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${p}</td><td>${v.n}</td><td>${v.median.toFixed(1)}s</td><td>${v.last} <span class="muted">of ${v.solved_in}</span></td>
+      <td class="${v.broke>=3?'neg':''}">${v.broke||''}</td><td class="muted">${v.after||''}</td><td>${v.stranded||''}</td><td>${v.died||''}</td>`;
+    tb.appendChild(tr);});
+})();
+
+/* mechanics */
+const M=J('mech'), DE=J('deaths');
+(function(){
+  /* missed droplets and the deaths that named Noxious Blast */
+  const s=document.getElementById('c-blasts'),W=900,H=220,L=40,R=10,T=14,B=34;
+  const f=D.fights, n=f.length, iw=(W-L-R)/n, bw=Math.min(12,(iw-6)/2);
+  const deaths={}; Object.entries(DE.pulls).forEach(([p,ds])=>deaths[p]=ds.filter(d=>d.ability==='Noxious Blast').length);
+  const max=Math.max(1,...f.map(d=>Math.max(d.blasts,deaths[d.pull]||0))), y=v=>T+(1-v/max)*(H-T-B);
+  for(let v=0;v<=max;v+=Math.max(1,Math.ceil(max/5))){mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});txt(s,L-8,y(v)+4,v,{anchor:'end'});}
+  f.forEach((d,i)=>{
+    const x=L+i*iw+(iw-2*bw-2)/2, dd=deaths[d.pull]||0;
+    /* the set cast just before Stasis, stacked under the rest */
+    const sets=M.drops.filter(c=>c.pull===d.pull&&c.blasts);
+    const pre=sets.filter(c=>c.to_stasis!=null&&c.to_stasis<=15).reduce((a,c)=>a+c.blasts,0), other=d.blasts-pre;
+    const tipB=`<b>Pull ${d.pull}</b><br>${d.blasts} missed droplet${d.blasts===1?'':'s'}: ${pre} from the set before Stasis, ${other} from others<br>${dd} deaths to Noxious Blast`+
+      sets.filter(c=>c.killed).map(c=>`<br>set cast ${mmss(c.t)}: ${c.blasts} blast${c.blasts===1?'':'s'}, ${c.alive} up, ${c.killed} killed`).join('');
+    if(pre){const r=mk(s,'rect',{x,y:y(pre),width:bw,height:y(0)-y(pre),fill:'var(--s2)'});hook(r,tipB);}
+    if(other){const r=mk(s,'rect',{x,y:y(pre+other),width:bw,height:y(pre)-y(pre+other),fill:'var(--s4)'});hook(r,tipB);}
+    if(dd){const r=mk(s,'rect',{x:x+bw+2,y:y(dd),width:bw,height:y(0)-y(dd),fill:'var(--fatal)',rx:2});
+      hook(r,`<b>Pull ${d.pull}</b><br>${dd} deaths to Noxious Blast`);}
+    txt(s,L+i*iw+iw/2,H-12,d.pull,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number',{anchor:'end',size:10});
+})();
+(function(){
+  /* eruptions caused, touched and caught, per player */
+  const s=document.getElementById('c-proto'),W=900,L=150,R=320,T=8;
+  const all=[...new Set([...Object.keys(M.carriers),...Object.keys(M.victims),...Object.keys(M.caught)])];
+  const p=all.map(n=>({n,c:M.carriers[n]||0,v:M.victims[n]||0,k:M.caught[n]||0,m:M.marked[n]||0}))
+    .sort((a,b)=>(b.c*3+b.v*2+b.k)-(a.c*3+a.v*2+a.k));
+  const rh=24,H=T+p.length*rh+20; s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const max=Math.max(...p.map(d=>d.c+d.v+d.k)), x=v=>L+v/max*(W-L-R);
+  p.forEach((d,i)=>{const yy=T+i*rh; let at=0;
+    const tipTxt=`<b>${d.n}</b><br>caused ${d.c} eruption${d.c===1?'':'s'} out of ${d.m} times marked<br>touched while clean ${d.v}<br>caught standing nearby ${d.k}`;
+    [[d.c,'var(--crit)'],[d.v,'var(--s2)'],[d.k,'var(--s4)']].forEach(([v,col])=>{
+      if(!v) return; const r=mk(s,'rect',{x:x(at)+(at?1:0),y:yy,width:Math.max(1,x(at+v)-x(at)-(at?1:0)),height:15,fill:col,rx:2});hook(r,tipTxt);at+=v;});
+    txt(s,L-10,yy+12,d.n,{anchor:'end',fill:'var(--ink)',size:12});
+    txt(s,x(at)+8,yy+12,`${d.c} caused of ${d.m} marked \u00b7 ${d.v} touched \u00b7 ${d.k} caught`,{size:11});});
+  /* who ran into whom, with the pulls it happened on */
+  const where={};
+  M.proto.forEach(r=>r.eruptions.forEach(e=>{if(!e.carrier)return;const k=e.carrier+'|'+e.touched;(where[k]=where[k]||[]).push(r.pull);}));
+  const tb=document.querySelector('#t-proto tbody');
+  M.pv_pairs.filter(([,,n])=>n>=2).forEach(([c,v,n])=>{const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="l">${c}</td><td class="l">${v}</td><td>${n}</td><td class="l muted">${[...new Set(where[c+'|'+v]||[])].join(', ')}</td>`;tb.appendChild(tr);});
+  const rest=M.pv_pairs.filter(([,,n])=>n<2).length;
+  if(rest){const tr=document.createElement('tr');tr.innerHTML=`<td colspan="4" class="l tbl-note">${rest} more pairs happened once each.</td>`;tb.appendChild(tr);}
+})();
+(function(){
+  /* living venom per player */
+  const V=J('lv');
+  const s=document.getElementById('c-lv'),W=900,L=150,R=250,T=8;
+  const p=[...V.players].sort((a,b)=>b.hits-a.hits);
+  const rh=24,H=T+p.length*rh+20; s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const max=Math.max(1,...p.map(d=>d.hits)), x=v=>L+v/max*(W-L-R);
+  p.forEach((d,i)=>{const yy=T+i*rh; let at=0;
+    const tipTxt=`<b>${d.player}</b> &middot; ${d.spec} ${d.class} &middot; ${d.team==='float'?'switch':'team '+d.team}<br>${d.hits} hits: ${d.breath} on Breath, ${d.blood} on Blood, ${d.unknown} unknown`+
+      `<br>${d.rate} per five minutes alive<br>${(d.dmg/1e6).toFixed(1)}M taken &middot; killed ${d.killed} &middot; died within 5s ${d.then_died}`;
+    [[d.breath,'var(--breath)'],[d.blood,'var(--blood)'],[d.unknown,'var(--muted)']].forEach(([v,col])=>{
+      if(!v) return; const r=mk(s,'rect',{x:x(at)+(at?1:0),y:yy,width:Math.max(1,x(at+v)-x(at)-(at?1:0)),height:15,fill:col,rx:2});hook(r,tipTxt);at+=v;});
+    txt(s,L-10,yy+12,d.player+(d.role!=='dps'?` (${d.role[0].toUpperCase()})`:''),{anchor:'end',fill:'var(--ink)',size:12});
+    txt(s,x(at)+8,yy+12,`${d.hits} \u00b7 ${d.rate.toFixed(1)} per 5 min`+(d.then_died?` \u00b7 ${d.then_died} then died`:''),{size:11,fill:d.then_died>=3?'var(--crit)':'var(--muted)'});});
+  const tb=document.querySelector('#t-lv tbody');
+  p.forEach(d=>{const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${d.player}${d.role!=='dps'?` <span class="chip">${d.role}</span>`:''}</td><td>${d.team==='float'?'switch':d.team}</td><td>${d.hits}</td><td>${d.breath}</td><td>${d.blood}</td>
+      <td>${(d.alive/60).toFixed(0)}</td><td>${d.rate.toFixed(1)}</td><td>${(d.dmg/1e6).toFixed(1)}M</td><td>${d.killed||''}</td><td class="${d.then_died>=3?'neg':''}">${d.then_died||''}</td>`;
+    tb.appendChild(tr);});
+})();
+(function(){
+  /* blood venom pools, and the table */
+  const s=document.getElementById('c-avoid'),W=900,L=150,R=120,T=8;
+  const A=M.avoid, roles={}; D.players.forEach(p=>roles[p.player]=p.role);
+  const p=Object.entries(A).map(([n,v])=>({n,pool:v.pool})).sort((a,b)=>b.pool-a.pool);
+  const rh=24,H=T+p.length*rh+20; s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const maxP=Math.max(1,...p.map(d=>d.pool)), xp=v=>v/maxP*(W-L-R);
+  p.forEach((d,i)=>{const yy=T+i*rh;
+    const r=mk(s,'rect',{x:L,y:yy,width:Math.max(1,xp(d.pool)),height:15,fill:'var(--s2)',rx:2});hook(r,`<b>${d.n}</b><br>${d.pool} times in a Blood Venom pool`);
+    txt(s,L-10,yy+12,d.n+(roles[d.n]==='tank'?' (T)':''),{anchor:'end',fill:'var(--ink)',size:12});
+    txt(s,L+xp(d.pool)+6,yy+12,d.pool,{size:10.5});});
+  const tb=document.querySelector('#t-avoid tbody');
+  Object.entries(A).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([n,v])=>{
+    const mk2=M.marks[n]||{dmg:0,peak:0,deaths:0};
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${n}${roles[n]!=='dps'?` <span class="chip">${roles[n]}</span>`:''}</td><td>${v.living}</td><td>${v.pool}</td><td>${M.soaks[n]||0}</td>
+      <td>${v.blast}</td><td class="${(M.carriers[n]||0)>=8?'neg':''}">${M.carriers[n]||0}</td><td>${M.victims[n]||0}</td><td>${M.dispellers[n]||''}</td>
+      <td>${fmtM(mk2.dmg)}</td><td>${mk2.peak}</td><td>${mk2.deaths||''}</td>`;
+    tb.appendChild(tr);});
+})();
+(function(){
+  /* deaths per pull by mechanic */
+  const GC={droplets:'var(--s2)',marks:'var(--s5)',slime:'var(--s4)',living:'var(--s1)',proto:'var(--crit)',puzzle:'var(--s3)',blood:'var(--cls-Warlock)',tank:'var(--ink-2)',other:'var(--muted)'};
+  document.getElementById('death-legend').innerHTML=DE.groups.map(([k,l])=>`<span><i style="background:${GC[k]}"></i>${l}</span>`).join('');
+  const s=document.getElementById('c-deaths'),W=900,H=280,L=40,R=10,T=14,B=34;
+  const f=D.fights, n=f.length, iw=(W-L-R)/n, bw=Math.min(22,iw-6);
+  const max=Math.max(1,...f.map(d=>(DE.pulls[d.pull]||[]).length)), y=v=>T+(1-v/max)*(H-T-B);
+  for(let v=0;v<=max;v+=5){mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});txt(s,L-8,y(v)+4,v,{anchor:'end'});}
+  f.forEach((d,i)=>{
+    const x=L+i*iw+(iw-bw)/2, ds=DE.pulls[d.pull]||[];
+    ds.forEach((dd,k)=>{const g=DE.group_of[dd.ability]||'other';
+      const r=mk(s,'rect',{x,y:y(k+1),width:bw,height:y(k)-y(k+1)-.6,fill:GC[g],opacity:dd.solo?1:.55,
+        stroke:k===0?'var(--ink)':'none','stroke-width':k===0?1.5:0});
+      hook(r,`<b>Pull ${d.pull}</b>, death ${k+1} of ${ds.length}<br>${dd.player} at ${mmss(dd.t)}<br>${dd.ability}${dd.solo?' &middot; solo':''}`);});
+    txt(s,x+bw/2,H-12,d.pull,{anchor:'middle',size:10});});
+  txt(s,W-R,H-1,'pull number · full colour = solo death',{anchor:'end',size:10});
+  const tb=document.querySelector('#t-firsts tbody');
+  DE.firsts.forEach(d=>{const ds=DE.pulls[d.pull]||[];const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${d.pull}</td><td class="l">${d.player}</td><td>${mmss(d.t)}</td><td class="l">${d.ability}</td><td>${d.phase??'Stasis'}</td><td>${ds.length}</td><td>${ds.filter(x=>x.solo).length}</td>`;
+    tb.appendChild(tr);});
+})();
+
+
+/* who soaks */
+(function(){
+  const K=J('soak');
+  const s=document.getElementById('c-soak'),W=900,L=150,R=220,T=8;
+  const p=K.players.map(d=>({...d,tot:d.pre+d.other})).sort((a,b)=>b.tot-a.tot);
+  const rh=24,H=T+p.length*rh+20; s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const max=Math.max(...p.map(d=>d.tot)), x=v=>L+v/max*(W-L-R);
+  const teamLab=t=>t==='float'?'switch':'team '+t;
+  p.forEach((d,i)=>{
+    const yy=T+i*rh, per=d.sets?d.tot/d.sets:0;
+    const tipTxt=`<b>${d.player}</b> &middot; ${d.spec} ${d.class} &middot; ${teamLab(d.team)}<br>${d.tot} droplets: ${d.pre} from the set before Stasis, ${d.other} from others`+
+      `<br>${per.toFixed(2)} a set over ${d.sets} sets alive<br>median ${d.median??'\u2014'}s after the cast &middot; ${d.late} after 10s`;
+    if(d.pre){const r=mk(s,'rect',{x:L,y:yy,width:Math.max(1,x(d.pre)-L),height:15,fill:'var(--s2)',rx:2});hook(r,tipTxt);}
+    if(d.other){const r=mk(s,'rect',{x:x(d.pre)+(d.pre?1:0),y:yy,width:Math.max(1,x(d.tot)-x(d.pre)-(d.pre?1:0)),height:15,fill:'var(--s4)',rx:2});hook(r,tipTxt);}
+    txt(s,L-10,yy+12,d.player+(d.role!=='dps'?` (${d.role[0].toUpperCase()})`:''),{anchor:'end',fill:'var(--ink)',size:12});
+    txt(s,x(d.tot)+8,yy+12,`${d.tot} \u00b7 ${per.toFixed(1)} a set \u00b7 ${d.median??'\u2014'}s`,{size:11});});
+  /* timing histogram, each kind of set as a share of its own soaks */
+  const c=document.getElementById('c-soak-time'),H2=240,L2=48,R2=12,T2=12,B2=30,N=17;
+  const bins=k=>{const b=new Array(N).fill(0);K.times[k].forEach(v=>{b[Math.min(N-1,Math.floor(v))]++;});const n=K.times[k].length||1;return b.map(v=>v/n);};
+  const pre=bins('pre'), oth=bins('other');
+  const max2=Math.max(...pre,...oth)*1.1, y=v=>T2+(1-v/max2)*(H2-T2-B2), cw=(W-L2-R2)/N, bw=(cw-6)/2;
+  mk(c,'rect',{x:L2+14.2*cw,y:T2,width:0.9*cw,height:H2-T2-B2,fill:'var(--crit)',opacity:.25});
+  for(let v=0;v<=max2;v+=.05){mk(c,'line',{x1:L2,x2:W-R2,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});txt(c,L2-8,y(v)+4,Math.round(v*100)+'%',{anchor:'end'});}
+  for(let i=0;i<N;i++){
+    [[pre,'var(--s2)','set before Stasis'],[oth,'var(--s4)','other sets']].forEach(([arr,col,lab],k)=>{
+      const v=arr[i]; if(!v) return;
+      const r=mk(c,'rect',{x:L2+i*cw+3+k*bw,y:y(v),width:bw,height:y(0)-y(v),fill:col,rx:1});
+      hook(r,`<b>${i}\u2013${i+1}s after the cast</b><br>${lab}: ${(v*100).toFixed(1)}% of its soaks`);});
+    txt(c,L2+i*cw+cw/2,H2-12,i+'s',{anchor:'middle',size:10});}
+  const tb=document.querySelector('#t-soak tbody');
+  p.forEach(d=>{const tr=document.createElement('tr');const per=d.sets?d.tot/d.sets:0;
+    tr.innerHTML=`<td>${d.player}${d.role!=='dps'?` <span class="chip">${d.role}</span>`:''}</td><td>${d.team==='float'?'switch':d.team}</td><td>${d.tot}</td><td>${d.pre}</td><td>${d.other}</td><td>${d.sets}</td>
+      <td>${per.toFixed(2)}</td><td>${d.median??'\u2014'}s</td><td class="${d.late>=10?'neg':''}">${d.late}</td>`;
+    tb.appendChild(tr);});
+})();
+
+
+/* marks from the other boss */
+(function(){
+  const X=J('wrong');
+  const s=document.getElementById('c-wrong'),W=900,L=150,R=230,T=8;
+  const p=X.players.map(d=>({...d,tot:d.walk+d.extended+d.fresh})).sort((a,b)=>b.extra-a.extra);
+  const rh=24,H=T+p.length*rh+20; s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const max=Math.max(1,...p.map(d=>d.tot)), x=v=>L+v/max*(W-L-R);
+  const lab=t=>t==='float'?'no team':'team '+t;
+  p.forEach((d,i)=>{const yy=T+i*rh; let at=0;
+    const pct=d.mark?100*d.extra/d.mark:0;
+    const tipTxt=`<b>${d.player}</b> &middot; ${d.spec} ${d.class} &middot; ${lab(d.team)}<br>${d.tot} stacks from the other boss over ${d.phases} phases`+
+      `<br>${d.walk} on the walk-out &middot; ${d.extended} extending &middot; ${d.fresh} fresh<br>${fmtM(d.extra)} extra, ${pct.toFixed(1)}% of their mark damage`;
+    [[d.walk,'var(--s4)'],[d.extended,'var(--s2)'],[d.fresh,'var(--crit)']].forEach(([v,col])=>{
+      if(!v) return; const r=mk(s,'rect',{x:x(at)+(at?1:0),y:yy,width:Math.max(1,x(at+v)-x(at)-(at?1:0)),height:15,fill:col,rx:2});hook(r,tipTxt);at+=v;});
+    txt(s,L-10,yy+12,d.player+(d.role!=='dps'?` (${d.role[0].toUpperCase()})`:''),{anchor:'end',fill:'var(--ink)',size:12});
+    txt(s,x(at)+8,yy+12,`${d.tot} stacks \u00b7 ${fmtM(d.extra)} extra \u00b7 ${pct.toFixed(1)}%`,{size:11,fill:pct>=10?'var(--crit)':'var(--muted)'});});
+  const tb=document.querySelector('#t-wrong tbody');
+  p.forEach(d=>{const tr=document.createElement('tr');const pct=d.mark?100*d.extra/d.mark:0;
+    tr.innerHTML=`<td>${d.player}${d.role!=='dps'?` <span class="chip">${d.role}</span>`:''}</td><td>${d.team==='float'?'\u2014':d.team}</td><td>${d.tot}</td><td>${d.walk}</td><td>${d.extended}</td><td>${d.fresh}</td><td>${d.phases}</td>
+      <td>${fmtM(d.extra)}</td><td class="${pct>=10?'neg':''}">${pct.toFixed(1)}%</td><td>${(d.per_min/1e6).toFixed(2)}M</td>`;
+    tb.appendChild(tr);});
+})();
+
+/* damage taken with a time window */
+(function(){
+  const X=JSON.parse(document.getElementById('dtps').textContent);
+  const NAMES=X.players, ROLE={tank:'T',healer:'H',dps:'D'};
+  const meta={}; D.players.forEach(p=>meta[p.player]=p);
+  const sel=document.getElementById('dt-pull');
+  const pulls=Object.keys(X.pulls).map(Number).sort((a,b)=>a-b);
+  pulls.forEach(p=>{const o=document.createElement('option');o.value=p;
+    o.textContent=`Pull ${p}, ${X.pulls[p].dur}s, ${X.pulls[p].boss_pct.toFixed(1)}% left`;
+    sel.appendChild(o);});
+  let pull={{deep_pull}}, from=0, to=X.maxdur;
+  sel.value=pull;
+  const fromEl=document.getElementById('dt-from'), toEl=document.getElementById('dt-to');
+  fromEl.max=X.maxdur-5; toEl.max=X.maxdur; toEl.value=X.maxdur;
+  sel.addEventListener('change',()=>{pull=Number(sel.value);render();});
+  fromEl.addEventListener('input',()=>{from=Math.min(+fromEl.value,+toEl.value-5);fromEl.value=from;render();});
+  toEl.addEventListener('input',()=>{to=Math.max(+toEl.value,+fromEl.value+5);toEl.value=to;render();});
+  document.getElementById('dt-reset').addEventListener('click',()=>{
+    from=0;to=X.maxdur;fromEl.value=0;toEl.value=X.maxdur;render();});
+
+  const s=document.getElementById('c-dtps');
+  const W=900,H=300,L=62,R=16,T=16,B=36;
+  const fmtK=v=>v>=1000?(v/1000).toFixed(1)+'M':Math.round(v)+'k';
+
+  function render(){
+    const P=X.pulls[pull], dur=P.dur, raid=P.raid;
+    while(s.firstChild)s.removeChild(s.firstChild);
+    const K=3;  /* half-width of the smoothing window */
+    const sm=raid.map((_,i)=>{let a=0,n=0;
+      for(let j=Math.max(0,i-K);j<=Math.min(raid.length-1,i+K);j++){a+=raid[j];n++;}
+      return a/n;});
+    const max=Math.max(1,...sm);
+    const x=t=>L+t/X.maxdur*(W-L-R), y=v=>T+(1-v/max)*(H-T-B);
+    const mag=Math.pow(10,Math.floor(Math.log10(max))), step=mag*(max/mag>5?2:max/mag>2?1:.5);
+    for(let v=0;v<=max*1.001;v+=step){
+      mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+      txt(s,L-8,y(v)+4,fmtK(v),{anchor:'end'});}
+    /* the stretch after this pull ended, so short pulls read as short */
+    if(dur<X.maxdur){
+      mk(s,'rect',{x:x(dur),y:T,width:x(X.maxdur)-x(dur),height:H-T-B,fill:'var(--surface-2)',opacity:.6});
+      txt(s,x(dur)+6,T+12,`pull ended at ${dur}s`,{size:10});}
+    /* drawn on a 7s centred average - the raw second is still in the tooltip */
+    const area=(a,b,fill,op)=>{
+      const pts=[`${x(a)},${y(0)}`];
+      for(let t=a;t<=Math.min(b,dur-1);t++) pts.push(`${x(t)},${y(sm[t]||0)}`);
+      pts.push(`${x(Math.min(b,dur-1))},${y(0)}`);
+      mk(s,'polygon',{points:pts.join(' '),fill,opacity:op});};
+    /* each Stasis shaded, so the intermissions read against the damage */
+    (P.stasis||[]).forEach(([a,b])=>mk(s,'rect',{x:x(a),y:T,width:Math.max(1,x(Math.min(b,dur))-x(a)),height:H-T-B,
+      fill:'var(--inter)',opacity:.22}));
+    area(0,dur-1,'var(--muted)',.28);
+    area(from,Math.min(to,dur-1),'var(--s1)',.85);
+    for(let t=0;t<=X.maxdur;t+=60) txt(s,x(t),H-B+18,t+'s',{anchor:'middle',size:10});
+    mk(s,'line',{x1:L,x2:W-R,y1:y(0),y2:y(0),stroke:'var(--rule)','stroke-width':1});
+    [from,to].forEach(t=>mk(s,'line',{x1:x(t),x2:x(t),y1:T,y2:H-B,stroke:'var(--ink)','stroke-width':1.5}));
+    const hit=mk(s,'rect',{x:L,y:T,width:W-L-R,height:H-T-B,fill:'transparent'});
+    hit.style.cursor='crosshair';
+    hit.addEventListener('pointermove',e=>{
+      const r=s.getBoundingClientRect(), sx=(e.clientX-r.left)/r.width*W;
+      const t=Math.max(0,Math.min(X.maxdur,Math.round((sx-L)/(W-L-R)*X.maxdur)));
+      tip.innerHTML=t>=dur?`<b>${t}s</b><br>pull was already over`
+        :`<b>${t}s</b><br>${fmtK(raid[t]||0)} taken this second${t>=from&&t<=to?'':'<br><span style="opacity:.6">outside the window</span>'}`;
+      tip.style.opacity=1;
+      const tw=tip.offsetWidth,th=tip.offsetHeight;
+      tip.style.left=Math.min(e.clientX+14,innerWidth-tw-8)+'px';
+      tip.style.top=Math.max(8,e.clientY-th-12)+'px';});
+    hit.addEventListener('pointerleave',()=>tip.style.opacity=0);
+
+    /* per-player totals for the window */
+    const b0=Math.floor(from/X.bucket), b1=Math.min(P.taken[0].length-1,Math.ceil(to/X.bucket)-1);
+    const rows=NAMES.map((n,i)=>{
+      let tk=0,ab=0,rd=0;
+      for(let b=b0;b<=b1;b++){tk+=P.taken[i][b];ab+=P.absorb[i][b];rd+=P.reduced[i][b];}
+      const inc=tk+ab+rd;   /* what the hit was worth before anything touched it */
+      return {n,tk,ab,rd,inc,red:inc?100*rd/inc:null,abs:inc?100*ab/inc:null,
+              maj:0,min:0,ext:0,hs:0,pot:0,death:0,spells:[]};});
+    P.ev.forEach(([i,sec,k,name])=>{
+      if(sec<from||sec>to) return;
+      const r=rows[i];
+      if(k==='maj'){r.maj++;r.spells.push(name);}
+      else if(k==='min')r.min++; else if(k==='ext'){r.ext++;r.spells.push(name);}
+      else if(k==='hs')r.hs++; else if(k==='pot')r.pot++; else if(k==='death')r.death++;});
+    const sum=k=>rows.reduce((a,r)=>a+r[k],0);
+    const tk=sum('tk'), inc=sum('inc');
+    document.getElementById('dt-tiles').innerHTML=[
+      [fmtK(tk).replace('M','<small>M</small>').replace('k','<small>k</small>'),'damage taken in window'],
+      [(inc?Math.round(100*sum('rd')/inc):0)+'<small>%</small>','reduced: armour, versatility, cooldowns'],
+      [(inc?Math.round(100*sum('ab')/inc):0)+'<small>%</small>','absorbed by shields'],
+      [sum('maj'),'major cooldowns'],[sum('min'),'minor / rotational'],[sum('ext'),'externals'],
+      [sum('hs')+'<small> / </small>'+sum('pot'),'stones / potions'],[sum('death'),'deaths']]
+      .map(([n,l])=>`<div class="tile"><span class="n">${n}</span><span class="lab">${l}</span></div>`).join('');
+    document.getElementById('dt-range').textContent=`${from}s \u2013 ${Math.min(to,dur)}s (${Math.min(to,dur)-from}s)`;
+    document.getElementById('dt-cap').textContent=
+      `Pull ${pull}: ${dur} seconds, ${P.kill?'the kill':'wiped at '+P.boss_pct.toFixed(2)+'%'}. `+
+      (to>dur?`The window runs past the end of this pull; only its ${Math.max(0,Math.min(to,dur)-from)} live seconds count.`:'');
+    const tb=document.querySelector('#t-dtps tbody'); tb.innerHTML='';
+    /* fixed order - dps then healers, alphabetical - so a row never moves when the window does */
+    const ORD={dps:0,healer:1,tank:2};
+    rows.slice().sort((a,b)=>{
+      const ra=ORD[(meta[a.n]||{}).role]??0, rb=ORD[(meta[b.n]||{}).role]??0;
+      return ra-rb || a.n.localeCompare(b.n);}).forEach(r=>{
+      const m=meta[r.n]||{}; const tr=document.createElement('tr');
+      const spells=[...new Set(r.spells)].join(', ');
+      tr.innerHTML=`<td>${r.n} <span class="role">${ROLE[m.role]||'D'}</span>
+          <span style="color:var(--muted)">${m.spec||''}</span></td>
+        <td>${fmtK(r.tk)}</td>
+        <td title="${fmtK(r.inc)} incoming before mitigation">${r.red==null?'\u2014':Math.round(r.red)+'%'}</td>
+        <td>${r.abs==null?'\u2014':Math.round(r.abs)+'%'}</td>
+        <td title="${spells}">${r.maj}</td><td>${r.min}</td><td>${r.ext}</td>
+        <td>${r.hs}</td><td>${r.pot}</td>
+        <td class="${r.death?'neg':''}">${r.death||''}</td>`;
+      tb.appendChild(tr);});
+  }
+  render();
+})();
+
+/* mitigation */
+(function(){
+  const M=JSON.parse(document.getElementById('mit').textContent);
+  const P=M.players;
+  document.getElementById('tiles-mit').innerHTML=[
+    ['{{n_spans}}','heavy spans'],['{{heavy_dmg_pct}}<small>%</small>','of damage taken, in {{heavy_time_pct}}% of the time'],
+    ['{{majors_total}}','major cooldowns pressed'],['{{majors_heavy}}','of them inside a heavy span'],
+    ['{{majors_per_span}}','majors per heavy span, raid-wide'],['{{hp_avg}}<small>%</small>','average health when a stone or potion goes down']]
+    .map(([n,l])=>`<div class="tile"><span class="n">${n}</span><span class="lab">${l}</span></div>`).join('');
+
+  /* coverage */
+  (function(){
+    const s=document.getElementById('c-cover'),W=900,L=150,R=190,T=8;
+    const p=[...P].sort((a,b)=>b.coverage-a.coverage), rh=24, H=T+p.length*rh+18;
+    s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    const max=Math.max(...p.map(d=>d.coverage)), x=v=>L+v/max*(W-L-R);
+    [0,10,20,30].filter(v=>v<=max).forEach(v=>{
+      mk(s,'line',{x1:x(v),x2:x(v),y1:T,y2:H-16,stroke:'var(--grid)','stroke-width':1});
+      txt(s,x(v),H-4,v+'%',{anchor:'middle'});});
+    p.forEach((d,i)=>{
+      const yy=T+i*rh, w=Math.max(2,x(d.coverage)-L);
+      const r=mk(s,'rect',{x:L,y:yy,width:w,height:15,fill:'var(--s1)',rx:3});
+      hook(r,`<b>${d.player}</b> &middot; ${d.spec} ${d.class}<br>${d.coverage}% of heavy spans covered<br>${d.maj_heavy} majors in heavy spans of ${d.maj} all night<br>${d.minor} minor / rotational, ${d.ext} externals given<br>top: ${d.top_spells.map(t=>t[0]+' \u00d7'+t[1]).join(', ')||'none'}`);
+      txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
+      const chip=d.role==='tank'?' tank':d.role==='healer'?' healer':'';
+      txt(s,L+w+8,yy+12,`${d.coverage}% \u00b7 ${d.maj_heavy}/${d.maj} majors${chip}`,{size:11});});
+  })();
+
+  /* consumables */
+  (function(){
+    const s=document.getElementById('c-consum'),W=900,L=150,R=200,T=8;
+    const p=[...P].sort((a,b)=>b.consum-a.consum), rh=24, H=T+p.length*rh+18;
+    s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    const max=Math.max(...p.map(d=>d.consum)), x=v=>L+v/max*(W-L-R-70);
+    [0,10,20,30,40].filter(v=>v<=max).forEach(v=>{
+      mk(s,'line',{x1:x(v),x2:x(v),y1:T,y2:H-16,stroke:'var(--grid)','stroke-width':1});
+      txt(s,x(v),H-4,v,{anchor:'middle'});});
+    const hpX=W-150;
+    mk(s,'line',{x1:hpX,x2:hpX,y1:T,y2:H-16,stroke:'var(--rule)','stroke-width':1});
+    txt(s,hpX,H-4,'0%',{anchor:'middle'});txt(s,hpX+110,H-4,'100% hp',{anchor:'middle'});
+    p.forEach((d,i)=>{
+      const yy=T+i*rh, w1=d.hs?Math.max(2,x(d.hs)-L):0, w2=d.pot?Math.max(2,x(d.consum)-x(d.hs)):0;
+      if(d.hs){const r=mk(s,'rect',{x:L,y:yy,width:w1,height:15,fill:'var(--s1)',rx:3});
+        hook(r,`<b>${d.player}</b><br>${d.hs} healthstones`);}
+      if(d.pot){const r=mk(s,'rect',{x:L+w1+2,y:yy,width:Math.max(2,w2-2),height:15,fill:'var(--s2)',rx:3});
+        hook(r,`<b>${d.player}</b><br>${d.pot} health potions`);}
+      txt(s,L-10,yy+12,d.player,{anchor:'end',fill:'var(--ink)',size:12});
+      if(d.consum) txt(s,L+w1+w2+8,yy+12,`${d.hs}+${d.pot}`,{size:11});
+      else txt(s,L+8,yy+12,'never used one',{size:11,fill:'var(--crit)'});
+      if(d.hp_at_use!=null){
+        const cx=hpX+d.hp_at_use/100*110;
+        const c=mk(s,'circle',{cx,cy:yy+7.5,r:4,fill:d.hp_at_use<25?'var(--crit)':'var(--muted)',
+          stroke:'var(--surface)','stroke-width':2});
+        hook(c,`<b>${d.player}</b><br>average ${d.hp_at_use}% health when pressing a stone or potion`);
+        txt(s,cx+9,yy+12,d.hp_at_use+'%',{size:10.5});}});
+    txt(s,L,H-4,'uses',{size:10});
+  })();
+
+  const tb=document.querySelector('#t-mit tbody');
+  [...P].sort((a,b)=>b.coverage-a.coverage).forEach(d=>{
+    const tr=document.createElement('tr');
+    /* the class carries the spec column's information in the name's colour */
+    tr.innerHTML=`<td><span style="color:var(--cls-${d.class})" title="${d.spec} ${d.class}">${d.player}</span>${d.role!=='dps'?` <span class="chip">${d.role}</span>`:''}</td>
+      <td>${d.maj}</td><td>${d.maj_heavy}</td><td>${d.coverage}%</td><td>${d.minor}</td><td>${d.ext}</td>
+      <td${d.hs?'':' class="neg"'}>${d.hs}</td><td>${d.pot}</td>
+      <td${d.hp_at_use<25?' class="neg"':''}>${d.hp_at_use!=null?d.hp_at_use+'%':'\u2014'}</td>
+      <td title="${d.spirit?`went down ${d.spirit}\u00d7 into Spirit of Redemption across the night`:''}">${d.early_deaths}${d.early_spirit?` <span style="color:var(--muted)">(${d.early_spirit} sp)</span>`:''}</td><td>${d.early_no_def}</td>`;
+    tb.appendChild(tr);});
+})();
+</script>
