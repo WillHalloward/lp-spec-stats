@@ -161,7 +161,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 .hatch-key{background:repeating-linear-gradient(45deg,var(--inter) 0 3px,transparent 3px 6px)!important}
 .tbl-note{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
 td.l,th.l{text-align:left}
-#bal-ctl{flex-wrap:wrap;width:auto;max-width:100%}
+#bal-ctl,#dt-view{flex-wrap:wrap;width:auto;max-width:100%}
 #tiles,#dt-tiles{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 </style>
 <div class="wrap">
@@ -399,9 +399,11 @@ td.l,th.l{text-align:left}
 
 <section>
   <div class="head"><h2>Damage taken, second by second</h2>
-  <p>Incoming damage on the raid across a pull, tanks excluded, since their intake is the job and would bury everyone else. The axis is fixed at {{maxdur}} seconds, the longest attempt, so every pull reads against the same clock, with each Stasis shaded. Drag the handles to a stretch of the fight and everything below recalculates for it: damage taken, how much was mitigated, and every cooldown, stone and potion spent inside it.</p></div>
+  <p>Incoming damage on the raid across a pull, tanks excluded, since their intake is the job and would bury everyone else. The axis is fixed at {{maxdur}} seconds, the longest attempt, so every pull reads against the same clock, with each Stasis shaded. Drag the handles to a stretch of the fight and everything below recalculates for it: damage taken, how much was mitigated, and every cooldown, stone and potion spent inside it.</p>
+  <p>The two sides take damage differently: Breath&#39;s side runs over droplets, kills the slime and dodges Living Venom; Blood&#39;s side shares Unstable Miasma, dispels Blighted Blood and steps around its pools. The view switch splits the damage by the boss each player stood beside, from the marks, phase by phase. Teams change bosses after every intermission, so a side is a place, not a group of people. Intermissions belong to neither side. The ticks along the top are Breath&#39;s droplet casts and each Unstable Miasma going off, so a spike can be matched to its mechanic. In a side view the table counts each player only for the seconds they stood on that side.</p></div>
   <div class="controls">
     <label class="ctl"><span class="lab">Pull</span><select id="dt-pull"></select></label>
+    <div class="ctl"><span class="lab">View</span><div class="seg-ctl" id="dt-view"></div></div>
     <div class="ctl grow"><span class="lab">Window <em id="dt-range"></em>
       <button type="button" class="linkish" id="dt-reset">whole pull</button></span>
       <div class="sliders">
@@ -410,6 +412,7 @@ td.l,th.l{text-align:left}
       </div></div>
   </div>
   <figure>
+    <div class="legend" id="dt-legend"></div>
     <svg id="c-dtps" viewBox="0 0 900 300" role="img" aria-label="Raid damage taken per second across the pull"></svg>
     <figcaption id="dt-cap"></figcaption>
   </figure>
@@ -1098,7 +1101,12 @@ const M=J('mech'), DE=J('deaths');
   pulls.forEach(p=>{const o=document.createElement('option');o.value=p;
     o.textContent=`Pull ${p}, ${X.pulls[p].dur}s, ${X.pulls[p].boss_pct.toFixed(1)}% left`;
     sel.appendChild(o);});
-  let pull={{deep_pull}}, from=0, to=X.maxdur;
+  let pull={{deep_pull}}, from=0, to=X.maxdur, view='raid';
+  const VIEWS=[['raid','whole raid'],['both','side by side'],['breath','Breath side'],['blood','Blood side']];
+  const viewBox=document.getElementById('dt-view');
+  VIEWS.forEach(([v,l])=>{const b=document.createElement('button');b.type='button';b.className='seg';b.textContent=l;b.dataset.v=v;
+    b.addEventListener('click',()=>{view=v;render();});viewBox.appendChild(b);});
+  const SC={breath:'var(--breath)',blood:'var(--blood)'}, SIDE={breath:'B',blood:'R'};
   sel.value=pull;
   const fromEl=document.getElementById('dt-from'), toEl=document.getElementById('dt-to');
   fromEl.max=X.maxdur-5; toEl.max=X.maxdur; toEl.value=X.maxdur;
@@ -1113,13 +1121,16 @@ const M=J('mech'), DE=J('deaths');
   const fmtK=v=>v>=1000?(v/1000).toFixed(1)+'M':Math.round(v)+'k';
 
   function render(){
+    [...viewBox.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===view));
     const P=X.pulls[pull], dur=P.dur, raid=P.raid;
     while(s.firstChild)s.removeChild(s.firstChild);
     const K=3;  /* half-width of the smoothing window */
-    const sm=raid.map((_,i)=>{let a=0,n=0;
-      for(let j=Math.max(0,i-K);j<=Math.min(raid.length-1,i+K);j++){a+=raid[j];n++;}
+    const smooth=arr=>arr.map((_,i)=>{let a=0,n=0;
+      for(let j=Math.max(0,i-K);j<=Math.min(arr.length-1,i+K);j++){a+=arr[j];n++;}
       return a/n;});
-    const max=Math.max(1,...sm);
+    const series=view==='raid'?[['raid',raid]]:view==='both'?[['breath',P.raid_breath],['blood',P.raid_blood]]:[[view,P['raid_'+view]]];
+    const sms=series.map(([k,arr])=>[k,smooth(arr)]);
+    const max=Math.max(1,...sms.flatMap(([,a])=>a));
     const x=t=>L+t/X.maxdur*(W-L-R), y=v=>T+(1-v/max)*(H-T-B);
     const mag=Math.pow(10,Math.floor(Math.log10(max))), step=mag*(max/mag>5?2:max/mag>2?1:.5);
     for(let v=0;v<=max*1.001;v+=step){
@@ -1129,27 +1140,51 @@ const M=J('mech'), DE=J('deaths');
     if(dur<X.maxdur){
       mk(s,'rect',{x:x(dur),y:T,width:x(X.maxdur)-x(dur),height:H-T-B,fill:'var(--surface-2)',opacity:.6});
       txt(s,x(dur)+6,T+12,`pull ended at ${dur}s`,{size:10});}
+    /* each Stasis shaded, so the intermissions read against the damage */
+    (P.stasis||[]).forEach(([a,b])=>mk(s,'rect',{x:x(a),y:T,width:Math.max(1,x(Math.min(b,dur))-x(a)),height:H-T-B,
+      fill:'var(--inter)',opacity:.22}));
+    /* the selected window, shaded behind the curves */
+    mk(s,'rect',{x:x(from),y:T,width:Math.max(0,x(Math.min(to,dur))-x(from)),height:H-T-B,fill:'var(--s1)',opacity:view==='raid'?0:.08});
     /* drawn on a 7s centred average - the raw second is still in the tooltip */
-    const area=(a,b,fill,op)=>{
+    const area=(sm,a,b,fill,op)=>{
       const pts=[`${x(a)},${y(0)}`];
       for(let t=a;t<=Math.min(b,dur-1);t++) pts.push(`${x(t)},${y(sm[t]||0)}`);
       pts.push(`${x(Math.min(b,dur-1))},${y(0)}`);
       mk(s,'polygon',{points:pts.join(' '),fill,opacity:op});};
-    /* each Stasis shaded, so the intermissions read against the damage */
-    (P.stasis||[]).forEach(([a,b])=>mk(s,'rect',{x:x(a),y:T,width:Math.max(1,x(Math.min(b,dur))-x(a)),height:H-T-B,
-      fill:'var(--inter)',opacity:.22}));
-    area(0,dur-1,'var(--muted)',.28);
-    area(from,Math.min(to,dur-1),'var(--s1)',.85);
+    const line=(sm,col)=>{const pts=[];for(let t=0;t<dur;t++)pts.push(`${x(t).toFixed(1)},${y(sm[t]||0).toFixed(1)}`);
+      mk(s,'polyline',{points:pts.join(' '),fill:'none',stroke:col,'stroke-width':2,'stroke-linejoin':'round'});};
+    if(view==='raid'){
+      area(sms[0][1],0,dur-1,'var(--muted)',.28);
+      area(sms[0][1],from,Math.min(to,dur-1),'var(--s1)',.85);
+    }else{
+      sms.forEach(([k,sm])=>{area(sm,0,dur-1,SC[k],view==='both'?.14:.3);line(sm,SC[k]);});
+    }
+    /* what the spikes are: droplet casts on Breath's side, Miasma going off on Blood's */
+    const tick=(ts,col,row,lab)=>ts.filter(v=>v<dur).forEach(v=>{
+      const m=mk(s,'path',{d:`M${x(v)-4},${T+row*8} L${x(v)+4},${T+row*8} L${x(v)},${T+row*8+6} Z`,fill:col});
+      hook(m,`<b>${lab}</b> at ${v}s`);});
+    if(view!=='blood') tick(P.marks.drop,'var(--breath)',0,'Toxic Droplets cast');
+    if(view!=='breath') tick(P.marks.miasma,'var(--blood)',view==='both'?1:0,'Unstable Miasma goes off');
+    document.getElementById('dt-legend').innerHTML=(view==='raid'
+      ?'<span><i style="background:var(--s1)"></i>raid, non-tanks</span>'
+      :(view!=='blood'?'<span><i style="background:var(--breath)"></i>Breath side</span>':'')+(view!=='breath'?'<span><i style="background:var(--blood)"></i>Blood side</span>':''))
+      +(view!=='blood'?'<span><i style="background:var(--breath);clip-path:polygon(0 0,100% 0,50% 100%)"></i>droplet cast</span>':'')
+      +(view!=='breath'?'<span><i style="background:var(--blood);clip-path:polygon(0 0,100% 0,50% 100%)"></i>Miasma goes off</span>':'')
+      +'<span><i class="hatch-key" style="opacity:.6"></i>Stasis</span>';
     for(let t=0;t<=X.maxdur;t+=60) txt(s,x(t),H-B+18,t+'s',{anchor:'middle',size:10});
     mk(s,'line',{x1:L,x2:W-R,y1:y(0),y2:y(0),stroke:'var(--rule)','stroke-width':1});
     [from,to].forEach(t=>mk(s,'line',{x1:x(t),x2:x(t),y1:T,y2:H-B,stroke:'var(--ink)','stroke-width':1.5}));
-    const hit=mk(s,'rect',{x:L,y:T,width:W-L-R,height:H-T-B,fill:'transparent'});
+    const hit=mk(s,'rect',{x:L,y:T+16,width:W-L-R,height:H-T-B-16,fill:'transparent'});
     hit.style.cursor='crosshair';
     hit.addEventListener('pointermove',e=>{
       const r=s.getBoundingClientRect(), sx=(e.clientX-r.left)/r.width*W;
       const t=Math.max(0,Math.min(X.maxdur,Math.round((sx-L)/(W-L-R)*X.maxdur)));
+      const inStasis=(P.stasis||[]).some(([a,b])=>t>=a&&t<=b);
       tip.innerHTML=t>=dur?`<b>${t}s</b><br>pull was already over`
-        :`<b>${t}s</b><br>${fmtK(raid[t]||0)} taken this second${t>=from&&t<=to?'':'<br><span style="opacity:.6">outside the window</span>'}`;
+        :`<b>${t}s</b>${inStasis?' &middot; Stasis':''}<br>raid ${fmtK(raid[t]||0)} this second`+
+         `<br><span style="color:var(--breath)">\u25a0</span> Breath side ${fmtK(P.raid_breath[t]||0)}`+
+         `<br><span style="color:var(--blood)">\u25a0</span> Blood side ${fmtK(P.raid_blood[t]||0)}`+
+         (t>=from&&t<=to?'':'<br><span style="opacity:.6">outside the window</span>');
       tip.style.opacity=1;
       const tw=tip.offsetWidth,th=tip.offsetHeight;
       tip.style.left=Math.min(e.clientX+14,innerWidth-tw-8)+'px';
@@ -1158,14 +1193,17 @@ const M=J('mech'), DE=J('deaths');
 
     /* per-player totals for the window */
     const b0=Math.floor(from/X.bucket), b1=Math.min(P.taken[0].length-1,Math.ceil(to/X.bucket)-1);
+    /* in a side view a player counts only for the buckets they stood on that side */
+    const want=(view==='breath'||view==='blood')?SIDE[view]:null;
+    const on=(i,b)=>!want||(P.side[i]||'')[b]===want;
     const rows=NAMES.map((n,i)=>{
-      let tk=0,ab=0,rd=0;
-      for(let b=b0;b<=b1;b++){tk+=P.taken[i][b];ab+=P.absorb[i][b];rd+=P.reduced[i][b];}
+      let tk=0,ab=0,rd=0,secs=0;
+      for(let b=b0;b<=b1;b++){if(!on(i,b))continue;tk+=P.taken[i][b];ab+=P.absorb[i][b];rd+=P.reduced[i][b];secs+=X.bucket;}
       const inc=tk+ab+rd;   /* what the hit was worth before anything touched it */
-      return {n,tk,ab,rd,inc,red:inc?100*rd/inc:null,abs:inc?100*ab/inc:null,
+      return {n,i,secs,tk,ab,rd,inc,red:inc?100*rd/inc:null,abs:inc?100*ab/inc:null,
               maj:0,min:0,ext:0,hs:0,pot:0,death:0,spells:[]};});
     P.ev.forEach(([i,sec,k,name])=>{
-      if(sec<from||sec>to) return;
+      if(sec<from||sec>to||!on(i,Math.floor(sec/X.bucket))) return;
       const r=rows[i];
       if(k==='maj'){r.maj++;r.spells.push(name);}
       else if(k==='min')r.min++; else if(k==='ext'){r.ext++;r.spells.push(name);}
@@ -1180,13 +1218,16 @@ const M=J('mech'), DE=J('deaths');
       [sum('hs')+'<small> / </small>'+sum('pot'),'stones / potions'],[sum('death'),'deaths']]
       .map(([n,l])=>`<div class="tile"><span class="n">${n}</span><span class="lab">${l}</span></div>`).join('');
     document.getElementById('dt-range').textContent=`${from}s \u2013 ${Math.min(to,dur)}s (${Math.min(to,dur)-from}s)`;
+    const onSide=want?rows.filter(r=>r.secs>0).length:null;
     document.getElementById('dt-cap').textContent=
       `Pull ${pull}: ${dur} seconds, ${P.kill?'the kill':'wiped at '+P.boss_pct.toFixed(2)+'%'}. `+
+      (want?`${VIEWS.find(v=>v[0]===view)[1]}: ${onSide} non-tanks stood there at some point in the window; the table counts each of them only for those seconds. `:'')+
+      (view==='both'?'Each curve is the damage taken by whoever stood beside that boss at the time. ':'')+
       (to>dur?`The window runs past the end of this pull; only its ${Math.max(0,Math.min(to,dur)-from)} live seconds count.`:'');
     const tb=document.querySelector('#t-dtps tbody'); tb.innerHTML='';
     /* fixed order - dps then healers, alphabetical - so a row never moves when the window does */
     const ORD={dps:0,healer:1,tank:2};
-    rows.slice().sort((a,b)=>{
+    rows.filter(r=>!want||r.secs>0).sort((a,b)=>{
       const ra=ORD[(meta[a.n]||{}).role]??0, rb=ORD[(meta[b.n]||{}).role]??0;
       return ra-rb || a.n.localeCompare(b.n);}).forEach(r=>{
       const m=meta[r.n]||{}; const tr=document.createElement('tr');

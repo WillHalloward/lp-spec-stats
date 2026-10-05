@@ -1614,10 +1614,35 @@ class Analysis:
         idx = {p: i for i, p in enumerate(non_tanks)}
         maxdur = max(v["dur"] for v in heavy.values())
         pulls = {}
+        tm = self.teams()
+        drop_ids = self.ids_named(spells.DROPLETS)
         for fid in self.ids:
             dur = heavy[fid]["dur"]
             nb = (dur + DTPS_BUCKET - 1) // DTPS_BUCKET
             raid = [0.0] * dur
+            n = self.pull_no[fid]
+
+            def side_at(p, ts, n=n, fid=fid):
+                """The boss a player stood beside at this moment: their team's side
+                that phase, or their own marks when they had no team that pull.
+                None in an intermission, when everybody is in the middle."""
+                ph = self.phase_of(fid, ts)
+                if ph is None:
+                    return None
+                team = tm["pull_team"].get(n, {}).get(p)
+                if team:
+                    return tm["sides"].get(n, {}).get(ph, {}).get(team)
+                return tm["per_pull"].get(n, {}).get(p, {}).get(ph)
+
+            by_side = {"breath": [0.0] * dur, "blood": [0.0] * dur}
+            # each non-tank's side per bucket: B Breath, R Blood, . neither
+            side_str = []
+            for p in non_tanks:
+                chars = []
+                for b in range(nb):
+                    sd = side_at(p, self.fight[fid]["startTime"] + (b * DTPS_BUCKET + DTPS_BUCKET / 2) * 1000)
+                    chars.append({"breath": "B", "blood": "R"}.get(sd, "."))
+                side_str.append("".join(chars))
             taken = [[0.0] * nb for _ in non_tanks]
             absorb = [[0.0] * nb for _ in non_tanks]
             reduced = [[0.0] * nb for _ in non_tanks]
@@ -1629,6 +1654,9 @@ class Analysis:
                 if not (0 <= s < dur):
                     continue
                 raid[s] += e.get("amount", 0)
+                sd = side_at(p, e["timestamp"])
+                if sd:
+                    by_side[sd][s] += e.get("amount", 0)
                 i, b = idx[p], s // DTPS_BUCKET
                 taken[i][b] += e.get("amount", 0)
                 absorb[i][b] += e.get("absorbed") or 0
@@ -1658,6 +1686,20 @@ class Analysis:
                 "kill": self.fight[fid]["kill"],
                 "stasis": [[round(self.rel(fid, a)), round(self.rel(fid, b))] for a, b in self.stasis(fid)],
                 "raid": [round(v / 1000) for v in raid],
+                "raid_breath": [round(v / 1000) for v in by_side["breath"]],
+                "raid_blood": [round(v / 1000) for v in by_side["blood"]],
+                "side": side_str,
+                # what each side's spikes are: Breath's droplet sets, Blood's Miasma going off
+                "marks": {
+                    "drop": sorted(
+                        round(self.rel(fid, e["timestamp"]), 1)
+                        for e in self.enemy_casts(fid)
+                        if e.get("type") == "cast"
+                        and e.get("abilityGameID") in drop_ids
+                        and self.boss_of.get(e.get("sourceID"))
+                    ),
+                    "miasma": [m["t"] for m in self.memo("miasma", self.miasma) if m["pull"] == n],
+                },
                 "taken": [[round(v / 1000) for v in r] for r in taken],
                 "absorb": [[round(v / 1000) for v in r] for r in absorb],
                 "reduced": [[round(v / 1000) for v in r] for r in reduced],
