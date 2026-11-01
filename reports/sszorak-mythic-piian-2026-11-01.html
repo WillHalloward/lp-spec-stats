@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>Sszorak Mythic — Piian&#x27;s Mid-Pressure — what got better</title>
+<meta name="description" content="38 pulls at mythic Sszorak: what got better over the night — tornado hits, phase-one cyst pops, the intermission cysts, Crosswinds launches and the Serpent&#x27;s Fury clock — and what still ends pulls.">
+<meta name="theme-color" content="#e0a526">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Low Pressure">
+<meta property="og:title" content="Sszorak Mythic — Piian&#x27;s Mid-Pressure — what got better">
+<meta property="og:description" content="38 pulls at mythic Sszorak: what got better over the night — tornado hits, phase-one cyst pops, the intermission cysts, Crosswinds launches and the Serpent&#x27;s Fury clock — and what still ends pulls.">
+<meta property="og:url" content="https://low-pressure-stats.halloward.com/reports/sszorak-mythic-piian-2026-11-01">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Sszorak Mythic — Piian&#x27;s Mid-Pressure — what got better">
+<meta name="twitter:description" content="38 pulls at mythic Sszorak: what got better over the night — tornado hits, phase-one cyst pops, the intermission cysts, Crosswinds launches and the Serpent&#x27;s Fury clock — and what still ends pulls.">
+<link rel="canonical" href="https://low-pressure-stats.halloward.com/reports/sszorak-mythic-piian-2026-11-01">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root{
+  --ground:#eaeee6; --surface:#f7faf3; --surface-2:#eef2e8;
+  --ink:#131c17; --ink-2:#3c4c42; --muted:#63735f; --rule:#cdd6c6;
+  --accent:#5f7a0d;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --crit:#c93b3a;
+  --fatal:#4b0a17; --inter:#9aa595;
+  --cls-Warlock:#5d60c8; --cls-Druid:#b45900; --cls-Hunter:#5f8a24;
+  --grid:#d7dfd0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0e1411; --surface:#151d18; --surface-2:#1b241d;
+  --ink:#e9efe5; --ink-2:#c3cfbe; --muted:#93a397; --rule:#2b3830;
+  --accent:#a9c93c;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
+  --fatal:#ffc2cd; --inter:#4d5a50;
+  --cls-Warlock:#8788ee; --cls-Druid:#ff7c0a; --cls-Hunter:#aad372;
+  --grid:#26312a;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ground:#0e1411; --surface:#151d18; --surface-2:#1b241d;
+  --ink:#e9efe5; --ink-2:#c3cfbe; --muted:#93a397; --rule:#2b3830;
+  --accent:#a9c93c;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
+  --fatal:#ffc2cd; --inter:#4d5a50;
+  --cls-Warlock:#8788ee; --cls-Druid:#ff7c0a; --cls-Hunter:#aad372;
+  --grid:#26312a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:1060px;margin:0 auto;padding-inline:16px;padding-block:40px 72px;
+  display:flex;flex-direction:column;gap:44px}
+h1,h2,h3,.lab{font-family:"Barlow Condensed","Arial Narrow",sans-serif;margin:0}
+h1{font-size:clamp(38px,7vw,60px);font-weight:700;line-height:.98;letter-spacing:.01em;text-wrap:balance}
+h2{font-size:26px;font-weight:600;letter-spacing:.02em}
+h3{font-size:17px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.lab{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:600;color:var(--muted)}
+p{margin:0;max-width:66ch;color:var(--ink-2)}
+a{color:var(--accent)}
+header .rule{height:3px;background:var(--accent);width:74px;margin:14px 0 18px}
+header .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);margin-top:12px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.tile{background:var(--surface);padding:16px 16px 14px;display:flex;flex-direction:column;gap:4px}
+.tile .n{font-family:"IBM Plex Mono",monospace;font-size:27px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:14px;color:var(--muted);font-weight:400}
+.tile .lab{font-size:11px}
+section{display:flex;flex-direction:column;gap:14px}
+section > .head{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--rule);padding-top:14px}
+figure{margin:0;background:var(--surface);border:1px solid var(--rule);padding:16px 14px 10px}
+figcaption{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);padding-top:6px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2);padding-bottom:8px}
+.legend i{width:11px;height:11px;display:inline-block;margin-right:6px;vertical-align:-1px;border-radius:2px}
+.tblwrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.09em;font-size:12px;
+  text-align:right;color:var(--muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+td.l,th.l{text-align:left}
+.pos{color:var(--s3)} .neg{color:var(--crit)}
+.note{background:var(--surface-2);border-left:3px solid var(--accent);padding:14px 16px;font-size:14.5px;display:flex;flex-direction:column;gap:10px}
+.note p{max-width:78ch}
+.mech{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.mech div{background:var(--surface);padding:14px 16px;font-size:14.5px;color:var(--ink-2)}
+.mech b{font-family:"Barlow Condensed",sans-serif;font-size:16px;letter-spacing:.04em;color:var(--ink);display:block;margin-bottom:4px}
+.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--ink);color:var(--ground);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;line-height:1.45;padding:7px 9px;z-index:9;max-width:260px}
+.role{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;
+  border:1px solid currentColor;padding:0 3px;margin-right:5px;opacity:.75;vertical-align:1px}
+.muted{color:var(--muted)}
+footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>img{max-width:100%}[hidden]{display:none!important}</style>
+<style>
+/* Strip tying the report back to the site it is served from. */
+.report-nav{display:flex;gap:18px;align-items:center;justify-content:center;
+  background:#070912;color:#8b95ad;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;
+  padding:10px 16px;border-bottom:1px solid #1c2438}
+.report-nav a{color:#8b95ad;text-decoration:none}
+.report-nav a:hover{color:#e0a526}
+.report-nav span{color:#e0a526;letter-spacing:.12em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<nav class="report-nav">
+  <a href="/reports">&larr; Reports</a>
+  <span>Low Pressure</span>
+  <a href="https://www.warcraftlogs.com/reports/JzYT4kyLPfcRDXWA">Warcraft Logs</a>
+</nav>
+<div class="wrap">
+<header>
+  <div class="lab">Warcraft Logs JzYT4kyLPfcRDXWA &middot; Mythic</div>
+  <h1>Sszorak, 38 pulls,<br>and what got better.</h1>
+  <div class="rule"></div>
+  <p>Tornadoes, cysts, crosswinds and the Serpent&#39;s Fury clock, pull by pull. Piian's Mid-Pressure progression night, 1 November.</p>
+  <div class="meta">
+    <span>The Venomous Abyss &middot; Mythic</span><span>20 raiders</span>
+    <span>best: 8.67% on pull 16</span><span>100 minutes on the boss</span>
+    <span><a href="https://www.warcraftlogs.com/reports/JzYT4kyLPfcRDXWA">open the log</a></span>
+  </div>
+</header>
+
+<div class="tiles">
+  <div class="tile"><span class="lab">Best pull</span><span class="n">8.67<small>%</small></span><span class="muted">pull 16, 6:20, 3 intermissions</span></div>
+  <div class="tile"><span class="lab">Deaths a minute</span><span class="n">5.8<small> &rarr; </small>3.4</span><span class="muted">first third to last, before the wipe</span></div>
+  <div class="tile"><span class="lab">Tornado hits a Tempest</span><span class="n">9.2<small> &rarr; </small>6.7</span><span class="muted">first third to last</span></div>
+  <div class="tile"><span class="lab">Phase-one cyst pops</span><span class="n">7<small> &rarr; </small>1</span><span class="muted">first third to last</span></div>
+  <div class="tile"><span class="lab">Clean intermissions</span><span class="n">3/9<small> &rarr; </small>10/14</span><span class="muted">first third to last</span></div>
+  <div class="tile"><span class="lab">Fury enrages</span><span class="n">6</span><span class="muted">pulls ended by Unbound Ferocity</span></div>
+</div>
+
+<section>
+  <div class="head"><h2>The night in three parts</h2>
+  <p>The night split into thirds by pull number. Every count is taken from the part of each pull before it was over. A pull is over once fewer than 15 players are alive with no battle res ready, because Serpent&#39;s Fury cannot be popped with fewer, and the raid called it there. A pull is also over when the raid jumps off the platform to reset, or at Unbound Ferocity. Rates are per event (per Tempest, per Crosswinds set), so longer pulls in the later thirds do not inflate them.</p></div>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="l">Pulls</th><th>1&ndash;13</th><th>14&ndash;25</th><th>26&ndash;38</th></tr></thead>
+    <tbody>
+      <tr><td class="l">Median boss health left</td><td>70%</td><td>50%</td><td>52%</td></tr>
+      <tr><td class="l">Best pull</td><td>43.6%</td><td>8.7%</td><td>22.8%</td></tr>
+      <tr><td class="l">Median pull length</td><td>115s</td><td>172s</td><td>165s</td></tr>
+      <tr><td class="l">Pulls that cleared an intermission</td><td>6 of 13</td><td>10 of 12</td><td>11 of 13</td></tr>
+      <tr><td class="l">Deaths a minute, before the wipe</td><td>5.8</td><td>3.0</td><td>3.4</td></tr>
+      <tr><td class="l">Tornado hits per Tempest</td><td>9.2</td><td>5.7</td><td>6.7</td></tr>
+      <tr><td class="l">Tornado deaths</td><td>16</td><td>17</td><td>19</td></tr>
+      <tr><td class="l">Cysts popped by accident in phase one</td><td>7</td><td>1</td><td>1</td></tr>
+      <tr><td class="l">Deaths to those cysts</td><td>34</td><td>3</td><td>0</td></tr>
+      <tr><td class="l">Clean intermissions</td><td>3 of 9</td><td>8 of 12</td><td>10 of 14</td></tr>
+      <tr><td class="l">Intermission deaths</td><td>24</td><td>18</td><td>33</td></tr>
+      <tr><td class="l">Crosswinds launches a player could have solo-cancelled</td><td>23 in 23 sets</td><td>20 in 29 sets</td><td>16 in 32 sets</td></tr>
+      <tr><td class="l">Crosswinds deaths</td><td>11</td><td>6</td><td>6</td></tr>
+      <tr><td class="l">Fury pops with an alive dps or tank missing</td><td>8 of 25</td><td>15 of 32</td><td>12 of 32</td></tr>
+      <tr><td class="l">Virulence second-hand per pop</td><td>1.9</td><td>1.7</td><td>1.1</td></tr>
+      <tr><td class="l">Virulence deaths</td><td>18</td><td>18</td><td>11</td></tr>
+      <tr><td class="l">Mutilate deaths</td><td>13</td><td>11</td><td>32</td></tr>
+      <tr><td class="l">Pulls ended by the Fury enrage</td><td>1</td><td>3</td><td>2</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">
+    <p><b>What improved.</b> Phase-one cyst pops went from 7 to 1, and the deaths they caused from 34 to 0. Intermissions went from 3 clean out of 9 to 10 out of 14. Crosswinds launches a player could have cancelled alone went from 23 in 23 sets to 16 in 32, tornado hits per Tempest fell from 9.2 to 6.7, and deaths a minute fell from 5.8 to 3.4.</p>
+    <p><b>What did not.</b> The Serpent&#39;s Fury enrage ended 2 of the last 13 pulls, and Mutilate deaths rose to 32 in the last third (9 of them on pull 28 alone). Tornado deaths held level (16, 17, 19) even as hits per Tempest fell; the later pulls saw more Tempests.</p>
+  </div>
+</section>
+
+<section>
+  <div class="head"><h2>Pull by pull</h2>
+  <p>Boss health left at the end of each pull, coloured by what ended it. Most pulls ended when deaths took the raid under 15 alive with no battle res ready (32 pulls). Those are coloured by the mechanic behind most of the deaths in the twenty seconds that got it there. A Fury enrage only counts as the cause when the raid still had the numbers to pop. Across the night: intermission (winds and cysts) (7), mutilate (6), serpent's fury enrage (6) and tornadoes (6).</p></div>
+  <figure>
+    <div class="legend" id="lg-pulls"></div>
+    <svg id="c-pulls" viewBox="0 0 900 280" role="img" aria-label="Boss health left per pull"></svg>
+    <figcaption>Lower is further. The number above each bar is the pull length in seconds.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>How Mythic Sszorak runs</h2>
+  <p>Read off this log rather than a guide: every pull ran to the same clock. Each phase one has two Apex Predator combos, and each combo is followed by a Serpent&#39;s Fury pop, a Venomous Surge and a Crosswinds set. Dig In then opens a 25-second intermission, and the cycle repeats.</p></div>
+  <div class="mech">
+    <div><b>Apex Predator</b>Five tank casts in a random order: two Ravage, two Mutilate, one Tempest. Ravage is a frontal on the tank; anyone else in it takes the hit (10 times this night, killing 6). Mutilate is a frontal the raid splits into two soak groups.</div>
+    <div><b>Tempest</b>Tornadoes come out of the boss and roam the room for most of the next minute. 50% of the night&#39;s tornado hits came in the first ten seconds after the cast and 47% more than fifteen seconds after it, while the raid was busy with Surge and Crosswinds.</div>
+    <div><b>Serpent&#39;s Fury</b>One player is marked. Sszorak builds rage until fourteen more stand in the circle with them, 15 in all, a hard minimum; then he charges the mark (To the Slaughter) and everyone in it gets Virulence, which bursts in lines five seconds later. At 100 rage he gains Unbound Ferocity, and the pull is over.</div>
+    <div><b>Venomous Surge &amp; Viscous Cyst</b>Two players are marked for ten seconds and drop a cyst where they stand. Touching a cyst pops it: a big knockback and a damage-over-time on everyone near it. The cysts are for the intermission.</div>
+    <div><b>Raging Crosswinds</b>Eight players get an arrow and are launched along it about eight seconds later. Two players with opposite arrows who meet cancel each other. Every class except Paladins and Priests can also cancel their own launch with a movement ability.</div>
+    <div><b>Dig In</b>The intermission. Winds sweep the platform in three gusts; the raid pops a cyst before each one at about 3.5, 12.2 and 20.5 seconds in, so the knockback carries everyone into the wind instead of off the edge.</div>
+  </div>
+  <figure>
+    <div class="legend" id="lg-tl"></div>
+    <svg id="c-tl" viewBox="0 0 900 190" role="img" aria-label="Timeline of the best pull"></svg>
+    <figcaption>Pull 16, the night&#39;s best, cast by cast. Shaded bands are Dig In.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Tornadoes</h2>
+  <p>685 tornado hits across 98 Tempests, counting a tornado tagging the same player twice within a second as one hit. They killed 52, and they were the first death of a pull more often than anything else: tornadoes (13), virulence (6) and mutilate (6).</p>
+  <p>Per Tempest the raid took 9.2 hits in pulls 1&ndash;13, 5.7 in 14&ndash;25 and 6.7 in 26&ndash;38. Per Tempest the player was alive for, the non-tanks hit most often were Valanarr (0.65), Atheniás (0.50), Shazàm (0.49) and Шамшыммыч (0.49), against a median of 0.30. The tanks stand where the tornadoes come out of the boss: Laradendusk (0.90) and Vesemirr (0.36).</p></div>
+  <figure>
+    <svg id="c-tor" viewBox="0 0 900 220" role="img" aria-label="Tornado hits per Tempest per pull"></svg>
+    <figcaption>One dot per pull: tornado hits per Tempest cast. The horizontal lines are each third&#39;s average.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Cysts in phase one</h2>
+  <p>A cyst popped outside the intermission is an accident: everyone near it is knocked across the room, and at the edge that means off it. 9 went off that way, on pulls 2, 5, 8, 10, 12, 19 and 35, catching 18 players at the median. 7 of them went off within ten seconds of being dropped, which means they were dropped where the raid stood. They killed 37, by knocking people off the platform or by the damage they leave behind.</p>
+  <p>This is the clearest improvement of the night. After pull 25 only one more went off (pull 35), and it killed nobody.</p></div>
+  <figure>
+    <svg id="c-acc" viewBox="0 0 900 200" role="img" aria-label="Players hit by an accidental cyst pop per pull"></svg>
+    <figcaption>Players caught by a phase-one cyst pop, per pull. Two pops in one pull are stacked.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>The intermission</h2>
+  <p>35 intermissions were opened across the night and 21 went cleanly: three cysts, about eight and a half seconds apart, and at most one death. They cost 75 deaths in all (22% of every death before a wipe).</p>
+  <p>The failures come in two kinds. <b>Two cysts within two seconds</b>, which wastes one, so a later gust has nothing to ride: 5 times (pulls 4, 16 (intermission 3), 22, 26 and 34), 41 dead. <b>A pop missing or late</b>: 6 times (pulls 6, 8, 10, 15, 17 and 30), 53 dead. The last intermission to lose five or more players was on pull 34.</p>
+  <p>The Fury holder must not set off the pop while Dig In is being cast: on pull 6 it went off at 100.0s, as Dig In started, and Virulence killed 11 that pull.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s3)"></i>cyst pop</span><span><i style="background:var(--crit)"></i>second pop within 2s</span><span><i style="background:var(--muted)"></i>deaths in the intermission</span></div>
+    <svg id="c-inter" viewBox="0 0 900 400" role="img" aria-label="Cyst pops in each intermission"></svg>
+    <figcaption>One row per intermission, its 25 seconds left to right. The three ticks at the top are where the clean ones popped.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Raging Crosswinds</h2>
+  <p>661 knock-ups across 84 sets. 488 were cancelled by a partner, and 94 by the player&#39;s own movement within a second and a half of the launch: mostly Alfi (26), Huibalast (26), Abeei (19), Squashiclysm (6) and Duruwarr (5). 59 launches went off on a player who could have cancelled alone: 34 pressed movement too late, and 25 pressed none. 20 more were Paladins and Priests, who can only be caught by a partner: Ghani (6 of 30), Shazàm (6 of 43), Indris (4 of 41), Aelyssar (2 of 41), Aeonara (2 of 37) and Angryde (0 of 42).</p>
+  <p>Launches that could have been avoided alone: 23 in 23 sets in pulls 1&ndash;13, 20 in 29 in 14&ndash;25, 16 in 32 in 26&ndash;38. Most often launched with a cancel in their kit: Mattiseppo (14 of 41: 8 late, 6 with no movement), Alfi (7 of 42: 7 late, 0 with no movement), Atheniás (7 of 35: 6 late, 1 with no movement) and Duruwarr (6 of 37: 3 late, 3 with no movement). Crosswinds killed 23; 3 of them went off the edge, and the rest died to the launch damage.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--crit)"></i>could have solo-cancelled</span><span><i style="background:var(--s4)"></i>paladin or priest, no partner</span></div>
+    <svg id="c-xw" viewBox="0 0 900 200" role="img" aria-label="Crosswinds launches per pull"></svg>
+    <figcaption>Launches per pull. A launch is a Turbulent Gusts debuff that lasted longer than 1.5 seconds; a cancelled knock-up drops it within half a second.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>The Serpent&#39;s Fury clock</h2>
+  <p>The pop needs 15 bodies in the circle, the marked player included, so a raid with 14 alive and no battle res ready cannot pop at all. 11 pulls reached Unbound Ferocity. In 5 of them (9, 11, 21, 29 and 31) the raid was already under 15 when it came, so the deaths ended those pulls, not the clock. The other 6 (3, 18, 22, 24, 27 and 36) still had the numbers, and the pop came too late. Every pop that did go off had 15 in the circle: 16 players at the median by Virulence and never fewer than 14. On the two pops with only fourteen players, the marked player was Piiaan, whose Beast Mastery pet stands in but never gets the debuff.</p>
+  <p>The boss reaches 100 rage 57.7 seconds after a pop within a phase, and 82.3 seconds after the last pop before an intermission, because the rage keeps building through Dig In. The first pop after the intermission cannot go off until the post-intermission combo ends; when it worked it went off at 154.6 seconds at the median. So the second pop of the pull sets the deadline for the third. Pop two landed anywhere from 72.6 to 82.6 seconds this night, and every second earlier is a second less after the combo.</p>
+  <p>Of the timing failures, 4 pulls died at that first post-intermission pop (3, 18, 24 and 27). 1 died at the next one (22), and 1 after the second intermission (36): pull 16: pop four at 202.6s, so the boss would enrage at 284.9s, and the raid popped at 282.4s; pull 29: pop four at 202.3s, so the boss would enrage at 284.6s, and it did at 285.0s, but the raid had been under 15 alive since 220.1s; pull 36: pop four at 200.7s, so the boss would enrage at 283.0s, and it did at 282.9s.</p>
+  <p>Against the plan (every dps and both tanks in, healers only to cover a dead one), 54 of 89 pops had every alive dps and tank in the circle. Missing most often while alive: Atheniás (8), Abeei (7), Alfi (6), Huibalast (6) and Squashiclysm (4). Healers stood in when no dps or tank was dead on 36 pops: Shazàm (28 of 39), Valanarr (16 of 31), Ghani (5 of 12) and Aeonara (2 of 8). A healer who soaks takes a Virulence they did not need, which is one more set of lines in the raid. Second-hand Virulence, someone clipped by a line, fell from 1.9 per pop to 1.1; it killed 47 across the night.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s3)"></i>pop</span><span><i style="background:var(--s4)"></i>deadline the pop set</span><span><i style="background:var(--fatal)"></i>enrage</span><span><i class="hatch" style="background:var(--inter)"></i>Dig In</span></div>
+    <svg id="c-fury" viewBox="0 0 900 600" role="img" aria-label="Serpent's Fury pops and deadlines per pull"></svg>
+    <figcaption>One row per pull that lasted past two minutes. Each pop draws a tick at the moment the next one becomes an enrage.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Mutilate, Ravage and the floor</h2>
+  <p><b>Mutilate</b> killed 56, mostly through the Mutilated Gash bleed after an under-filled soak. Pull 28 was the worst at 9, with 10 of its soakers still carrying Gash from the soak before (14 such soaks across the whole night). Mutilate deaths rose from 13 in the first third to 32 in the last. <b>Ravage</b> hit someone other than a tank 10 times and killed 6. <b>Venomous Surge</b> killed 10, and the <b>caustic puddles</b> 15.</p></div>
+</section>
+
+<section>
+  <div class="head"><h2>Deaths</h2>
+  <p>346 deaths before a pull was over. Deaths after the raid fell under 15 alive with no battle res ready are not counted (three seconds of grace, so one blow killing several counts in full). Neither are deaths after a jump-off reset (1 pulls reset that way before going under) or after an enrage. That leaves out 315 and 87 more. The biggest killers were intermission (winds and cysts) (75), mutilate (56) and tornadoes (52).</p></div>
+  <figure>
+    <div class="legend" id="lg-deaths"></div>
+    <svg id="c-deaths" viewBox="0 0 900 260" role="img" aria-label="Deaths per pull by mechanic"></svg>
+    <figcaption>Deaths per pull, before the wipe, by the mechanic behind them. A fall off the platform is counted under whatever moved the player there.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-players">
+    <thead><tr><th class="l">Player</th><th>Tornado hits / Tempest</th><th>Crosswinds marked</th><th>Solo cancels</th><th>Launched (late / none / no partner)</th><th>Fury missed</th><th>Fury extra</th><th>Clipped</th><th>Ravage</th><th>Deaths</th><th class="l">Top cause</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p class="muted" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">Per player, before each pull was over. Fury missed: pops where they were alive, assigned (dps or tank) and not in the circle. Fury extra: healers standing in when no dps or tank was dead. Clipped: Virulence picked up from somebody else&#39;s lines.</p>
+</section>
+
+<section>
+  <div class="note">
+    <p><b>How this is read.</b> The platform&#39;s edge is about 60 yards from the middle. No player still alive fifteen seconds later was ever logged past 69. A death whose last eight seconds went past 65 yards, with no killing blow, is a fall. It is blamed on what moved the player there in the seven seconds before they left the platform: a Crosswinds launch, a cyst pop, the intermission&#39;s winds, or nothing. Nothing means they walked or jumped off. Three of those inside ten seconds is a called wipe. <b>Under the number</b> is fewer than 15 alive, counting a ready battle res as one more. Charges follow the raid rule: one at the pull and one every 4.5 minutes with twenty players, spent by Rebirth or Intercession; a shaman&#39;s Reincarnation is free. Every death more than three seconds after either point is left out. <b>A tornado hit</b> is a Tempest hit without the tick flag. <b>A cyst pop</b> is a burst of Viscous Cyst hits without the tick flag; pops during Dig In or in the ten seconds after it are planned, all others are accidents. <b>A Fury pop</b> is the mark dropping with Virulence going out to the soakers within 1.5 seconds; the rage windows are read off the enrages themselves. <b>A Crosswinds launch</b> is Turbulent Gusts lasting past 1.5 seconds. A solo cancel is the player&#39;s own movement ability (Alter Time, Blink, Burning Rush, Charge, Chi Torpedo, Demonic Circle: Teleport, Disengage, Fel Rush, Feral Lunge, Glide, Gust of Wind, Heroic Leap, Intervene, Roll, Shadowstep, Shield Charge, Shimmer, Vengeful Retreat, Wild Charge) cast from half a second before to 1.5 seconds after the launch. A launch with that movement pressed later counts as late.</p>
+  </div>
+</section>
+
+<footer>Built from the Warcraft Logs v2 API &middot; report JzYT4kyLPfcRDXWA &middot; 38 pulls, best 8.67%.</footer>
+</div>
+<div class="tip" id="tip"></div>
+<script id="data" type="application/json">{"pulls":[{"pull":1,"dur":74.0,"pct":76.5,"inters":0,"inters_done":0,"ended":"mutilate","called":55.1,"cut":55.1,"enrage":null,"enrage_forced":false,"under":55.1,"walked":false,"tempests":1,"tornado_hits":2,"tornado_rate":2.0,"xw_sets":1,"xw_flung":2,"xw_rate":2.0,"xw_own":2,"xw_partner":0,"xw_own_rate":2.0,"acc_pops":0,"acc_hit":0,"deaths_live":7,"dpm":7.63,"deaths":{"virulence":1,"crosswinds":2,"mutilate":4},"fury":{"pops":[33.3],"soakers":[19],"enrage":null,"enrage_after":null,"clipped":2,"missing":[0],"extra_healers":[3],"deadlines":[91.0]},"inter":[],"mut_double":0,"ravage_raid":0,"first":{"t":38.8,"player":"Duruwarr","group":"virulence"}},{"pull":2,"dur":71.7,"pct":77.68,"inters":0,"inters_done":0,"ended":"cyst_p1","called":59.0,"cut":59.0,"enrage":null,"enrage_forced":false,"under":59.0,"walked":false,"tempests":1,"tornado_hits":22,"tornado_rate":22.0,"xw_sets":1,"xw_flung":2,"xw_rate":2.0,"xw_own":2,"xw_partner":0,"xw_own_rate":2.0,"acc_pops":1,"acc_hit":19,"deaths_live":8,"dpm":8.13,"deaths":{"cyst_p1":4,"tornado":1,"mutilate":3},"fury":{"pops":[26.6],"soakers":[15],"enrage":null,"enrage_after":null,"clipped":0,"missing":[1],"extra_healers":[0],"deadlines":[84.3]},"inter":[],"mut_double":0,"ravage_raid":0,"first":{"t":51.0,"player":"Valanarr","group":"cyst_p1"}},{"pull":3,"dur":163.9,"pct":57.95,"inters":1,"inters_done":1,"ended":"enrage","called":156.1,"cut":156.1,"enrage":155.952,"enrage_forced":false,"under":156.1,"walked":false,"tempests":3,"tornado_hits":26,"tornado_rate":8.67,"xw_sets":2,"xw_flung":3,"xw_rate":1.5,"xw_own":1,"xw_partner":2,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":5,"dpm":1.92,"deaths":{"mutilate":1,"tornado":1,"crosswinds":3},"fury":{"pops":[26.7,73.6],"soakers":[16,17],"enrage":156.0,"enrage_after":82.3,"clipped":2,"missing":[1,0],"extra_healers":[1,1],"deadlines":[84.4,155.9]},"inter":[{"start":100.013,"pops":[3.2,12.2,20.3],"double":0,"died":1,"fell":0,"alive_in":16,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":43.5,"player":"Taranus","group":"mutilate"}},{"pull":4,"dur":127.1,"pct":66.01,"inters":1,"inters_done":1,"ended":"inter","called":115.7,"cut":115.7,"enrage":null,"enrage_forced":false,"under":115.7,"walked":false,"tempests":2,"tornado_hits":17,"tornado_rate":8.5,"xw_sets":2,"xw_flung":2,"xw_rate":1.0,"xw_own":1,"xw_partner":1,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":19,"dpm":9.86,"deaths":{"tornado":1,"inter":16,"floor":2},"fury":{"pops":[26.2,73.9],"soakers":[17,16],"enrage":null,"enrage_after":null,"clipped":1,"missing":[0,0],"extra_healers":[1,0],"deadlines":[83.9,156.2]},"inter":[{"start":99.98,"pops":[3.4,4.1,22.4],"double":1,"died":18,"fell":14,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":2,"first":{"t":48.3,"player":"Angryde","group":"tornado"}},{"pull":5,"dur":97.3,"pct":73.05,"inters":0,"inters_done":0,"ended":"cyst_p1","called":81.1,"cut":81.1,"enrage":null,"enrage_forced":false,"under":81.1,"walked":false,"tempests":2,"tornado_hits":18,"tornado_rate":9.0,"xw_sets":1,"xw_flung":2,"xw_rate":2.0,"xw_own":2,"xw_partner":0,"xw_own_rate":2.0,"acc_pops":1,"acc_hit":19,"deaths_live":11,"dpm":8.14,"deaths":{"surge":1,"cyst_p1":8,"virulence":1,"other":1},"fury":{"pops":[26.3,74.4],"soakers":[15,17],"enrage":null,"enrage_after":null,"clipped":3,"missing":[2,0],"extra_healers":[1,1],"deadlines":[84.0,132.1]},"inter":[],"mut_double":0,"ravage_raid":0,"first":{"t":42.0,"player":"Duruwarr","group":"surge"}},{"pull":6,"dur":114.3,"pct":69.94,"inters":1,"inters_done":0,"ended":"virulence","called":105.2,"cut":105.2,"enrage":null,"enrage_forced":false,"under":105.2,"walked":false,"tempests":2,"tornado_hits":24,"tornado_rate":12.0,"xw_sets":2,"xw_flung":1,"xw_rate":0.5,"xw_own":0,"xw_partner":1,"xw_own_rate":0.0,"acc_pops":0,"acc_hit":0,"deaths_live":16,"dpm":9.13,"deaths":{"tornado":3,"virulence":11,"inter":2},"fury":{"pops":[26.8,74.9,100.0],"soakers":[15,16,16],"enrage":null,"enrage_after":null,"clipped":15,"missing":[0,0,1],"extra_healers":[0,0,0],"deadlines":[84.5,157.2,182.3]},"inter":[{"start":100.032,"pops":[3.3],"double":0,"died":13,"fell":1,"alive_in":17,"survived":false}],"mut_double":0,"ravage_raid":0,"first":{"t":20.4,"player":"Huibalast","group":"tornado"}},{"pull":7,"dur":135.8,"pct":66.4,"inters":1,"inters_done":1,"ended":"tornado","called":104.4,"cut":104.4,"enrage":null,"enrage_forced":false,"under":104.4,"walked":false,"tempests":2,"tornado_hits":24,"tornado_rate":12.0,"xw_sets":2,"xw_flung":1,"xw_rate":0.5,"xw_own":1,"xw_partner":0,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":7,"dpm":4.02,"deaths":{"tornado":4,"other":1,"inter":2},"fury":{"pops":[26.4,73.5],"soakers":[16,16],"enrage":null,"enrage_after":null,"clipped":2,"missing":[0,0],"extra_healers":[0,0],"deadlines":[84.1,155.8]},"inter":[{"start":99.978,"pops":[3.4,10.5,16.3,19.8],"double":0,"died":3,"fell":0,"alive_in":16,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":16.6,"player":"Шамшыммыч","group":"tornado"}},{"pull":8,"dur":108.2,"pct":70.41,"inters":1,"inters_done":0,"ended":"cyst_p1","called":91.2,"cut":91.2,"enrage":null,"enrage_forced":false,"under":91.2,"walked":false,"tempests":2,"tornado_hits":15,"tornado_rate":7.5,"xw_sets":2,"xw_flung":3,"xw_rate":1.5,"xw_own":2,"xw_partner":1,"xw_own_rate":1.0,"acc_pops":1,"acc_hit":18,"deaths_live":12,"dpm":7.9,"deaths":{"floor":1,"tornado":2,"surge":1,"cyst_p1":4,"tank":1,"mutilate":2,"crosswinds":1},"fury":{"pops":[25.8,75.8],"soakers":[16,17],"enrage":null,"enrage_after":null,"clipped":1,"missing":[2,1],"extra_healers":[2,2],"deadlines":[83.5,158.1]},"inter":[{"start":99.96,"pops":[],"double":0,"died":0,"fell":0,"alive_in":6,"survived":false}],"mut_double":0,"ravage_raid":0,"first":{"t":81.1,"player":"Duruwarr","group":"floor"}},{"pull":9,"dur":215.2,"pct":43.59,"inters":1,"inters_done":1,"ended":"floor","called":208.0,"cut":208.0,"enrage":212.957,"enrage_forced":true,"under":208.0,"walked":false,"tempests":4,"tornado_hits":34,"tornado_rate":8.5,"xw_sets":3,"xw_flung":3,"xw_rate":1.0,"xw_own":3,"xw_partner":0,"xw_own_rate":1.0,"acc_pops":0,"acc_hit":0,"deaths_live":8,"dpm":2.31,"deaths":{"tornado":2,"mutilate":2,"tank":1,"floor":2,"other":1},"fury":{"pops":[26.6,74.9,155.5],"soakers":[17,16,15],"enrage":213.0,"enrage_after":57.4,"clipped":3,"missing":[0,1,0],"extra_healers":[1,0,0],"deadlines":[84.3,157.2,213.2]},"inter":[{"start":99.997,"pops":[3.4,12.1,20.0],"double":0,"died":0,"fell":0,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":38.5,"player":"Piiaan","group":"tornado"}},{"pull":10,"dur":115.1,"pct":70.91,"inters":1,"inters_done":0,"ended":"cyst_p1","called":93.9,"cut":93.9,"enrage":null,"enrage_forced":false,"under":93.9,"walked":false,"tempests":2,"tornado_hits":13,"tornado_rate":6.5,"xw_sets":2,"xw_flung":5,"xw_rate":2.5,"xw_own":3,"xw_partner":2,"xw_own_rate":1.5,"acc_pops":2,"acc_hit":37,"deaths_live":13,"dpm":8.31,"deaths":{"mutilate":1,"cyst_p1":8,"tornado":1,"crosswinds":2,"other":1},"fury":{"pops":[27.4,74.0],"soakers":[17,17],"enrage":null,"enrage_after":null,"clipped":3,"missing":[0,0],"extra_healers":[1,1],"deadlines":[85.1,156.3]},"inter":[{"start":100.01,"pops":[3.2],"double":0,"died":0,"fell":0,"alive_in":5,"survived":false}],"mut_double":0,"ravage_raid":0,"first":{"t":44.5,"player":"Squashiclysm","group":"mutilate"}},{"pull":11,"dur":161.6,"pct":58.34,"inters":1,"inters_done":1,"ended":"ravage","called":137.3,"cut":137.3,"enrage":158.967,"enrage_forced":true,"under":137.3,"walked":false,"tempests":2,"tornado_hits":20,"tornado_rate":10.0,"xw_sets":2,"xw_flung":2,"xw_rate":1.0,"xw_own":1,"xw_partner":1,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":7,"dpm":3.06,"deaths":{"virulence":2,"floor":1,"ravage":2,"cyst_p1":2},"fury":{"pops":[27.9,75.2],"soakers":[14,17],"enrage":159.0,"enrage_after":83.8,"clipped":7,"missing":[2,0],"extra_healers":[0,1],"deadlines":[85.6,157.5]},"inter":[{"start":99.965,"pops":[2.8,12.2,19.7],"double":0,"died":0,"fell":0,"alive_in":17,"survived":true}],"mut_double":0,"ravage_raid":2,"first":{"t":80.4,"player":"Duruwarr","group":"virulence"}},{"pull":12,"dur":68.1,"pct":80.65,"inters":0,"inters_done":0,"ended":"cyst_p1","called":49.2,"cut":49.2,"enrage":null,"enrage_forced":false,"under":49.2,"walked":false,"tempests":1,"tornado_hits":3,"tornado_rate":3.0,"xw_sets":1,"xw_flung":4,"xw_rate":4.0,"xw_own":4,"xw_partner":0,"xw_own_rate":4.0,"acc_pops":2,"acc_hit":39,"deaths_live":12,"dpm":14.64,"deaths":{"cyst_p1":8,"crosswinds":3,"other":1},"fury":{"pops":[27.5],"soakers":[17],"enrage":null,"enrage_after":null,"clipped":2,"missing":[0],"extra_healers":[1],"deadlines":[85.2]},"inter":[],"mut_double":0,"ravage_raid":0,"first":{"t":47.7,"player":"Shazàm","group":"cyst_p1"}},{"pull":13,"dur":143.2,"pct":58.13,"inters":1,"inters_done":1,"ended":"inter","called":128.0,"cut":128.0,"enrage":null,"enrage_forced":false,"under":128.0,"walked":false,"tempests":2,"tornado_hits":21,"tornado_rate":10.5,"xw_sets":2,"xw_flung":1,"xw_rate":0.5,"xw_own":1,"xw_partner":0,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":9,"dpm":4.22,"deaths":{"virulence":3,"tornado":1,"surge":1,"inter":4},"fury":{"pops":[27.4,73.8],"soakers":[16,16],"enrage":null,"enrage_after":null,"clipped":6,"missing":[0,0],"extra_healers":[0,0],"deadlines":[85.1,156.1]},"inter":[{"start":100.028,"pops":[3.6,12.2,20.6],"double":0,"died":4,"fell":0,"alive_in":15,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":32.9,"player":"Atheniás","group":"virulence"}},{"pull":14,"dur":51.1,"pct":84.57,"inters":0,"inters_done":0,"ended":"other","called":41.4,"cut":41.4,"enrage":null,"enrage_forced":false,"under":47.2,"walked":true,"tempests":1,"tornado_hits":8,"tornado_rate":8.0,"xw_sets":1,"xw_flung":4,"xw_rate":4.0,"xw_own":3,"xw_partner":1,"xw_own_rate":3.0,"acc_pops":0,"acc_hit":0,"deaths_live":1,"dpm":1.45,"deaths":{"other":1},"fury":{"pops":[33.3],"soakers":[15],"enrage":null,"enrage_after":null,"clipped":2,"missing":[2],"extra_healers":[1],"deadlines":[91.0]},"inter":[],"mut_double":1,"ravage_raid":0,"first":{"t":4.0,"player":"Atheniás","group":"other"}},{"pull":15,"dur":134.5,"pct":64.08,"inters":1,"inters_done":1,"ended":"inter","called":125.7,"cut":125.7,"enrage":null,"enrage_forced":false,"under":125.7,"walked":false,"tempests":2,"tornado_hits":8,"tornado_rate":4.0,"xw_sets":2,"xw_flung":1,"xw_rate":0.5,"xw_own":0,"xw_partner":1,"xw_own_rate":0.0,"acc_pops":0,"acc_hit":0,"deaths_live":11,"dpm":5.25,"deaths":{"tornado":2,"crosswinds":1,"inter":4,"other":2,"floor":2},"fury":{"pops":[27.1,81.0],"soakers":[17,16],"enrage":null,"enrage_after":null,"clipped":0,"missing":[0,2],"extra_healers":[1,1],"deadlines":[84.8,163.3]},"inter":[{"start":100.009,"pops":[3.4,10.6],"double":0,"died":9,"fell":4,"alive_in":18,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":44.2,"player":"Alfi","group":"tornado"}},{"pull":16,"dur":380.4,"pct":8.67,"inters":3,"inters_done":3,"ended":"virulence","called":343.2,"cut":343.2,"enrage":null,"enrage_forced":false,"under":343.2,"walked":false,"tempests":6,"tornado_hits":37,"tornado_rate":6.17,"xw_sets":6,"xw_flung":6,"xw_rate":1.0,"xw_own":4,"xw_partner":2,"xw_own_rate":0.67,"acc_pops":0,"acc_hit":0,"deaths_live":8,"dpm":1.4,"deaths":{"mutilate":2,"surge":2,"floor":1,"other":1,"tornado":1,"virulence":1},"fury":{"pops":[25.9,75.5,154.0,202.6,282.4,329.6],"soakers":[16,16,16,16,15,16],"enrage":null,"enrage_after":null,"clipped":7,"missing":[1,1,1,0,0,0],"extra_healers":[1,1,1,0,0,0],"deadlines":[83.6,157.8,211.7,284.9,340.1,411.9]},"inter":[{"start":99.981,"pops":[3.4,12.2,20.5],"double":0,"died":0,"fell":0,"alive_in":20,"survived":true},{"start":227.044,"pops":[3.4,12.6,20.6],"double":0,"died":0,"fell":0,"alive_in":16,"survived":true},{"start":354.059,"pops":[3.8,4.6,5.3],"double":2,"died":0,"fell":0,"alive_in":12,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":164.6,"player":"Squashiclysm","group":"mutilate"}},{"pull":17,"dur":135.7,"pct":62.77,"inters":1,"inters_done":1,"ended":"inter","called":118.1,"cut":118.1,"enrage":null,"enrage_forced":false,"under":118.1,"walked":false,"tempests":2,"tornado_hits":16,"tornado_rate":8.0,"xw_sets":2,"xw_flung":1,"xw_rate":0.5,"xw_own":1,"xw_partner":0,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":16,"dpm":8.13,"deaths":{"virulence":1,"inter":12,"other":3},"fury":{"pops":[26.2,75.6],"soakers":[15,16],"enrage":null,"enrage_after":null,"clipped":3,"missing":[2,1],"extra_healers":[1,1],"deadlines":[83.9,157.9]},"inter":[{"start":100.037,"pops":[3.7,21.0],"double":0,"died":15,"fell":8,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":81.0,"player":"Duruwarr","group":"virulence"}},{"pull":18,"dur":161.7,"pct":49.43,"inters":1,"inters_done":1,"ended":"enrage","called":155.7,"cut":155.7,"enrage":154.953,"enrage_forced":false,"under":155.7,"walked":false,"tempests":3,"tornado_hits":15,"tornado_rate":5.0,"xw_sets":2,"xw_flung":2,"xw_rate":1.0,"xw_own":1,"xw_partner":1,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":5,"dpm":1.93,"deaths":{"crosswinds":1,"mutilate":3,"tornado":1},"fury":{"pops":[26.0,72.6],"soakers":[17,17],"enrage":155.0,"enrage_after":82.3,"clipped":1,"missing":[0,0],"extra_healers":[1,1],"deadlines":[83.7,154.9]},"inter":[{"start":99.984,"pops":[3.8,12.3,20.6],"double":0,"died":0,"fell":0,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":94.8,"player":"Shazàm","group":"crosswinds"}},{"pull":19,"dur":76.1,"pct":74.1,"inters":0,"inters_done":0,"ended":"tornado","called":67.6,"cut":67.6,"enrage":null,"enrage_forced":false,"under":67.6,"walked":false,"tempests":2,"tornado_hits":11,"tornado_rate":5.5,"xw_sets":1,"xw_flung":1,"xw_rate":1.0,"xw_own":0,"xw_partner":1,"xw_own_rate":0.0,"acc_pops":1,"acc_hit":18,"deaths_live":12,"dpm":10.66,"deaths":{"tornado":4,"crosswinds":1,"cyst_p1":3,"ravage":3,"mutilate":1},"fury":{"pops":[27.9],"soakers":[16],"enrage":null,"enrage_after":null,"clipped":0,"missing":[0],"extra_healers":[0],"deadlines":[85.6]},"inter":[],"mut_double":0,"ravage_raid":3,"first":{"t":18.1,"player":"Shazàm","group":"tornado"}},{"pull":20,"dur":178.2,"pct":50.78,"inters":1,"inters_done":1,"ended":"virulence","called":155.8,"cut":155.8,"enrage":null,"enrage_forced":false,"under":155.8,"walked":false,"tempests":3,"tornado_hits":17,"tornado_rate":5.67,"xw_sets":2,"xw_flung":1,"xw_rate":0.5,"xw_own":1,"xw_partner":0,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":7,"dpm":2.7,"deaths":{"tornado":2,"crosswinds":1,"virulence":4},"fury":{"pops":[27.2,74.7,154.0],"soakers":[16,16,17],"enrage":null,"enrage_after":null,"clipped":11,"missing":[0,1,0],"extra_healers":[0,1,0],"deadlines":[84.9,157.0,211.7]},"inter":[{"start":100.012,"pops":[3.5,11.9,20.7],"double":0,"died":1,"fell":0,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":65.1,"player":"Duruwarr","group":"tornado"}},{"pull":21,"dur":212.6,"pct":41.34,"inters":1,"inters_done":1,"ended":"tornado","called":211.5,"cut":211.5,"enrage":211.958,"enrage_forced":true,"under":211.5,"walked":false,"tempests":4,"tornado_hits":20,"tornado_rate":5.0,"xw_sets":3,"xw_flung":2,"xw_rate":0.67,"xw_own":1,"xw_partner":1,"xw_own_rate":0.33,"acc_pops":0,"acc_hit":0,"deaths_live":8,"dpm":2.27,"deaths":{"mutilate":2,"inter":1,"tornado":2,"floor":2,"surge":1},"fury":{"pops":[26.8,73.6,154.3],"soakers":[16,15,16],"enrage":212.0,"enrage_after":57.7,"clipped":0,"missing":[0,1,0],"extra_healers":[0,0,0],"deadlines":[84.5,155.9,212.0]},"inter":[{"start":99.965,"pops":[3.5,11.8,20.7],"double":0,"died":1,"fell":1,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":1,"first":{"t":82.5,"player":"Squashiclysm","group":"mutilate"}},{"pull":22,"dur":218.4,"pct":39.25,"inters":1,"inters_done":1,"ended":"enrage","called":213.2,"cut":213.2,"enrage":211.974,"enrage_forced":false,"under":213.2,"walked":false,"tempests":4,"tornado_hits":23,"tornado_rate":5.75,"xw_sets":3,"xw_flung":3,"xw_rate":1.0,"xw_own":3,"xw_partner":0,"xw_own_rate":1.0,"acc_pops":0,"acc_hit":0,"deaths_live":4,"dpm":1.13,"deaths":{"tornado":4},"fury":{"pops":[26.5,74.7,153.5],"soakers":[16,16,17],"enrage":212.0,"enrage_after":58.5,"clipped":6,"missing":[0,0,0],"extra_healers":[0,0,0],"deadlines":[84.2,157.0,211.2]},"inter":[{"start":99.994,"pops":[3.8,4.3,11.9,20.0],"double":1,"died":0,"fell":0,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":92.4,"player":"Шамшыммыч","group":"tornado"}},{"pull":23,"dur":175.1,"pct":52.55,"inters":1,"inters_done":1,"ended":"floor","called":160.4,"cut":160.4,"enrage":null,"enrage_forced":false,"under":160.4,"walked":false,"tempests":3,"tornado_hits":19,"tornado_rate":6.33,"xw_sets":2,"xw_flung":1,"xw_rate":0.5,"xw_own":1,"xw_partner":0,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":10,"dpm":3.74,"deaths":{"virulence":3,"surge":3,"mutilate":1,"floor":2,"tank":1},"fury":{"pops":[28.0,82.6,160.3],"soakers":[16,15,14],"enrage":null,"enrage_after":null,"clipped":8,"missing":[1,2,2],"extra_healers":[1,1,0],"deadlines":[85.7,164.9,218.0]},"inter":[{"start":100.029,"pops":[3.5,12.1,20.9],"double":0,"died":0,"fell":0,"alive_in":16,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":33.5,"player":"Duruwarr","group":"virulence"}},{"pull":24,"dur":168.8,"pct":49.66,"inters":1,"inters_done":1,"ended":"enrage","called":158.6,"cut":158.6,"enrage":156.951,"enrage_forced":false,"under":158.6,"walked":false,"tempests":3,"tornado_hits":21,"tornado_rate":7.0,"xw_sets":2,"xw_flung":3,"xw_rate":1.5,"xw_own":2,"xw_partner":1,"xw_own_rate":1.0,"acc_pops":0,"acc_hit":0,"deaths_live":3,"dpm":1.13,"deaths":{"crosswinds":1,"inter":1,"tornado":1},"fury":{"pops":[26.1,74.6],"soakers":[15,16],"enrage":157.0,"enrage_after":82.3,"clipped":0,"missing":[1,1],"extra_healers":[0,1],"deadlines":[83.8,156.9]},"inter":[{"start":99.962,"pops":[3.4,12.3,21.0],"double":0,"died":1,"fell":1,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":99.0,"player":"Valanarr","group":"crosswinds"}},{"pull":25,"dur":222.0,"pct":38.57,"inters":1,"inters_done":1,"ended":"virulence","called":203.7,"cut":203.7,"enrage":null,"enrage_forced":false,"under":203.7,"walked":false,"tempests":4,"tornado_hits":17,"tornado_rate":4.25,"xw_sets":3,"xw_flung":4,"xw_rate":1.33,"xw_own":3,"xw_partner":1,"xw_own_rate":1.0,"acc_pops":0,"acc_hit":0,"deaths_live":12,"dpm":3.53,"deaths":{"crosswinds":1,"mutilate":2,"virulence":9},"fury":{"pops":[27.4,75.3,154.6,201.7],"soakers":[16,15,17,16],"enrage":null,"enrage_after":null,"clipped":17,"missing":[0,1,0,0],"extra_healers":[0,0,1,0],"deadlines":[85.1,157.6,212.3,259.4]},"inter":[{"start":100.041,"pops":[3.9,12.0,19.9],"double":0,"died":0,"fell":0,"alive_in":20,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":180.6,"player":"Shazàm","group":"crosswinds"}},{"pull":26,"dur":143.2,"pct":60.84,"inters":1,"inters_done":1,"ended":"inter","called":126.3,"cut":126.3,"enrage":null,"enrage_forced":false,"under":126.3,"walked":false,"tempests":2,"tornado_hits":23,"tornado_rate":11.5,"xw_sets":2,"xw_flung":2,"xw_rate":1.0,"xw_own":2,"xw_partner":0,"xw_own_rate":1.0,"acc_pops":0,"acc_hit":0,"deaths_live":8,"dpm":3.8,"deaths":{"tornado":1,"inter":6,"other":1},"fury":{"pops":[25.8,75.4],"soakers":[16,16],"enrage":null,"enrage_after":null,"clipped":1,"missing":[0,0],"extra_healers":[0,0],"deadlines":[83.5,157.7]},"inter":[{"start":100.03,"pops":[3.4,4.0,11.8],"double":1,"died":8,"fell":1,"alive_in":20,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":100.9,"player":"Shazàm","group":"tornado"}},{"pull":27,"dur":164.8,"pct":51.93,"inters":1,"inters_done":1,"ended":"enrage","called":158.1,"cut":158.1,"enrage":156.987,"enrage_forced":false,"under":158.1,"walked":false,"tempests":3,"tornado_hits":14,"tornado_rate":4.67,"xw_sets":2,"xw_flung":2,"xw_rate":1.0,"xw_own":1,"xw_partner":1,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":4,"dpm":1.52,"deaths":{"surge":1,"crosswinds":2,"tank":1},"fury":{"pops":[26.5,74.3],"soakers":[16,16],"enrage":157.0,"enrage_after":82.7,"clipped":1,"missing":[1,1],"extra_healers":[1,1],"deadlines":[84.2,156.6]},"inter":[{"start":100.013,"pops":[3.6,12.2,21.0],"double":0,"died":2,"fell":2,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":91.0,"player":"Squashiclysm","group":"surge"}},{"pull":28,"dur":34.2,"pct":90.83,"inters":0,"inters_done":0,"ended":"mutilate","called":12.1,"cut":12.1,"enrage":null,"enrage_forced":false,"under":12.1,"walked":false,"tempests":0,"tornado_hits":0,"tornado_rate":null,"xw_sets":0,"xw_flung":0,"xw_rate":null,"xw_own":0,"xw_partner":0,"xw_own_rate":null,"acc_pops":0,"acc_hit":0,"deaths_live":9,"dpm":44.5,"deaths":{"mutilate":9},"fury":{"pops":[],"soakers":[],"enrage":null,"enrage_after":null,"clipped":0,"missing":[],"extra_healers":[],"deadlines":[]},"inter":[],"mut_double":10,"ravage_raid":0,"first":{"t":12.1,"player":"Alfi","group":"mutilate"}},{"pull":29,"dur":287.6,"pct":24.7,"inters":2,"inters_done":2,"ended":"tornado","called":220.1,"cut":220.1,"enrage":284.967,"enrage_forced":true,"under":220.1,"walked":false,"tempests":4,"tornado_hits":37,"tornado_rate":9.25,"xw_sets":4,"xw_flung":1,"xw_rate":0.25,"xw_own":1,"xw_partner":0,"xw_own_rate":0.25,"acc_pops":0,"acc_hit":0,"deaths_live":8,"dpm":2.18,"deaths":{"mutilate":2,"tornado":5,"virulence":1},"fury":{"pops":[27.6,75.7,153.9,202.3],"soakers":[16,16,17,16],"enrage":285.0,"enrage_after":82.7,"clipped":1,"missing":[0,0,0,0],"extra_healers":[0,0,1,0],"deadlines":[85.3,158.0,211.6,284.6]},"inter":[{"start":99.945,"pops":[3.5,12.3,20.7],"double":0,"died":0,"fell":0,"alive_in":20,"survived":true},{"start":226.98,"pops":[3.7,12.1,19.9],"double":0,"died":0,"fell":0,"alive_in":12,"survived":true}],"mut_double":1,"ravage_raid":0,"first":{"t":147.5,"player":"Ghani","group":"mutilate"}},{"pull":30,"dur":121.0,"pct":67.64,"inters":1,"inters_done":0,"ended":"inter","called":109.0,"cut":109.0,"enrage":null,"enrage_forced":false,"under":109.0,"walked":false,"tempests":2,"tornado_hits":9,"tornado_rate":4.5,"xw_sets":2,"xw_flung":2,"xw_rate":1.0,"xw_own":2,"xw_partner":0,"xw_own_rate":1.0,"acc_pops":0,"acc_hit":0,"deaths_live":16,"dpm":8.8,"deaths":{"other":2,"inter":10,"crosswinds":2,"mutilate":1,"tornado":1},"fury":{"pops":[27.4,75.2],"soakers":[17,16],"enrage":null,"enrage_after":null,"clipped":4,"missing":[0,1],"extra_healers":[1,1],"deadlines":[85.1,157.5]},"inter":[{"start":99.997,"pops":[11.7,15.6],"double":0,"died":16,"fell":10,"alive_in":20,"survived":false}],"mut_double":0,"ravage_raid":1,"first":{"t":106.9,"player":"Huibalast","group":"other"}},{"pull":31,"dur":162.6,"pct":55.24,"inters":1,"inters_done":1,"ended":"mutilate","called":143.1,"cut":143.1,"enrage":156.955,"enrage_forced":true,"under":143.1,"walked":false,"tempests":2,"tornado_hits":16,"tornado_rate":8.0,"xw_sets":2,"xw_flung":1,"xw_rate":0.5,"xw_own":1,"xw_partner":0,"xw_own_rate":0.5,"acc_pops":0,"acc_hit":0,"deaths_live":8,"dpm":3.35,"deaths":{"tornado":1,"virulence":2,"mutilate":5},"fury":{"pops":[26.1,75.0],"soakers":[16,16],"enrage":157.0,"enrage_after":82.0,"clipped":3,"missing":[0,0],"extra_healers":[0,0],"deadlines":[83.8,157.3]},"inter":[{"start":100.012,"pops":[3.7,12.7,20.9],"double":0,"died":0,"fell":0,"alive_in":17,"survived":true}],"mut_double":1,"ravage_raid":0,"first":{"t":47.8,"player":"Shazàm","group":"tornado"}},{"pull":32,"dur":155.4,"pct":54.3,"inters":1,"inters_done":1,"ended":"mutilate","called":142.4,"cut":142.4,"enrage":null,"enrage_forced":false,"under":142.4,"walked":false,"tempests":2,"tornado_hits":10,"tornado_rate":5.0,"xw_sets":2,"xw_flung":2,"xw_rate":1.0,"xw_own":2,"xw_partner":0,"xw_own_rate":1.0,"acc_pops":0,"acc_hit":0,"deaths_live":7,"dpm":2.95,"deaths":{"crosswinds":1,"inter":1,"mutilate":4,"other":1},"fury":{"pops":[27.7,73.5],"soakers":[15,17],"enrage":null,"enrage_after":null,"clipped":0,"missing":[1,0],"extra_healers":[0,1],"deadlines":[85.4,155.8]},"inter":[{"start":99.98,"pops":[3.4,12.1,20.7],"double":0,"died":0,"fell":0,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":94.8,"player":"Duruwarr","group":"crosswinds"}},{"pull":33,"dur":201.6,"pct":45.03,"inters":1,"inters_done":1,"ended":"tornado","called":182.7,"cut":182.7,"enrage":null,"enrage_forced":false,"under":182.7,"walked":false,"tempests":3,"tornado_hits":19,"tornado_rate":6.33,"xw_sets":3,"xw_flung":4,"xw_rate":1.33,"xw_own":4,"xw_partner":0,"xw_own_rate":1.33,"acc_pops":0,"acc_hit":0,"deaths_live":8,"dpm":2.63,"deaths":{"tornado":3,"virulence":1,"inter":1,"mutilate":2,"other":1},"fury":{"pops":[26.7,74.4,155.1],"soakers":[15,15,15],"enrage":null,"enrage_after":null,"clipped":8,"missing":[1,1,1],"extra_healers":[0,0,0],"deadlines":[84.4,156.7,212.8]},"inter":[{"start":99.967,"pops":[3.6,12.3,20.5],"double":0,"died":1,"fell":1,"alive_in":18,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":61.5,"player":"Шамшыммыч","group":"tornado"}},{"pull":34,"dur":130.0,"pct":66.43,"inters":1,"inters_done":1,"ended":"inter","called":105.3,"cut":105.3,"enrage":null,"enrage_forced":false,"under":105.3,"walked":false,"tempests":2,"tornado_hits":14,"tornado_rate":7.0,"xw_sets":2,"xw_flung":0,"xw_rate":0.0,"xw_own":0,"xw_partner":0,"xw_own_rate":0.0,"acc_pops":0,"acc_hit":0,"deaths_live":16,"dpm":9.12,"deaths":{"tornado":1,"inter":14,"other":1},"fury":{"pops":[26.5,80.0],"soakers":[15,17],"enrage":null,"enrage_after":null,"clipped":0,"missing":[1,0],"extra_healers":[0,0],"deadlines":[84.2,162.3]},"inter":[{"start":100.011,"pops":[3.7,4.6,5.2,12.4],"double":2,"died":15,"fell":0,"alive_in":19,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":45.4,"player":"Abeei","group":"tornado"}},{"pull":35,"dur":202.7,"pct":45.25,"inters":1,"inters_done":1,"ended":"mutilate","called":190.1,"cut":190.1,"enrage":null,"enrage_forced":false,"under":190.1,"walked":false,"tempests":3,"tornado_hits":14,"tornado_rate":4.67,"xw_sets":3,"xw_flung":1,"xw_rate":0.33,"xw_own":1,"xw_partner":0,"xw_own_rate":0.33,"acc_pops":1,"acc_hit":16,"deaths_live":12,"dpm":3.79,"deaths":{"ravage":1,"virulence":3,"tornado":1,"other":1,"mutilate":6},"fury":{"pops":[26.2,74.3,155.3],"soakers":[14,16,18],"enrage":null,"enrage_after":null,"clipped":5,"missing":[2,0,0],"extra_healers":[0,0,1],"deadlines":[83.9,156.6,213.0]},"inter":[{"start":100.014,"pops":[3.6,12.1,20.5],"double":0,"died":0,"fell":0,"alive_in":20,"survived":true}],"mut_double":1,"ravage_raid":1,"first":{"t":139.1,"player":"Шамшыммыч","group":"ravage"}},{"pull":36,"dur":289.8,"pct":22.78,"inters":2,"inters_done":2,"ended":"enrage","called":285.1,"cut":285.1,"enrage":282.949,"enrage_forced":false,"under":285.1,"walked":false,"tempests":5,"tornado_hits":34,"tornado_rate":6.8,"xw_sets":4,"xw_flung":2,"xw_rate":0.5,"xw_own":1,"xw_partner":1,"xw_own_rate":0.25,"acc_pops":0,"acc_hit":0,"deaths_live":3,"dpm":0.63,"deaths":{"tornado":1,"crosswinds":1,"virulence":1},"fury":{"pops":[27.2,75.1,155.3,200.7],"soakers":[16,16,16,15],"enrage":282.9,"enrage_after":82.3,"clipped":2,"missing":[0,0,0,0],"extra_healers":[0,0,0,0],"deadlines":[84.9,157.4,213.0,283.0]},"inter":[{"start":100.003,"pops":[3.8,12.4,19.7],"double":0,"died":0,"fell":0,"alive_in":18,"survived":true},{"start":227.009,"pops":[3.2,12.3,20.4],"double":0,"died":0,"fell":0,"alive_in":17,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":91.2,"player":"Aelyssar","group":"tornado"}},{"pull":37,"dur":211.7,"pct":43.3,"inters":1,"inters_done":1,"ended":"tornado","called":199.3,"cut":199.3,"enrage":null,"enrage_forced":false,"under":199.3,"walked":false,"tempests":4,"tornado_hits":28,"tornado_rate":7.0,"xw_sets":3,"xw_flung":1,"xw_rate":0.33,"xw_own":1,"xw_partner":0,"xw_own_rate":0.33,"acc_pops":0,"acc_hit":0,"deaths_live":7,"dpm":2.11,"deaths":{"virulence":2,"floor":1,"tornado":4},"fury":{"pops":[33.3,73.9,154.5],"soakers":[17,16,17],"enrage":null,"enrage_after":null,"clipped":6,"missing":[1,0,0],"extra_healers":[2,0,0],"deadlines":[91.0,156.2,212.2]},"inter":[{"start":100.012,"pops":[3.6,12.0,19.4],"double":0,"died":0,"fell":0,"alive_in":18,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":79.5,"player":"Angryde","group":"virulence"}},{"pull":38,"dur":212.5,"pct":50.91,"inters":1,"inters_done":1,"ended":"mutilate","called":182.1,"cut":182.1,"enrage":null,"enrage_forced":false,"under":182.1,"walked":false,"tempests":3,"tornado_hits":16,"tornado_rate":5.33,"xw_sets":3,"xw_flung":1,"xw_rate":0.33,"xw_own":0,"xw_partner":1,"xw_own_rate":0.0,"acc_pops":0,"acc_hit":0,"deaths_live":9,"dpm":2.97,"deaths":{"tank":1,"virulence":1,"other":1,"inter":1,"floor":1,"tornado":1,"mutilate":3},"fury":{"pops":[27.1,81.8,155.0],"soakers":[15,15,17],"enrage":null,"enrage_after":null,"clipped":3,"missing":[1,1,0],"extra_healers":[0,0,0],"deadlines":[84.8,164.1,212.7]},"inter":[{"start":99.982,"pops":[3.0,12.3,20.4],"double":0,"died":1,"fell":1,"alive_in":17,"survived":true}],"mut_double":0,"ravage_raid":0,"first":{"t":67.5,"player":"Laradendusk","group":"tank"}}],"players":[{"player":"Abeei","role":"dps","cls":"Warlock","spec":"Demonology","tornado":21,"tempests":88,"tornado_rate":0.24,"xw_marked":33,"xw_flung":0,"xw_solo":19,"xw_cancelled":14,"xw_late":0,"xw_none":0,"xw_partner":0,"fury_missed":7,"fury_in":0,"fury_extra":0,"clipped":9,"ravage":1,"deaths":22,"alive_min":79.1,"groups":{"mutilate":2,"cyst_p1":3,"inter":5,"virulence":5,"crosswinds":1,"tornado":2,"other":2,"surge":1,"ravage":1}},{"player":"Aelyssar","role":"dps","cls":"Paladin","spec":"Retribution","tornado":40,"tempests":93,"tornado_rate":0.43,"xw_marked":41,"xw_flung":2,"xw_solo":0,"xw_cancelled":39,"xw_late":0,"xw_none":0,"xw_partner":2,"fury_missed":1,"fury_in":0,"fury_extra":0,"clipped":5,"ravage":1,"deaths":22,"alive_min":84.0,"groups":{"tornado":4,"floor":3,"cyst_p1":3,"virulence":3,"other":1,"inter":4,"ravage":1,"mutilate":2,"crosswinds":1}},{"player":"Aeonara","role":"healer","cls":"Priest","spec":"Holy","tornado":27,"tempests":98,"tornado_rate":0.28,"xw_marked":37,"xw_flung":2,"xw_solo":0,"xw_cancelled":35,"xw_late":0,"xw_none":0,"xw_partner":2,"fury_missed":0,"fury_in":8,"fury_extra":2,"clipped":9,"ravage":1,"deaths":3,"alive_min":89.8,"groups":{"cyst_p1":2,"inter":1}},{"player":"Alfi","role":"dps","cls":"DemonHunter","spec":"Havoc","tornado":42,"tempests":96,"tornado_rate":0.44,"xw_marked":42,"xw_flung":7,"xw_solo":26,"xw_cancelled":9,"xw_late":7,"xw_none":0,"xw_partner":0,"fury_missed":6,"fury_in":0,"fury_extra":0,"clipped":5,"ravage":0,"deaths":10,"alive_min":87.9,"groups":{"floor":1,"cyst_p1":1,"tornado":3,"virulence":1,"mutilate":4}},{"player":"Angryde","role":"dps","cls":"Paladin","spec":"Retribution","tornado":23,"tempests":93,"tornado_rate":0.25,"xw_marked":42,"xw_flung":0,"xw_solo":0,"xw_cancelled":42,"xw_late":0,"xw_none":0,"xw_partner":0,"fury_missed":0,"fury_in":0,"fury_extra":0,"clipped":4,"ravage":2,"deaths":17,"alive_min":84.9,"groups":{"crosswinds":2,"tornado":2,"inter":6,"ravage":1,"cyst_p1":1,"virulence":3,"mutilate":2}},{"player":"Atheniás","role":"dps","cls":"Shaman","spec":"Elemental","tornado":47,"tempests":94,"tornado_rate":0.5,"xw_marked":35,"xw_flung":7,"xw_solo":0,"xw_cancelled":28,"xw_late":6,"xw_none":1,"xw_partner":0,"fury_missed":8,"fury_in":0,"fury_extra":0,"clipped":10,"ravage":0,"deaths":16,"alive_min":83.9,"groups":{"mutilate":2,"inter":3,"tornado":5,"virulence":3,"other":2,"cyst_p1":1}},{"player":"Duruwarr","role":"dps","cls":"Warrior","spec":"Arms","tornado":30,"tempests":91,"tornado_rate":0.33,"xw_marked":37,"xw_flung":6,"xw_solo":5,"xw_cancelled":26,"xw_late":3,"xw_none":3,"xw_partner":0,"fury_missed":0,"fury_in":0,"fury_extra":0,"clipped":9,"ravage":0,"deaths":23,"alive_min":79.7,"groups":{"virulence":7,"inter":3,"surge":1,"floor":3,"mutilate":2,"other":1,"crosswinds":2,"tornado":4}},{"player":"Ghani","role":"healer","cls":"Priest","spec":"Holy","tornado":39,"tempests":97,"tornado_rate":0.4,"xw_marked":30,"xw_flung":6,"xw_solo":0,"xw_cancelled":24,"xw_late":0,"xw_none":0,"xw_partner":6,"fury_missed":0,"fury_in":12,"fury_extra":5,"clipped":5,"ravage":2,"deaths":12,"alive_min":88.4,"groups":{"inter":6,"cyst_p1":1,"virulence":2,"mutilate":3}},{"player":"Huibalast","role":"dps","cls":"Mage","spec":"Arcane","tornado":21,"tempests":95,"tornado_rate":0.22,"xw_marked":34,"xw_flung":4,"xw_solo":26,"xw_cancelled":4,"xw_late":3,"xw_none":1,"xw_partner":0,"fury_missed":6,"fury_in":0,"fury_extra":0,"clipped":1,"ravage":0,"deaths":19,"alive_min":85.9,"groups":{"cyst_p1":3,"inter":5,"tornado":1,"floor":1,"crosswinds":1,"other":4,"mutilate":4}},{"player":"Indris","role":"dps","cls":"Paladin","spec":"Retribution","tornado":21,"tempests":94,"tornado_rate":0.22,"xw_marked":41,"xw_flung":4,"xw_solo":0,"xw_cancelled":37,"xw_late":0,"xw_none":0,"xw_partner":4,"fury_missed":0,"fury_in":0,"fury_extra":0,"clipped":6,"ravage":0,"deaths":20,"alive_min":85.2,"groups":{"mutilate":5,"inter":4,"cyst_p1":3,"tornado":3,"floor":1,"crosswinds":3,"virulence":1}},{"player":"Laradendusk","role":"tank","cls":"Monk","spec":"Brewmaster","tornado":85,"tempests":94,"tornado_rate":0.9,"xw_marked":9,"xw_flung":0,"xw_solo":0,"xw_cancelled":9,"xw_late":0,"xw_none":0,"xw_partner":0,"fury_missed":1,"fury_in":0,"fury_extra":0,"clipped":11,"ravage":0,"deaths":9,"alive_min":85.8,"groups":{"virulence":1,"tank":4,"cyst_p1":1,"surge":1,"mutilate":2}},{"player":"Mattiseppo","role":"dps","cls":"Rogue","spec":"Subtlety","tornado":21,"tempests":97,"tornado_rate":0.22,"xw_marked":41,"xw_flung":14,"xw_solo":5,"xw_cancelled":22,"xw_late":8,"xw_none":6,"xw_partner":0,"fury_missed":0,"fury_in":0,"fury_extra":0,"clipped":3,"ravage":1,"deaths":7,"alive_min":88.2,"groups":{"tornado":1,"inter":2,"cyst_p1":2,"ravage":1,"floor":1}},{"player":"Niydra","role":"dps","cls":"Warlock","spec":"Affliction","tornado":20,"tempests":98,"tornado_rate":0.2,"xw_marked":37,"xw_flung":4,"xw_solo":2,"xw_cancelled":31,"xw_late":2,"xw_none":2,"xw_partner":0,"fury_missed":2,"fury_in":0,"fury_extra":0,"clipped":3,"ravage":0,"deaths":19,"alive_min":87.8,"groups":{"mutilate":3,"inter":4,"cyst_p1":2,"virulence":4,"crosswinds":1,"other":4,"surge":1}},{"player":"Piiaan","role":"dps","cls":"Hunter","spec":"BeastMastery","tornado":19,"tempests":92,"tornado_rate":0.21,"xw_marked":13,"xw_flung":1,"xw_solo":0,"xw_cancelled":12,"xw_late":0,"xw_none":1,"xw_partner":0,"fury_missed":1,"fury_in":0,"fury_extra":0,"clipped":3,"ravage":1,"deaths":19,"alive_min":82.8,"groups":{"inter":8,"tornado":2,"floor":2,"other":3,"ravage":1,"virulence":1,"mutilate":2}},{"player":"Shazàm","role":"healer","cls":"Paladin","spec":"Holy","tornado":44,"tempests":89,"tornado_rate":0.49,"xw_marked":43,"xw_flung":6,"xw_solo":0,"xw_cancelled":37,"xw_late":0,"xw_none":0,"xw_partner":6,"fury_missed":0,"fury_in":39,"fury_extra":28,"clipped":10,"ravage":0,"deaths":30,"alive_min":77.5,"groups":{"crosswinds":4,"inter":4,"virulence":4,"tornado":9,"surge":1,"cyst_p1":3,"mutilate":3,"floor":1,"other":1}},{"player":"Squashiclysm","role":"dps","cls":"Mage","spec":"Arcane","tornado":27,"tempests":87,"tornado_rate":0.31,"xw_marked":30,"xw_flung":4,"xw_solo":6,"xw_cancelled":20,"xw_late":2,"xw_none":2,"xw_partner":0,"fury_missed":4,"fury_in":0,"fury_extra":0,"clipped":3,"ravage":0,"deaths":23,"alive_min":77.1,"groups":{"cyst_p1":2,"inter":5,"virulence":4,"mutilate":7,"crosswinds":1,"other":1,"surge":2,"tornado":1}},{"player":"Taranus","role":"dps","cls":"Shaman","spec":"Enhancement","tornado":19,"tempests":92,"tornado_rate":0.21,"xw_marked":40,"xw_flung":3,"xw_solo":0,"xw_cancelled":37,"xw_late":0,"xw_none":3,"xw_partner":0,"fury_missed":2,"fury_in":0,"fury_extra":0,"clipped":3,"ravage":0,"deaths":23,"alive_min":82.7,"groups":{"mutilate":6,"inter":4,"other":1,"virulence":3,"cyst_p1":2,"floor":2,"tornado":2,"crosswinds":2,"surge":1}},{"player":"Valanarr","role":"healer","cls":"Druid","spec":"Restoration","tornado":60,"tempests":93,"tornado_rate":0.65,"xw_marked":36,"xw_flung":5,"xw_solo":4,"xw_cancelled":27,"xw_late":1,"xw_none":4,"xw_partner":0,"fury_missed":0,"fury_in":31,"fury_extra":16,"clipped":10,"ravage":0,"deaths":19,"alive_min":83.7,"groups":{"crosswinds":4,"cyst_p1":3,"inter":3,"virulence":2,"tornado":4,"surge":2,"mutilate":1}},{"player":"Vesemirr","role":"tank","cls":"Warrior","spec":"Protection","tornado":35,"tempests":98,"tornado_rate":0.36,"xw_marked":7,"xw_flung":0,"xw_solo":1,"xw_cancelled":6,"xw_late":0,"xw_none":0,"xw_partner":0,"fury_missed":2,"fury_in":0,"fury_extra":0,"clipped":10,"ravage":0,"deaths":11,"alive_min":89.7,"groups":{"mutilate":3,"inter":3,"cyst_p1":3,"virulence":1,"tank":1}},{"player":"Шамшыммыч","role":"dps","cls":"Shaman","spec":"Elemental","tornado":44,"tempests":90,"tornado_rate":0.49,"xw_marked":33,"xw_flung":4,"xw_solo":0,"xw_cancelled":29,"xw_late":2,"xw_none":2,"xw_partner":0,"fury_missed":4,"fury_in":0,"fury_extra":0,"clipped":1,"ravage":1,"deaths":22,"alive_min":80.0,"groups":{"mutilate":3,"crosswinds":1,"inter":5,"tornado":9,"cyst_p1":1,"virulence":2,"ravage":1}}],"groups":[["inter","Intermission (winds and cysts)","var(--s1)"],["cyst_p1","Cyst popped in phase one","var(--s4)"],["tornado","Tornadoes","var(--s3)"],["mutilate","Mutilate","var(--crit)"],["virulence","Virulence","var(--s2)"],["crosswinds","Crosswinds","var(--s5)"],["ravage","Ravage frontal","var(--cls-Warlock)"],["surge","Venomous Surge","var(--cls-Druid)"],["floor","Caustic puddles","var(--cls-Hunter)"],["tank","Tank deaths","var(--ink-2)"],["other","Other","var(--muted)"]],"ended":{"enrage":["Serpent's Fury enrage","var(--fatal)"],"inter":["Intermission (winds and cysts)","var(--s1)"],"cyst_p1":["Cyst popped in phase one","var(--s4)"],"tornado":["Tornadoes","var(--s3)"],"crosswinds":["Crosswinds","var(--s5)"],"virulence":["Virulence","var(--s2)"],"mutilate":["Mutilate","var(--crit)"],"ravage":["Ravage frontal","var(--cls-Warlock)"],"tank":["Tank deaths","var(--ink-2)"],"surge":["Venomous Surge","var(--cls-Druid)"],"floor":["Caustic puddles","var(--cls-Hunter)"],"other":["Other","var(--muted)"]},"timeline":{"pull":16,"dur":380.4,"events":[{"t":8.0,"k":"mutilate"},{"t":12.0,"k":"mutilate"},{"t":16.5,"k":"tempest"},{"t":20.5,"k":"ravage"},{"t":24.5,"k":"ravage"},{"t":25.9,"k":"fury"},{"t":29.0,"k":"surge"},{"t":39.7,"k":"crosswinds"},{"t":55.0,"k":"ravage"},{"t":59.0,"k":"ravage"},{"t":63.0,"k":"mutilate"},{"t":67.5,"k":"tempest"},{"t":71.5,"k":"mutilate"},{"t":75.5,"k":"fury"},{"t":76.1,"k":"surge"},{"t":86.7,"k":"crosswinds"},{"t":103.4,"k":"pop"},{"t":112.2,"k":"pop"},{"t":120.5,"k":"pop"},{"t":130.3,"k":"pop"},{"t":135.0,"k":"ravage"},{"t":139.5,"k":"tempest"},{"t":143.5,"k":"mutilate"},{"t":147.5,"k":"ravage"},{"t":151.5,"k":"mutilate"},{"t":154.0,"k":"fury"},{"t":156.0,"k":"surge"},{"t":166.8,"k":"crosswinds"},{"t":182.0,"k":"mutilate"},{"t":186.0,"k":"ravage"},{"t":190.0,"k":"ravage"},{"t":194.5,"k":"tempest"},{"t":198.5,"k":"mutilate"},{"t":202.6,"k":"fury"},{"t":203.2,"k":"surge"},{"t":213.8,"k":"crosswinds"},{"t":230.4,"k":"pop"},{"t":239.6,"k":"pop"},{"t":247.7,"k":"pop"},{"t":256.3,"k":"pop"},{"t":262.1,"k":"ravage"},{"t":266.6,"k":"tempest"},{"t":270.6,"k":"ravage"},{"t":274.6,"k":"mutilate"},{"t":278.6,"k":"mutilate"},{"t":282.4,"k":"fury"},{"t":283.1,"k":"surge"},{"t":293.8,"k":"crosswinds"},{"t":309.1,"k":"mutilate"},{"t":313.1,"k":"mutilate"},{"t":317.1,"k":"ravage"},{"t":321.6,"k":"tempest"},{"t":325.6,"k":"ravage"},{"t":329.6,"k":"fury"},{"t":330.1,"k":"surge"},{"t":340.8,"k":"crosswinds"},{"t":357.9,"k":"pop"},{"t":358.7,"k":"pop"},{"t":359.3,"k":"pop"}],"segs":[{"k":"p1","s":0.0,"e":100.0},{"k":"inter","s":100.0,"e":125.0},{"k":"p1","s":125.0,"e":227.0},{"k":"inter","s":227.0,"e":252.0},{"k":"p1","s":252.0,"e":354.1},{"k":"inter","s":354.1,"e":379.1},{"k":"p1","s":379.1,"e":380.4}]},"windows":{"long":82.3,"short":57.7}}</script>
+<script>
+(function(){
+const D=JSON.parse(document.getElementById('data').textContent);
+const NS='http://www.w3.org/2000/svg';
+function mk(p,t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;}
+function txt(p,x,y,s,o={}){const e=mk(p,'text',Object.assign({x,y,fill:o.fill||'var(--muted)','font-size':o.size||11,
+  'font-family':'IBM Plex Mono, monospace','text-anchor':o.anchor||'middle'},o.attr||{}));e.textContent=s;return e;}
+const tip=document.getElementById('tip');
+function hook(el,html){
+  el.addEventListener('mousemove',ev=>{tip.innerHTML=html;tip.style.opacity=1;
+    const w=tip.offsetWidth;let x=ev.clientX+14;if(x+w>innerWidth-8)x=ev.clientX-w-14;
+    tip.style.left=x+'px';tip.style.top=(ev.clientY+14)+'px';});
+  el.addEventListener('mouseleave',()=>tip.style.opacity=0);
+}
+function niceStep(max){const mag=Math.pow(10,Math.floor(Math.log10(max||1)));return mag*(max/mag>5?2:max/mag>2?1:.5);}
+function legend(id,items){const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=items.map(([l,c])=>`<span><i style="background:${c}"></i>${l}</span>`).join('');}
+const P=D.pulls, N=P.length;
+const thirds=(()=>{const a=Math.round(N/3),b=Math.round(2*N/3);return [[0,a],[a,b],[b,N]];})();
+
+/* axes for a per-pull chart */
+function frame(s,H,ymax,fmt){
+  const L=40,R=10,T=14,B=26,W=900,cw=(W-L-R)/N;
+  const y=v=>T+(H-T-B)*(1-v/ymax);
+  const st=niceStep(ymax/4);
+  for(let v=0;v<=ymax+1e-9;v+=st){mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)'});
+    txt(s,L-6,y(v)+4,fmt?fmt(v):v,{anchor:'end'});}
+  P.forEach((p,i)=>{if(p.pull%5===0||i===0)txt(s,L+cw*(i+.5),H-8,p.pull);});
+  return {L,R,T,B,W,cw,y,x:i=>L+cw*(i+.5)};
+}
+
+/* pulls */
+(function(){
+  const s=document.getElementById('c-pulls'),H=280,f=frame(s,H,100,v=>v+'%');
+  const used=[...new Set(P.map(p=>p.ended))];
+  legend('lg-pulls',used.map(k=>D.ended[k]));
+  P.forEach((p,i)=>{
+    const c=D.ended[p.ended][1], x=f.L+f.cw*i+2, w=f.cw-4;
+    const r=mk(s,'rect',{x,y:f.y(p.pct),width:w,height:f.y(0)-f.y(p.pct),fill:c,rx:1.5});
+    txt(s,x+w/2,f.y(p.pct)-4,Math.round(p.dur),{size:8.5});
+    hook(r,`<b>Pull ${p.pull}</b><br>${p.pct.toFixed(1)}% left, ${Math.round(p.dur)}s<br>${p.inters_done} intermission${p.inters_done==1?'':'s'} cleared<br>ended by: ${D.ended[p.ended][0]}<br>${p.deaths_live} deaths before the wipe`+(p.first?`<br>first death: ${p.first.player} at ${p.first.t}s (${D.ended[p.first.group][0].toLowerCase()})`:''));
+  });
+})();
+
+/* timeline of the best pull */
+(function(){
+  const s=document.getElementById('c-tl'),T=D.timeline,W=900,L=96,R=10;
+  const x=t=>L+(W-L-R)*t/T.dur;
+  const LANES=[['ravage','Ravage','var(--cls-Warlock)'],['mutilate','Mutilate','var(--crit)'],['tempest','Tempest','var(--s3)'],
+    ['fury','Fury pop','var(--s2)'],['surge','Surge','var(--ink-2)'],['crosswinds','Crosswinds','var(--s5)'],['pop','Cyst pop','var(--s4)']];
+  const lh=22,top=8;
+  T.segs.forEach(g=>{if(g.k==='inter')mk(s,'rect',{x:x(g.s),y:top-4,width:x(g.e)-x(g.s),height:LANES.length*lh+4,fill:'var(--inter)',opacity:.35});});
+  LANES.forEach(([k,l,c],i)=>{const yy=top+i*lh+lh/2;
+    txt(s,L-8,yy+4,l,{anchor:'end'});mk(s,'line',{x1:L,x2:W-R,y1:yy,y2:yy,stroke:'var(--grid)'});
+    T.events.filter(e=>e.k===k).forEach(e=>{const m=mk(s,'rect',{x:x(e.t)-2.5,y:yy-7,width:5,height:14,fill:c,rx:1});hook(m,`${l} at ${e.t}s`);});
+  });
+  const yb=top+LANES.length*lh+14;
+  for(let t=0;t<=T.dur;t+=30)txt(s,x(t),yb,t+'s');
+})();
+
+/* third-average lines on a dot chart */
+function trend(id,key,ymaxMin,fmt){
+  const s=document.getElementById(id),H=+s.getAttribute('viewBox').split(' ')[3];
+  const vals=P.map(p=>p[key]);
+  const ymax=Math.max(ymaxMin,...vals.filter(v=>v!=null))*1.1;
+  const f=frame(s,H,ymax,fmt);
+  thirds.forEach(([a,b])=>{const v=vals.slice(a,b).filter(v=>v!=null);if(!v.length)return;
+    const m=v.reduce((x,y)=>x+y,0)/v.length;
+    mk(s,'line',{x1:f.L+f.cw*a+2,x2:f.L+f.cw*b-2,y1:f.y(m),y2:f.y(m),stroke:'var(--accent)','stroke-width':2});
+    txt(s,f.L+f.cw*(a+b)/2,f.y(m)-6,m.toFixed(1),{fill:'var(--accent)'});
+  });
+  P.forEach((p,i)=>{if(vals[i]==null)return;const c=mk(s,'circle',{cx:f.x(i),cy:f.y(vals[i]),r:4,fill:'var(--s1)'});
+    hook(c,`<b>Pull ${p.pull}</b><br>${p.tornado_hits} tornado hits over ${p.tempests} Tempests`);});
+}
+trend('c-tor','tornado_rate',4,v=>v.toFixed(0));
+
+/* stacked per-pull bars */
+function stacked(id,parts,ymin,tipf){
+  const s=document.getElementById(id),H=+s.getAttribute('viewBox').split(' ')[3];
+  const tot=P.map(p=>parts.reduce((a,[k])=>a+(typeof k==='function'?k(p):(p[k]||0)),0));
+  const f=frame(s,H,Math.max(ymin,...tot)*1.08,v=>Math.round(v));
+  P.forEach((p,i)=>{let acc=0;const x=f.L+f.cw*i+2,w=f.cw-4;
+    parts.forEach(([k,c])=>{const v=typeof k==='function'?k(p):(p[k]||0);if(!v)return;
+      const r=mk(s,'rect',{x,y:f.y(acc+v),width:w,height:f.y(acc)-f.y(acc+v),fill:c});hook(r,tipf(p));acc+=v;});
+  });
+}
+stacked('c-acc',[['acc_hit','var(--s4)']],10,p=>`<b>Pull ${p.pull}</b><br>${p.acc_pops} cyst${p.acc_pops==1?'':'s'} popped in phase one, ${p.acc_hit} players caught`);
+stacked('c-xw',[['xw_own','var(--crit)'],['xw_partner','var(--s4)']],5,p=>`<b>Pull ${p.pull}</b><br>${p.xw_sets} sets<br>${p.xw_own} launched who could have solo-cancelled<br>${p.xw_partner} paladin/priest launched without a partner`);
+legend('lg-deaths',D.groups.map(g=>[g[1],g[2]]));
+stacked('c-deaths',D.groups.map(([k,,c])=>[p=>p.deaths[k]||0,c]),10,p=>`<b>Pull ${p.pull}</b><br>`+D.groups.filter(g=>p.deaths[g[0]]).map(g=>`${g[1]}: ${p.deaths[g[0]]}`).join('<br>'));
+
+/* intermissions */
+(function(){
+  const s=document.getElementById('c-inter'),rows=[];
+  P.forEach(p=>p.inter.forEach((x,i)=>rows.push({p,x,i})));
+  const W=900,L=120,R=150,T=24,rh=11,H=T+rows.length*rh+24;
+  s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const X=t=>L+(W-L-R)*t/25;
+  [3.5,12.2,20.5].forEach(t=>{mk(s,'line',{x1:X(t),x2:X(t),y1:T-6,y2:H-20,stroke:'var(--grid)','stroke-dasharray':'3 3'});});
+  for(let t=0;t<=25;t+=5)txt(s,X(t),H-6,t+'s');
+  txt(s,W-R+8,T-10,'dead / fell',{anchor:'start'});
+  rows.forEach(({p,x,i},j)=>{const yy=T+j*rh+rh/2;
+    txt(s,L-8,yy+3.5,`pull ${p.pull}`+(i?` · ${i+1}`:''),{anchor:'end',size:9.5});
+    mk(s,'line',{x1:X(0),x2:X(25),y1:yy,y2:yy,stroke:'var(--grid)'});
+    x.pops.forEach((t,k)=>{const dbl=k>0&&t-x.pops[k-1]<2;
+      const c=mk(s,'circle',{cx:X(Math.min(t,25)),cy:yy,r:4,fill:dbl?'var(--crit)':'var(--s3)'});hook(c,`pull ${p.pull}: cyst at ${t}s`);});
+    if(x.died){const w=Math.min(70,x.died*3.5);mk(s,'rect',{x:W-R+8,y:yy-3.5,width:w,height:7,fill:'var(--muted)'});}
+    txt(s,W-R+8+Math.min(70,x.died*3.5)+(x.died?4:0),yy+3.5,x.died?`${x.died} / ${x.fell}`:'0',{anchor:'start',size:9.5});
+  });
+})();
+
+/* Fury clock */
+(function(){
+  const s=document.getElementById('c-fury'),rows=P.filter(p=>p.dur>=120);
+  const W=900,L=60,R=12,T=10,rh=16,tmax=Math.max(...rows.map(p=>p.dur));
+  const H=T+rows.length*rh+26;s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const X=t=>L+(W-L-R)*t/tmax;
+  for(let t=0;t<=tmax;t+=30){mk(s,'line',{x1:X(t),x2:X(t),y1:T,y2:H-20,stroke:'var(--grid)'});txt(s,X(t),H-6,t+'s');}
+  rows.forEach((p,j)=>{const yy=T+j*rh+rh/2;
+    txt(s,L-8,yy+3.5,`pull ${p.pull}`,{anchor:'end',size:9.5});
+    p.inter.forEach(x=>mk(s,'rect',{x:X(x.start),y:yy-6,width:X(x.start+25)-X(x.start),height:12,fill:'var(--inter)',opacity:.45}));
+    mk(s,'line',{x1:X(0),x2:X(p.dur),y1:yy,y2:yy,stroke:'var(--rule)'});
+    p.fury.pops.forEach((t,k)=>{const d=p.fury.deadlines[k];
+      const nxt=p.fury.pops[k+1];
+      if(d<=p.dur+2){const tk=mk(s,'rect',{x:X(d)-1.5,y:yy-6,width:3,height:12,fill:'var(--s4)'});
+        hook(tk,`pull ${p.pull}: pop at ${t}s set the enrage at ${d}s`+(nxt?`<br>next pop at ${nxt}s (${(d-nxt).toFixed(1)}s to spare)`:''));}
+      const c=mk(s,'circle',{cx:X(t),cy:yy,r:3.6,fill:'var(--s3)'});
+      hook(c,`pull ${p.pull}: pop ${k+1} at ${t}s, ${p.fury.soakers[k]} soaked`+(p.fury.missing[k]?`<br>${p.fury.missing[k]} alive dps/tank missing`:'')+(p.fury.extra_healers[k]?`<br>${p.fury.extra_healers[k]} healer(s) beyond the plan`:''));
+    });
+    if(p.enrage){const e=X(p.enrage);
+      const g=mk(s,'path',{d:`M${e-4},${yy-4}L${e+4},${yy+4}M${e+4},${yy-4}L${e-4},${yy+4}`,stroke:'var(--fatal)','stroke-width':2.4});
+      hook(g,`pull ${p.pull}: Unbound Ferocity at ${p.enrage}s`);}
+  });
+})();
+
+/* players */
+(function(){
+  const tb=document.querySelector('#t-players tbody');
+  const R={tank:'T',healer:'H',dps:'D'};
+  const top=g=>{const e=Object.entries(g).sort((a,b)=>b[1]-a[1])[0];return e?`${D.ended[e[0]][0].toLowerCase()} (${e[1]})`:'';};
+  [...D.players].sort((a,b)=>({tank:0,healer:1,dps:2}[a.role]-{tank:0,healer:1,dps:2}[b.role])||a.player.localeCompare(b.player)).forEach(p=>{
+    const tr=document.createElement('tr');
+    const flung=p.xw_late+p.xw_none+p.xw_partner;
+    tr.innerHTML=`<td class="l"><span class="role">${R[p.role]}</span>${p.player} <span class="muted">${p.spec} ${p.cls.replace('DemonHunter','Demon Hunter')}</span></td>`+
+      `<td>${p.tornado_rate.toFixed(2)}</td><td>${p.xw_marked}</td><td>${p.xw_solo||''}</td>`+
+      `<td>${flung?`${flung} <span class="muted">(${p.xw_late} / ${p.xw_none} / ${p.xw_partner})</span>`:''}</td>`+
+      `<td>${p.fury_missed||''}</td><td>${p.fury_extra||''}</td><td>${p.clipped||''}</td><td>${p.ravage||''}</td><td>${p.deaths}</td><td class="l">${top(p.groups)}</td>`;
+    tb.appendChild(tr);
+  });
+})();
+})();
+</script>
+
+</body>
+</html>

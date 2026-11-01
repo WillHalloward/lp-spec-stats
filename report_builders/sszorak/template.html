@@ -1,0 +1,402 @@
+<title>Sszorak Prog Ledger</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root{
+  --ground:#eaeee6; --surface:#f7faf3; --surface-2:#eef2e8;
+  --ink:#131c17; --ink-2:#3c4c42; --muted:#63735f; --rule:#cdd6c6;
+  --accent:#5f7a0d;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --crit:#c93b3a;
+  --fatal:#4b0a17; --inter:#9aa595;
+  --cls-Warlock:#5d60c8; --cls-Druid:#b45900; --cls-Hunter:#5f8a24;
+  --grid:#d7dfd0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0e1411; --surface:#151d18; --surface-2:#1b241d;
+  --ink:#e9efe5; --ink-2:#c3cfbe; --muted:#93a397; --rule:#2b3830;
+  --accent:#a9c93c;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
+  --fatal:#ffc2cd; --inter:#4d5a50;
+  --cls-Warlock:#8788ee; --cls-Druid:#ff7c0a; --cls-Hunter:#aad372;
+  --grid:#26312a;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ground:#0e1411; --surface:#151d18; --surface-2:#1b241d;
+  --ink:#e9efe5; --ink-2:#c3cfbe; --muted:#93a397; --rule:#2b3830;
+  --accent:#a9c93c;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
+  --fatal:#ffc2cd; --inter:#4d5a50;
+  --cls-Warlock:#8788ee; --cls-Druid:#ff7c0a; --cls-Hunter:#aad372;
+  --grid:#26312a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:1060px;margin:0 auto;padding-inline:16px;padding-block:40px 72px;
+  display:flex;flex-direction:column;gap:44px}
+h1,h2,h3,.lab{font-family:"Barlow Condensed","Arial Narrow",sans-serif;margin:0}
+h1{font-size:clamp(38px,7vw,60px);font-weight:700;line-height:.98;letter-spacing:.01em;text-wrap:balance}
+h2{font-size:26px;font-weight:600;letter-spacing:.02em}
+h3{font-size:17px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.lab{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:600;color:var(--muted)}
+p{margin:0;max-width:66ch;color:var(--ink-2)}
+a{color:var(--accent)}
+header .rule{height:3px;background:var(--accent);width:74px;margin:14px 0 18px}
+header .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);margin-top:12px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.tile{background:var(--surface);padding:16px 16px 14px;display:flex;flex-direction:column;gap:4px}
+.tile .n{font-family:"IBM Plex Mono",monospace;font-size:27px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .n small{font-size:14px;color:var(--muted);font-weight:400}
+.tile .lab{font-size:11px}
+section{display:flex;flex-direction:column;gap:14px}
+section > .head{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--rule);padding-top:14px}
+figure{margin:0;background:var(--surface);border:1px solid var(--rule);padding:16px 14px 10px}
+figcaption{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);padding-top:6px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2);padding-bottom:8px}
+.legend i{width:11px;height:11px;display:inline-block;margin-right:6px;vertical-align:-1px;border-radius:2px}
+.tblwrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.09em;font-size:12px;
+  text-align:right;color:var(--muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+td.l,th.l{text-align:left}
+.pos{color:var(--s3)} .neg{color:var(--crit)}
+.note{background:var(--surface-2);border-left:3px solid var(--accent);padding:14px 16px;font-size:14.5px;display:flex;flex-direction:column;gap:10px}
+.note p{max-width:78ch}
+.mech{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.mech div{background:var(--surface);padding:14px 16px;font-size:14.5px;color:var(--ink-2)}
+.mech b{font-family:"Barlow Condensed",sans-serif;font-size:16px;letter-spacing:.04em;color:var(--ink);display:block;margin-bottom:4px}
+.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--ink);color:var(--ground);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;line-height:1.45;padding:7px 9px;z-index:9;max-width:260px}
+.role{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;
+  border:1px solid currentColor;padding:0 3px;margin-right:5px;opacity:.75;vertical-align:1px}
+.muted{color:var(--muted)}
+footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<div class="wrap">
+<header>
+  <div class="lab">Warcraft Logs {{report}} &middot; {{difficulty}}</div>
+  <h1>{{boss}}, {{pulls}} pulls,<br>and what got better.</h1>
+  <div class="rule"></div>
+  <p>Tornadoes, cysts, crosswinds and the Serpent&#39;s Fury clock, pull by pull. {{night_title}}, {{date_long}}.</p>
+  <div class="meta">
+    <span>{{zone}} &middot; {{difficulty}}</span><span>{{raiders}} raiders</span>
+    <span>{{best_line}}</span><span>{{boss_minutes}} minutes on the boss</span>
+    <span><a href="https://www.warcraftlogs.com/reports/{{report}}">open the log</a></span>
+  </div>
+</header>
+
+<div class="tiles">
+  <div class="tile"><span class="lab">Best pull</span><span class="n">{{best_pct}}<small>%</small></span><span class="muted">pull {{best_pull}}, {{best_dur}}, {{best_inters}} intermissions</span></div>
+  <div class="tile"><span class="lab">Deaths a minute</span><span class="n">{{t1_dpm}}<small> &rarr; </small>{{t3_dpm}}</span><span class="muted">first third to last, before the wipe</span></div>
+  <div class="tile"><span class="lab">Tornado hits a Tempest</span><span class="n">{{t1_tor}}<small> &rarr; </small>{{t3_tor}}</span><span class="muted">first third to last</span></div>
+  <div class="tile"><span class="lab">Phase-one cyst pops</span><span class="n">{{t1_acc}}<small> &rarr; </small>{{t3_acc}}</span><span class="muted">first third to last</span></div>
+  <div class="tile"><span class="lab">Clean intermissions</span><span class="n">{{t1_clean}}/{{t1_inters}}<small> &rarr; </small>{{t3_clean}}/{{t3_inters}}</span><span class="muted">first third to last</span></div>
+  <div class="tile"><span class="lab">Fury enrages</span><span class="n">{{enrage_n}}</span><span class="muted">pulls ended by Unbound Ferocity</span></div>
+</div>
+
+<section>
+  <div class="head"><h2>The night in three parts</h2>
+  <p>The night split into thirds by pull number. Every count is taken from the part of each pull before it was over. A pull is over once fewer than {{fury_need}} players are alive with no battle res ready, because Serpent&#39;s Fury cannot be popped with fewer, and the raid called it there. A pull is also over when the raid jumps off the platform to reset, or at Unbound Ferocity. Rates are per event (per Tempest, per Crosswinds set), so longer pulls in the later thirds do not inflate them.</p></div>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="l">Pulls</th><th>{{t1}}</th><th>{{t2}}</th><th>{{t3}}</th></tr></thead>
+    <tbody>
+      <tr><td class="l">Median boss health left</td><td>{{t1_med_pct}}%</td><td>{{t2_med_pct}}%</td><td>{{t3_med_pct}}%</td></tr>
+      <tr><td class="l">Best pull</td><td>{{t1_best}}%</td><td>{{t2_best}}%</td><td>{{t3_best}}%</td></tr>
+      <tr><td class="l">Median pull length</td><td>{{t1_med_dur}}s</td><td>{{t2_med_dur}}s</td><td>{{t3_med_dur}}s</td></tr>
+      <tr><td class="l">Pulls that cleared an intermission</td><td>{{t1_reach}} of {{t1_n}}</td><td>{{t2_reach}} of {{t2_n}}</td><td>{{t3_reach}} of {{t3_n}}</td></tr>
+      <tr><td class="l">Deaths a minute, before the wipe</td><td>{{t1_dpm}}</td><td>{{t2_dpm}}</td><td>{{t3_dpm}}</td></tr>
+      <tr><td class="l">Tornado hits per Tempest</td><td>{{t1_tor}}</td><td>{{t2_tor}}</td><td>{{t3_tor}}</td></tr>
+      <tr><td class="l">Tornado deaths</td><td>{{t1_tor_dead}}</td><td>{{t2_tor_dead}}</td><td>{{t3_tor_dead}}</td></tr>
+      <tr><td class="l">Cysts popped by accident in phase one</td><td>{{t1_acc}}</td><td>{{t2_acc}}</td><td>{{t3_acc}}</td></tr>
+      <tr><td class="l">Deaths to those cysts</td><td>{{t1_cyst_dead}}</td><td>{{t2_cyst_dead}}</td><td>{{t3_cyst_dead}}</td></tr>
+      <tr><td class="l">Clean intermissions</td><td>{{t1_clean}} of {{t1_inters}}</td><td>{{t2_clean}} of {{t2_inters}}</td><td>{{t3_clean}} of {{t3_inters}}</td></tr>
+      <tr><td class="l">Intermission deaths</td><td>{{t1_inter_dead}}</td><td>{{t2_inter_dead}}</td><td>{{t3_inter_dead}}</td></tr>
+      <tr><td class="l">Crosswinds launches a player could have solo-cancelled</td><td>{{t1_xw_own}} in {{t1_xw_sets}} sets</td><td>{{t2_xw_own}} in {{t2_xw_sets}} sets</td><td>{{t3_xw_own}} in {{t3_xw_sets}} sets</td></tr>
+      <tr><td class="l">Crosswinds deaths</td><td>{{t1_xw_dead}}</td><td>{{t2_xw_dead}}</td><td>{{t3_xw_dead}}</td></tr>
+      <tr><td class="l">Fury pops with an alive dps or tank missing</td><td>{{t1_fury_miss}} of {{t1_fury_pops}}</td><td>{{t2_fury_miss}} of {{t2_fury_pops}}</td><td>{{t3_fury_miss}} of {{t3_fury_pops}}</td></tr>
+      <tr><td class="l">Virulence second-hand per pop</td><td>{{t1_clip}}</td><td>{{t2_clip}}</td><td>{{t3_clip}}</td></tr>
+      <tr><td class="l">Virulence deaths</td><td>{{t1_vir_dead}}</td><td>{{t2_vir_dead}}</td><td>{{t3_vir_dead}}</td></tr>
+      <tr><td class="l">Mutilate deaths</td><td>{{t1_mut_dead}}</td><td>{{t2_mut_dead}}</td><td>{{t3_mut_dead}}</td></tr>
+      <tr><td class="l">Pulls ended by the Fury enrage</td><td>{{t1_enrage}}</td><td>{{t2_enrage}}</td><td>{{t3_enrage}}</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">
+    <p><b>What improved.</b> Phase-one cyst pops went from {{t1_acc}} to {{t3_acc}}, and the deaths they caused from {{t1_cyst_dead}} to {{t3_cyst_dead}}. Intermissions went from {{t1_clean}} clean out of {{t1_inters}} to {{t3_clean}} out of {{t3_inters}}. Crosswinds launches a player could have cancelled alone went from {{t1_xw_own}} in {{t1_xw_sets}} sets to {{t3_xw_own}} in {{t3_xw_sets}}, tornado hits per Tempest fell from {{t1_tor}} to {{t3_tor}}, and deaths a minute fell from {{t1_dpm}} to {{t3_dpm}}.</p>
+    <p><b>What did not.</b> The Serpent&#39;s Fury enrage ended {{t3_enrage}} of the last {{t3_n}} pulls, and Mutilate deaths rose to {{t3_mut_dead}} in the last third ({{mut_worst_n}} of them on pull {{mut_worst}} alone). Tornado deaths held level ({{t1_tor_dead}}, {{t2_tor_dead}}, {{t3_tor_dead}}) even as hits per Tempest fell; the later pulls saw more Tempests.</p>
+  </div>
+</section>
+
+<section>
+  <div class="head"><h2>Pull by pull</h2>
+  <p>Boss health left at the end of each pull, coloured by what ended it. Most pulls ended when deaths took the raid under {{fury_need}} alive with no battle res ready ({{under_n}} pulls). Those are coloured by the mechanic behind most of the deaths in the twenty seconds that got it there. A Fury enrage only counts as the cause when the raid still had the numbers to pop. Across the night: {{ended_top}}.</p></div>
+  <figure>
+    <div class="legend" id="lg-pulls"></div>
+    <svg id="c-pulls" viewBox="0 0 900 280" role="img" aria-label="Boss health left per pull"></svg>
+    <figcaption>Lower is further. The number above each bar is the pull length in seconds.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>How Mythic Sszorak runs</h2>
+  <p>Read off this log rather than a guide: every pull ran to the same clock. Each phase one has two Apex Predator combos, and each combo is followed by a Serpent&#39;s Fury pop, a Venomous Surge and a Crosswinds set. Dig In then opens a 25-second intermission, and the cycle repeats.</p></div>
+  <div class="mech">
+    <div><b>Apex Predator</b>Five tank casts in a random order: two Ravage, two Mutilate, one Tempest. Ravage is a frontal on the tank; anyone else in it takes the hit ({{ravage_raid}} times this night, killing {{ravage_dead}}). Mutilate is a frontal the raid splits into two soak groups.</div>
+    <div><b>Tempest</b>Tornadoes come out of the boss and roam the room for most of the next minute. {{tor_first10_pct}}% of the night&#39;s tornado hits came in the first ten seconds after the cast and {{tor_late_pct}}% more than fifteen seconds after it, while the raid was busy with Surge and Crosswinds.</div>
+    <div><b>Serpent&#39;s Fury</b>One player is marked. Sszorak builds rage until fourteen more stand in the circle with them, {{fury_need}} in all, a hard minimum; then he charges the mark (To the Slaughter) and everyone in it gets Virulence, which bursts in lines five seconds later. At 100 rage he gains Unbound Ferocity, and the pull is over.</div>
+    <div><b>Venomous Surge &amp; Viscous Cyst</b>Two players are marked for ten seconds and drop a cyst where they stand. Touching a cyst pops it: a big knockback and a damage-over-time on everyone near it. The cysts are for the intermission.</div>
+    <div><b>Raging Crosswinds</b>Eight players get an arrow and are launched along it about eight seconds later. Two players with opposite arrows who meet cancel each other. Every class except {{xw_partner_classes}} can also cancel their own launch with a movement ability.</div>
+    <div><b>Dig In</b>The intermission. Winds sweep the platform in three gusts; the raid pops a cyst before each one at about {{pop1}}, {{pop2}} and {{pop3}} seconds in, so the knockback carries everyone into the wind instead of off the edge.</div>
+  </div>
+  <figure>
+    <div class="legend" id="lg-tl"></div>
+    <svg id="c-tl" viewBox="0 0 900 190" role="img" aria-label="Timeline of the best pull"></svg>
+    <figcaption>Pull {{best_pull}}, the night&#39;s best, cast by cast. Shaded bands are Dig In.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Tornadoes</h2>
+  <p>{{tornado_hits}} tornado hits across {{tempests}} Tempests, counting a tornado tagging the same player twice within a second as one hit. They killed {{tornado_deaths}}, and they were the first death of a pull more often than anything else: {{first_top}}.</p>
+  <p>Per Tempest the raid took {{t1_tor}} hits in pulls {{t1}}, {{t2_tor}} in {{t2}} and {{t3_tor}} in {{t3}}. Per Tempest the player was alive for, the non-tanks hit most often were {{tor_top}}, against a median of {{tor_med}}. The tanks stand where the tornadoes come out of the boss: {{tor_tanks}}.</p></div>
+  <figure>
+    <svg id="c-tor" viewBox="0 0 900 220" role="img" aria-label="Tornado hits per Tempest per pull"></svg>
+    <figcaption>One dot per pull: tornado hits per Tempest cast. The horizontal lines are each third&#39;s average.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Cysts in phase one</h2>
+  <p>A cyst popped outside the intermission is an accident: everyone near it is knocked across the room, and at the edge that means off it. {{acc_total}} went off that way, on pulls {{acc_pull_list}}, catching {{acc_hit_med}} players at the median. {{acc_fresh}} of them went off within ten seconds of being dropped, which means they were dropped where the raid stood. They killed {{cyst_p1_dead}}, by knocking people off the platform or by the damage they leave behind.</p>
+  <p>This is the clearest improvement of the night. After pull 25 only one more went off (pull {{acc_last}}), and it killed nobody.</p></div>
+  <figure>
+    <svg id="c-acc" viewBox="0 0 900 200" role="img" aria-label="Players hit by an accidental cyst pop per pull"></svg>
+    <figcaption>Players caught by a phase-one cyst pop, per pull. Two pops in one pull are stacked.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>The intermission</h2>
+  <p>{{inter_n}} intermissions were opened across the night and {{inter_clean}} went cleanly: three cysts, about eight and a half seconds apart, and at most one death. They cost {{inter_dead}} deaths in all ({{inter_dead_pct}}% of every death before a wipe).</p>
+  <p>The failures come in two kinds. <b>Two cysts within two seconds</b>, which wastes one, so a later gust has nothing to ride: {{inter_double}} times (pulls {{inter_double_list}}), {{inter_double_dead}} dead. <b>A pop missing or late</b>: {{inter_short}} times (pulls {{inter_short_list}}), {{inter_short_dead}} dead. The last intermission to lose five or more players was on pull {{inter_last_bad}}.</p>
+  <p>The Fury holder must not set off the pop while Dig In is being cast: {{dig_note}}.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s3)"></i>cyst pop</span><span><i style="background:var(--crit)"></i>second pop within 2s</span><span><i style="background:var(--muted)"></i>deaths in the intermission</span></div>
+    <svg id="c-inter" viewBox="0 0 900 400" role="img" aria-label="Cyst pops in each intermission"></svg>
+    <figcaption>One row per intermission, its 25 seconds left to right. The three ticks at the top are where the clean ones popped.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Raging Crosswinds</h2>
+  <p>{{xw_knocks}} knock-ups across {{xw_sets}} sets. {{xw_cancelled}} were cancelled by a partner, and {{xw_solo}} by the player&#39;s own movement within a second and a half of the launch: mostly {{xw_soloists}}. {{xw_own}} launches went off on a player who could have cancelled alone: {{xw_late}} pressed movement too late, and {{xw_none}} pressed none. {{xw_partner}} more were {{xw_partner_classes}}, who can only be caught by a partner: {{xw_dep}}.</p>
+  <p>Launches that could have been avoided alone: {{t1_xw_own}} in {{t1_xw_sets}} sets in pulls {{t1}}, {{t2_xw_own}} in {{t2_xw_sets}} in {{t2}}, {{t3_xw_own}} in {{t3_xw_sets}} in {{t3}}. Most often launched with a cancel in their kit: {{xw_top}}. Crosswinds killed {{xw_dead}}; {{xw_edge}} of them went off the edge, and the rest died to the launch damage.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--crit)"></i>could have solo-cancelled</span><span><i style="background:var(--s4)"></i>paladin or priest, no partner</span></div>
+    <svg id="c-xw" viewBox="0 0 900 200" role="img" aria-label="Crosswinds launches per pull"></svg>
+    <figcaption>Launches per pull. A launch is a Turbulent Gusts debuff that lasted longer than 1.5 seconds; a cancelled knock-up drops it within half a second.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>The Serpent&#39;s Fury clock</h2>
+  <p>The pop needs {{fury_need}} bodies in the circle, the marked player included, so a raid with {{fury_need_less}} alive and no battle res ready cannot pop at all. {{enrage_all_n}} pulls reached Unbound Ferocity. In {{enrage_forced_n}} of them ({{enrage_forced_list}}) the raid was already under {{fury_need}} when it came, so the deaths ended those pulls, not the clock. The other {{enrage_n}} ({{enrage_list}}) still had the numbers, and the pop came too late. Every pop that did go off had {{fury_need}} in the circle: {{soak_med}} players at the median by Virulence and never fewer than {{soak_lo}}. On the two pops with only fourteen players, the marked player was Piiaan, whose Beast Mastery pet stands in but never gets the debuff.</p>
+  <p>The boss reaches 100 rage {{fury_short}} seconds after a pop within a phase, and {{fury_long}} seconds after the last pop before an intermission, because the rage keeps building through Dig In. The first pop after the intermission cannot go off until the post-intermission combo ends; when it worked it went off at {{pop3_med}} seconds at the median. So the second pop of the pull sets the deadline for the third. Pop two landed anywhere from {{pop2_lo}} to {{pop2_hi}} seconds this night, and every second earlier is a second less after the combo.</p>
+  <p>Of the timing failures, {{enrage_slot3}} pulls died at that first post-intermission pop ({{enrage_slot3_list}}). {{enrage_slot4}} died at the next one ({{enrage_slot4_list}}), and {{enrage_slot5}} after the second intermission ({{enrage_slot5_list}}): {{p5_rows}}.</p>
+  <p>Against the plan (every dps and both tanks in, healers only to cover a dead one), {{fury_full}} of {{fury_pops}} pops had every alive dps and tank in the circle. Missing most often while alive: {{fury_missers}}. Healers stood in when no dps or tank was dead on {{fury_extra_pops}} pops: {{fury_extra_names}}. A healer who soaks takes a Virulence they did not need, which is one more set of lines in the raid. Second-hand Virulence, someone clipped by a line, fell from {{t1_clip}} per pop to {{t3_clip}}; it killed {{vir_dead}} across the night.</p></div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--s3)"></i>pop</span><span><i style="background:var(--s4)"></i>deadline the pop set</span><span><i style="background:var(--fatal)"></i>enrage</span><span><i class="hatch" style="background:var(--inter)"></i>Dig In</span></div>
+    <svg id="c-fury" viewBox="0 0 900 600" role="img" aria-label="Serpent's Fury pops and deadlines per pull"></svg>
+    <figcaption>One row per pull that lasted past two minutes. Each pop draws a tick at the moment the next one becomes an enrage.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head"><h2>Mutilate, Ravage and the floor</h2>
+  <p><b>Mutilate</b> killed {{mut_dead}}, mostly through the Mutilated Gash bleed after an under-filled soak. Pull {{mut_worst}} was the worst at {{mut_worst_n}}, with {{mut_worst_double}} of its soakers still carrying Gash from the soak before ({{mut_double}} such soaks across the whole night). Mutilate deaths rose from {{t1_mut_dead}} in the first third to {{t3_mut_dead}} in the last. <b>Ravage</b> hit someone other than a tank {{ravage_raid}} times and killed {{ravage_dead}}. <b>Venomous Surge</b> killed {{surge_dead}}, and the <b>caustic puddles</b> {{floor_dead}}.</p></div>
+</section>
+
+<section>
+  <div class="head"><h2>Deaths</h2>
+  <p>{{deaths_live}} deaths before a pull was over. Deaths after the raid fell under {{fury_need}} alive with no battle res ready are not counted (three seconds of grace, so one blow killing several counts in full). Neither are deaths after a jump-off reset ({{walked_n}} pulls reset that way before going under) or after an enrage. That leaves out {{called_deaths}} and {{enrage_deaths}} more. The biggest killers were {{death_top}}.</p></div>
+  <figure>
+    <div class="legend" id="lg-deaths"></div>
+    <svg id="c-deaths" viewBox="0 0 900 260" role="img" aria-label="Deaths per pull by mechanic"></svg>
+    <figcaption>Deaths per pull, before the wipe, by the mechanic behind them. A fall off the platform is counted under whatever moved the player there.</figcaption>
+  </figure>
+  <div class="tblwrap"><table id="t-players">
+    <thead><tr><th class="l">Player</th><th>Tornado hits / Tempest</th><th>Crosswinds marked</th><th>Solo cancels</th><th>Launched (late / none / no partner)</th><th>Fury missed</th><th>Fury extra</th><th>Clipped</th><th>Ravage</th><th>Deaths</th><th class="l">Top cause</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p class="muted" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">Per player, before each pull was over. Fury missed: pops where they were alive, assigned (dps or tank) and not in the circle. Fury extra: healers standing in when no dps or tank was dead. Clipped: Virulence picked up from somebody else&#39;s lines.</p>
+</section>
+
+<section>
+  <div class="note">
+    <p><b>How this is read.</b> The platform&#39;s edge is about 60 yards from the middle. No player still alive fifteen seconds later was ever logged past 69. A death whose last eight seconds went past 65 yards, with no killing blow, is a fall. It is blamed on what moved the player there in the seven seconds before they left the platform: a Crosswinds launch, a cyst pop, the intermission&#39;s winds, or nothing. Nothing means they walked or jumped off. Three of those inside ten seconds is a called wipe. <b>Under the number</b> is fewer than {{fury_need}} alive, counting a ready battle res as one more. Charges follow the raid rule: one at the pull and one every 4.5 minutes with twenty players, spent by Rebirth or Intercession; a shaman&#39;s Reincarnation is free. Every death more than three seconds after either point is left out. <b>A tornado hit</b> is a Tempest hit without the tick flag. <b>A cyst pop</b> is a burst of Viscous Cyst hits without the tick flag; pops during Dig In or in the ten seconds after it are planned, all others are accidents. <b>A Fury pop</b> is the mark dropping with Virulence going out to the soakers within 1.5 seconds; the rage windows are read off the enrages themselves. <b>A Crosswinds launch</b> is Turbulent Gusts lasting past 1.5 seconds. A solo cancel is the player&#39;s own movement ability ({{solo_moves}}) cast from half a second before to 1.5 seconds after the launch. A launch with that movement pressed later counts as late.</p>
+  </div>
+</section>
+
+<footer>Built from the Warcraft Logs v2 API &middot; report {{report}} &middot; {{pulls}} pulls, {{outcome}}.</footer>
+</div>
+<div class="tip" id="tip"></div>
+<script id="data" type="application/json">__PAYLOAD__</script>
+<script>
+(function(){
+const D=JSON.parse(document.getElementById('data').textContent);
+const NS='http://www.w3.org/2000/svg';
+function mk(p,t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;}
+function txt(p,x,y,s,o={}){const e=mk(p,'text',Object.assign({x,y,fill:o.fill||'var(--muted)','font-size':o.size||11,
+  'font-family':'IBM Plex Mono, monospace','text-anchor':o.anchor||'middle'},o.attr||{}));e.textContent=s;return e;}
+const tip=document.getElementById('tip');
+function hook(el,html){
+  el.addEventListener('mousemove',ev=>{tip.innerHTML=html;tip.style.opacity=1;
+    const w=tip.offsetWidth;let x=ev.clientX+14;if(x+w>innerWidth-8)x=ev.clientX-w-14;
+    tip.style.left=x+'px';tip.style.top=(ev.clientY+14)+'px';});
+  el.addEventListener('mouseleave',()=>tip.style.opacity=0);
+}
+function niceStep(max){const mag=Math.pow(10,Math.floor(Math.log10(max||1)));return mag*(max/mag>5?2:max/mag>2?1:.5);}
+function legend(id,items){const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=items.map(([l,c])=>`<span><i style="background:${c}"></i>${l}</span>`).join('');}
+const P=D.pulls, N=P.length;
+const thirds=(()=>{const a=Math.round(N/3),b=Math.round(2*N/3);return [[0,a],[a,b],[b,N]];})();
+
+/* axes for a per-pull chart */
+function frame(s,H,ymax,fmt){
+  const L=40,R=10,T=14,B=26,W=900,cw=(W-L-R)/N;
+  const y=v=>T+(H-T-B)*(1-v/ymax);
+  const st=niceStep(ymax/4);
+  for(let v=0;v<=ymax+1e-9;v+=st){mk(s,'line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--grid)'});
+    txt(s,L-6,y(v)+4,fmt?fmt(v):v,{anchor:'end'});}
+  P.forEach((p,i)=>{if(p.pull%5===0||i===0)txt(s,L+cw*(i+.5),H-8,p.pull);});
+  return {L,R,T,B,W,cw,y,x:i=>L+cw*(i+.5)};
+}
+
+/* pulls */
+(function(){
+  const s=document.getElementById('c-pulls'),H=280,f=frame(s,H,100,v=>v+'%');
+  const used=[...new Set(P.map(p=>p.ended))];
+  legend('lg-pulls',used.map(k=>D.ended[k]));
+  P.forEach((p,i)=>{
+    const c=D.ended[p.ended][1], x=f.L+f.cw*i+2, w=f.cw-4;
+    const r=mk(s,'rect',{x,y:f.y(p.pct),width:w,height:f.y(0)-f.y(p.pct),fill:c,rx:1.5});
+    txt(s,x+w/2,f.y(p.pct)-4,Math.round(p.dur),{size:8.5});
+    hook(r,`<b>Pull ${p.pull}</b><br>${p.pct.toFixed(1)}% left, ${Math.round(p.dur)}s<br>${p.inters_done} intermission${p.inters_done==1?'':'s'} cleared<br>ended by: ${D.ended[p.ended][0]}<br>${p.deaths_live} deaths before the wipe`+(p.first?`<br>first death: ${p.first.player} at ${p.first.t}s (${D.ended[p.first.group][0].toLowerCase()})`:''));
+  });
+})();
+
+/* timeline of the best pull */
+(function(){
+  const s=document.getElementById('c-tl'),T=D.timeline,W=900,L=96,R=10;
+  const x=t=>L+(W-L-R)*t/T.dur;
+  const LANES=[['ravage','Ravage','var(--cls-Warlock)'],['mutilate','Mutilate','var(--crit)'],['tempest','Tempest','var(--s3)'],
+    ['fury','Fury pop','var(--s2)'],['surge','Surge','var(--ink-2)'],['crosswinds','Crosswinds','var(--s5)'],['pop','Cyst pop','var(--s4)']];
+  const lh=22,top=8;
+  T.segs.forEach(g=>{if(g.k==='inter')mk(s,'rect',{x:x(g.s),y:top-4,width:x(g.e)-x(g.s),height:LANES.length*lh+4,fill:'var(--inter)',opacity:.35});});
+  LANES.forEach(([k,l,c],i)=>{const yy=top+i*lh+lh/2;
+    txt(s,L-8,yy+4,l,{anchor:'end'});mk(s,'line',{x1:L,x2:W-R,y1:yy,y2:yy,stroke:'var(--grid)'});
+    T.events.filter(e=>e.k===k).forEach(e=>{const m=mk(s,'rect',{x:x(e.t)-2.5,y:yy-7,width:5,height:14,fill:c,rx:1});hook(m,`${l} at ${e.t}s`);});
+  });
+  const yb=top+LANES.length*lh+14;
+  for(let t=0;t<=T.dur;t+=30)txt(s,x(t),yb,t+'s');
+})();
+
+/* third-average lines on a dot chart */
+function trend(id,key,ymaxMin,fmt){
+  const s=document.getElementById(id),H=+s.getAttribute('viewBox').split(' ')[3];
+  const vals=P.map(p=>p[key]);
+  const ymax=Math.max(ymaxMin,...vals.filter(v=>v!=null))*1.1;
+  const f=frame(s,H,ymax,fmt);
+  thirds.forEach(([a,b])=>{const v=vals.slice(a,b).filter(v=>v!=null);if(!v.length)return;
+    const m=v.reduce((x,y)=>x+y,0)/v.length;
+    mk(s,'line',{x1:f.L+f.cw*a+2,x2:f.L+f.cw*b-2,y1:f.y(m),y2:f.y(m),stroke:'var(--accent)','stroke-width':2});
+    txt(s,f.L+f.cw*(a+b)/2,f.y(m)-6,m.toFixed(1),{fill:'var(--accent)'});
+  });
+  P.forEach((p,i)=>{if(vals[i]==null)return;const c=mk(s,'circle',{cx:f.x(i),cy:f.y(vals[i]),r:4,fill:'var(--s1)'});
+    hook(c,`<b>Pull ${p.pull}</b><br>${p.tornado_hits} tornado hits over ${p.tempests} Tempests`);});
+}
+trend('c-tor','tornado_rate',4,v=>v.toFixed(0));
+
+/* stacked per-pull bars */
+function stacked(id,parts,ymin,tipf){
+  const s=document.getElementById(id),H=+s.getAttribute('viewBox').split(' ')[3];
+  const tot=P.map(p=>parts.reduce((a,[k])=>a+(typeof k==='function'?k(p):(p[k]||0)),0));
+  const f=frame(s,H,Math.max(ymin,...tot)*1.08,v=>Math.round(v));
+  P.forEach((p,i)=>{let acc=0;const x=f.L+f.cw*i+2,w=f.cw-4;
+    parts.forEach(([k,c])=>{const v=typeof k==='function'?k(p):(p[k]||0);if(!v)return;
+      const r=mk(s,'rect',{x,y:f.y(acc+v),width:w,height:f.y(acc)-f.y(acc+v),fill:c});hook(r,tipf(p));acc+=v;});
+  });
+}
+stacked('c-acc',[['acc_hit','var(--s4)']],10,p=>`<b>Pull ${p.pull}</b><br>${p.acc_pops} cyst${p.acc_pops==1?'':'s'} popped in phase one, ${p.acc_hit} players caught`);
+stacked('c-xw',[['xw_own','var(--crit)'],['xw_partner','var(--s4)']],5,p=>`<b>Pull ${p.pull}</b><br>${p.xw_sets} sets<br>${p.xw_own} launched who could have solo-cancelled<br>${p.xw_partner} paladin/priest launched without a partner`);
+legend('lg-deaths',D.groups.map(g=>[g[1],g[2]]));
+stacked('c-deaths',D.groups.map(([k,,c])=>[p=>p.deaths[k]||0,c]),10,p=>`<b>Pull ${p.pull}</b><br>`+D.groups.filter(g=>p.deaths[g[0]]).map(g=>`${g[1]}: ${p.deaths[g[0]]}`).join('<br>'));
+
+/* intermissions */
+(function(){
+  const s=document.getElementById('c-inter'),rows=[];
+  P.forEach(p=>p.inter.forEach((x,i)=>rows.push({p,x,i})));
+  const W=900,L=120,R=150,T=24,rh=11,H=T+rows.length*rh+24;
+  s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const X=t=>L+(W-L-R)*t/25;
+  [3.5,12.2,20.5].forEach(t=>{mk(s,'line',{x1:X(t),x2:X(t),y1:T-6,y2:H-20,stroke:'var(--grid)','stroke-dasharray':'3 3'});});
+  for(let t=0;t<=25;t+=5)txt(s,X(t),H-6,t+'s');
+  txt(s,W-R+8,T-10,'dead / fell',{anchor:'start'});
+  rows.forEach(({p,x,i},j)=>{const yy=T+j*rh+rh/2;
+    txt(s,L-8,yy+3.5,`pull ${p.pull}`+(i?` · ${i+1}`:''),{anchor:'end',size:9.5});
+    mk(s,'line',{x1:X(0),x2:X(25),y1:yy,y2:yy,stroke:'var(--grid)'});
+    x.pops.forEach((t,k)=>{const dbl=k>0&&t-x.pops[k-1]<2;
+      const c=mk(s,'circle',{cx:X(Math.min(t,25)),cy:yy,r:4,fill:dbl?'var(--crit)':'var(--s3)'});hook(c,`pull ${p.pull}: cyst at ${t}s`);});
+    if(x.died){const w=Math.min(70,x.died*3.5);mk(s,'rect',{x:W-R+8,y:yy-3.5,width:w,height:7,fill:'var(--muted)'});}
+    txt(s,W-R+8+Math.min(70,x.died*3.5)+(x.died?4:0),yy+3.5,x.died?`${x.died} / ${x.fell}`:'0',{anchor:'start',size:9.5});
+  });
+})();
+
+/* Fury clock */
+(function(){
+  const s=document.getElementById('c-fury'),rows=P.filter(p=>p.dur>=120);
+  const W=900,L=60,R=12,T=10,rh=16,tmax=Math.max(...rows.map(p=>p.dur));
+  const H=T+rows.length*rh+26;s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const X=t=>L+(W-L-R)*t/tmax;
+  for(let t=0;t<=tmax;t+=30){mk(s,'line',{x1:X(t),x2:X(t),y1:T,y2:H-20,stroke:'var(--grid)'});txt(s,X(t),H-6,t+'s');}
+  rows.forEach((p,j)=>{const yy=T+j*rh+rh/2;
+    txt(s,L-8,yy+3.5,`pull ${p.pull}`,{anchor:'end',size:9.5});
+    p.inter.forEach(x=>mk(s,'rect',{x:X(x.start),y:yy-6,width:X(x.start+25)-X(x.start),height:12,fill:'var(--inter)',opacity:.45}));
+    mk(s,'line',{x1:X(0),x2:X(p.dur),y1:yy,y2:yy,stroke:'var(--rule)'});
+    p.fury.pops.forEach((t,k)=>{const d=p.fury.deadlines[k];
+      const nxt=p.fury.pops[k+1];
+      if(d<=p.dur+2){const tk=mk(s,'rect',{x:X(d)-1.5,y:yy-6,width:3,height:12,fill:'var(--s4)'});
+        hook(tk,`pull ${p.pull}: pop at ${t}s set the enrage at ${d}s`+(nxt?`<br>next pop at ${nxt}s (${(d-nxt).toFixed(1)}s to spare)`:''));}
+      const c=mk(s,'circle',{cx:X(t),cy:yy,r:3.6,fill:'var(--s3)'});
+      hook(c,`pull ${p.pull}: pop ${k+1} at ${t}s, ${p.fury.soakers[k]} soaked`+(p.fury.missing[k]?`<br>${p.fury.missing[k]} alive dps/tank missing`:'')+(p.fury.extra_healers[k]?`<br>${p.fury.extra_healers[k]} healer(s) beyond the plan`:''));
+    });
+    if(p.enrage){const e=X(p.enrage);
+      const g=mk(s,'path',{d:`M${e-4},${yy-4}L${e+4},${yy+4}M${e+4},${yy-4}L${e-4},${yy+4}`,stroke:'var(--fatal)','stroke-width':2.4});
+      hook(g,`pull ${p.pull}: Unbound Ferocity at ${p.enrage}s`);}
+  });
+})();
+
+/* players */
+(function(){
+  const tb=document.querySelector('#t-players tbody');
+  const R={tank:'T',healer:'H',dps:'D'};
+  const top=g=>{const e=Object.entries(g).sort((a,b)=>b[1]-a[1])[0];return e?`${D.ended[e[0]][0].toLowerCase()} (${e[1]})`:'';};
+  [...D.players].sort((a,b)=>({tank:0,healer:1,dps:2}[a.role]-{tank:0,healer:1,dps:2}[b.role])||a.player.localeCompare(b.player)).forEach(p=>{
+    const tr=document.createElement('tr');
+    const flung=p.xw_late+p.xw_none+p.xw_partner;
+    tr.innerHTML=`<td class="l"><span class="role">${R[p.role]}</span>${p.player} <span class="muted">${p.spec} ${p.cls.replace('DemonHunter','Demon Hunter')}</span></td>`+
+      `<td>${p.tornado_rate.toFixed(2)}</td><td>${p.xw_marked}</td><td>${p.xw_solo||''}</td>`+
+      `<td>${flung?`${flung} <span class="muted">(${p.xw_late} / ${p.xw_none} / ${p.xw_partner})</span>`:''}</td>`+
+      `<td>${p.fury_missed||''}</td><td>${p.fury_extra||''}</td><td>${p.clipped||''}</td><td>${p.ravage||''}</td><td>${p.deaths}</td><td class="l">${top(p.groups)}</td>`;
+    tb.appendChild(tr);
+  });
+})();
+})();
+</script>
