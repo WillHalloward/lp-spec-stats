@@ -1,0 +1,377 @@
+<title>Rouse Spawn Pattern</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column. Rules, then the six Rouses of a fight, then one Rouse up close, then a whole log as a grid. */
+:root {
+  --bg: #f3f5f4; --panel: #ffffff; --fg: #18211f; --muted: #5d6b67; --line: #d5dcda;
+  --left: #23808a; --left-soft: #d4eaec; --right: #b06a14; --right-soft: #f4e3cc;
+  --rep: #c0304c; --rep-soft: #f8dbe1; --empty: #eceff0; --ghost: #9aa7a3;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121817; --panel: #1a2220; --fg: #e3ebe8; --muted: #93a39f; --line: #2c3835;
+  --left: #4fb4be; --left-soft: #173a3e; --right: #e09a45; --right-soft: #3d2b14;
+  --rep: #f0607c; --rep-soft: #4a1d27; --empty: #202a28; --ghost: #56635f; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121817; --panel: #1a2220; --fg: #e3ebe8; --muted: #93a39f; --line: #2c3835;
+  --left: #4fb4be; --left-soft: #173a3e; --right: #e09a45; --right-soft: #3d2b14;
+  --rep: #f0607c; --rep-soft: #4a1d27; --empty: #202a28; --ghost: #56635f; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.5; margin: 0; }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 40px; }
+h1, h2 { font-family: var(--display); font-weight: 700; letter-spacing: .01em; text-wrap: balance; margin: 0; }
+h1 { font-size: 2.6rem; line-height: 1.05; }
+h2 { font-size: 1.6rem; }
+.sub { color: var(--muted); margin: 6px 0 0; max-width: 68ch; }
+.eyebrow { font: 600 .72rem/1 var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+section { display: grid; gap: 14px; min-width: 0; }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.rule { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.rule .n { font: 700 2rem/1 var(--display); }
+.rule p { margin: 0; color: var(--muted); font-size: .92rem; }
+.rule b { color: var(--fg); font-weight: 600; }
+.tag { display: inline-block; font: 600 .7rem/1 var(--mono); padding: 3px 6px; border-radius: 3px; vertical-align: 2px; }
+.tag.l { background: var(--left-soft); color: var(--left); }
+.tag.r { background: var(--right-soft); color: var(--right); }
+.tag.x { background: var(--rep-soft); color: var(--rep); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.picker { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.picker label { display: flex; gap: 8px; align-items: center; }
+select { font: 400 .95rem var(--body); padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--fg); max-width: 100%; }
+select:focus-visible, .row:focus-visible { outline: 2px solid var(--left); outline-offset: 2px; }
+.scroll { overflow-x: auto; }
+svg text { font-family: var(--mono); }
+.note { font-size: .88rem; color: var(--muted); margin: 0; max-width: 70ch; }
+ul.advice { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; max-width: 70ch; }
+ul.advice li::marker { color: var(--muted); }
+/* the six Rouses */
+.six { display: grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); gap: 8px; min-width: 760px; }
+.rz { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: grid; gap: 8px; align-content: start; }
+.rz .hd { display: flex; justify-content: space-between; align-items: baseline; }
+.rz .hd b { font: 700 1.25rem/1 var(--display); }
+.rz .hd span { font: 400 .75rem var(--mono); color: var(--muted); }
+.rz .pl { font: 600 .7rem/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.rz .big { font: 700 1.9rem/1 var(--display); }
+.rz .big.zero { color: var(--left); } .rz .big.some { color: var(--rep); }
+.rz .meter { height: 8px; border-radius: 4px; background: var(--empty); overflow: hidden; }
+.rz .meter i { display: block; height: 100%; background: var(--rep); }
+.rz p { margin: 0; font-size: .8rem; color: var(--muted); }
+.corner-band { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; min-width: 760px; }
+.corner-band div { font: 600 .7rem/1 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; border-top: 2px solid var(--line); padding-top: 6px; }
+/* grid */
+.grid { display: grid; grid-template-columns: 110px repeat(5, minmax(40px, 1fr)) 14px repeat(5, minmax(40px, 1fr)) 40px; gap: 3px; min-width: 660px; font-variant-numeric: tabular-nums; }
+.grid .h { font: 600 .72rem/1 var(--mono); color: var(--muted); text-align: center; padding: 6px 0; }
+.grid .h.l { color: var(--left); } .grid .h.r { color: var(--right); }
+.grid .grp { grid-column: 1 / -1; font: 700 1.1rem/1 var(--display); padding: 14px 0 4px; display: flex; gap: 10px; align-items: baseline; }
+.grid .grp span { font: 400 .8rem var(--body); color: var(--muted); }
+.row { display: contents; cursor: pointer; }
+.row .lab { font: 600 .78rem/1 var(--mono); display: flex; align-items: center; padding-left: 6px; border-radius: 3px; }
+.row.sel .lab { background: var(--fg); color: var(--bg); }
+.row:hover .lab { text-decoration: underline; }
+.c { height: 30px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font: 600 .78rem/1 var(--mono); }
+.c.l { background: var(--left-soft); color: var(--left); }
+.c.r { background: var(--right-soft); color: var(--right); }
+.c.e { background: var(--empty); color: var(--muted); }
+.c.x { background: var(--rep-soft); color: var(--rep); box-shadow: inset 0 0 0 2px var(--rep); }
+.c.u { color: var(--muted); font-weight: 400; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .82rem; color: var(--muted); align-items: center; }
+.legend i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">The Twin Fangs · Mythic · Rouse the Brood</div>
+    <h1>Rouse Spawn Pattern</h1>
+    <p class="sub" id="intro"></p>
+  </header>
+
+  <section>
+    <h2>The rules</h2>
+    <div class="rules" id="rules"></div>
+  </section>
+
+  <section>
+    <h2>Through the fight</h2>
+    <p class="note">Each corner gets two Rouses. The first one in a place uses every spot once; the second one can reuse spots. Share of Rouses with at least one spot used twice, across the kills:</p>
+    <div class="scroll">
+      <div class="corner-band" id="band"></div>
+      <div class="six" id="six"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Which Broodling comes back</h2>
+    <p class="note" id="ordernote"></p>
+    <div class="scroll"><svg id="order" role="img" aria-label="Repeat rate by Broodling number on a side"></svg></div>
+  </section>
+
+  <section>
+    <h2>For the kick plan</h2>
+    <ul class="advice" id="advice"></ul>
+  </section>
+
+  <section>
+    <h2>One Rouse up close</h2>
+    <div class="panel">
+      <div class="picker">
+        <label><span class="eyebrow">Log</span><select id="pickLog"></select></label>
+        <label><span class="eyebrow">Rouse</span><select id="pickRouse"></select></label>
+      </div>
+      <div class="scroll"><svg id="map" role="img" aria-label="Spots to scale with spawn order"></svg></div>
+      <div class="scroll"><svg id="lanes" role="img" aria-label="Broodling lifetimes by spot"></svg></div>
+      <p class="note" id="lanenote"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Every Rouse in a log</h2>
+    <div class="picker"><label><span class="eyebrow">Log</span><select id="gridLog"></select></label></div>
+    <p class="note">Each cell is a spot; the number is the spawn order (1 is the first Broodling, 1.5 s after the cast, then one a second). Click a row to open it above.</p>
+    <div class="legend">
+      <span><i style="background:var(--left-soft)"></i>L spot used once</span>
+      <span><i style="background:var(--right-soft)"></i>R spot used once</span>
+      <span><i style="background:var(--rep-soft);box-shadow:inset 0 0 0 2px var(--rep)"></i>spot used twice</span>
+      <span><i style="background:var(--empty)"></i>spot left empty</span>
+      <span>? = Broodlings with no position (nothing hit them)</span>
+    </div>
+    <div class="scroll"><div class="grid" id="grid"></div></div>
+  </section>
+
+  <section>
+    <h2>How this was read</h2>
+    <p class="note" id="method"></p>
+  </section>
+</div>
+
+<script>
+const P = __PAYLOAD__;
+const SPOTS = ["L1","L2","L3","L4","L5","R5","R4","R3","R2","R1"];
+const PLACE = { arc: "opening arc", west: "west corner", east: "east corner" };
+const side = s => s && s[0] === "L" ? "l" : s && s[0] === "R" ? "r" : null;
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const NS = "http://www.w3.org/2000/svg";
+const pct = (a, b) => b ? Math.round(100 * a / b) : 0;
+function el(tag, attrs = {}, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs = {}) { const t = el("text", { x, y, "font-size": 11, fill: css("--muted"), ...attrs }, parent); t.textContent = s; return t; }
+function sizeSvg(svg, W, H) { svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("width", W); svg.style.maxWidth = "100%"; svg.style.height = "auto"; }
+
+// per-Rouse facts
+function facts(r) {
+  r.by = {}; r.unk = [];
+  for (const a of r.adds) { if (SPOTS.includes(a.s)) (r.by[a.s] ||= []).push(a); else r.unk.push(a); }
+  r.reps = Object.values(r.by).filter(v => v.length > 1);
+  return r;
+}
+P.logs.forEach(l => l.rouses.forEach(facts));
+P.night.forEach(facts);
+
+const B = P.by_n, odd = B.filter(b => b.n % 2), even = B.filter(b => !(b.n % 2));
+const sum = (xs, k) => xs.reduce((s, x) => s + x[k], 0);
+const fmtDate = d => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+document.getElementById("intro").textContent =
+  `Where the ten Broodlings surface in each Rouse the Brood, read from ${P.kills} Mythic kills (${fmtDate(P.dates[0])} to ${fmtDate(P.dates[1])} 2026, ${P.rouses} Rouses) and from Piian's Mid-Pressure night on 5 November. ` +
+  `Every kill is after the 15 September hotfix that cut each Rouse from 14 Broodlings to 10 and made Visceral Burst 0.5 s slower; the race kills before it are left out.`;
+
+// rules
+(function () {
+  const alt = sum(B, "alt"), all = sum(B, "rouses"), sided = sum(B, "sided"), five = sum(B, "five");
+  const oddN = sum(odd, "mapped"), oddRep = sum(odd, "with_rep");
+  const evN = sum(even, "mapped"), evRep = sum(even, "with_rep"), pairs = sum(even, "pairs"), freed = sum(even, "freed");
+  const maxOn = Math.max(...even.map(b => b.max_on_spot));
+  const gaps = {}; even.forEach(b => Object.entries(b.gap).forEach(([g, c]) => gaps[g] = (gaps[g] || 0) + c));
+  const gapTxt = Object.keys(gaps).sort((a, b) => a - b).map(g => g + " s").join(" or ");
+  document.getElementById("rules").innerHTML = `
+    <div class="rule"><div class="eyebrow">Every Rouse</div><div class="n">${alt} / ${all}</div>
+      <p><b>Sides alternate, five a side.</b> One Broodling a second from 1.5 s to 10.5 s, switching <span class="tag l">L</span>/<span class="tag r">R</span> every time. Either side can open (${pct(sum(B, "opens_left"), all)}% open on L). Every Rouse with all sides known (${sided}) split ${five === sided ? "exactly" : five + " of them"} 5 and 5.</p></div>
+    <div class="rule"><div class="eyebrow">Rouses 1, 3, 5</div><div class="n">${oddN - oddRep} / ${oddN}</div>
+      <p><b>The first Rouse in each place uses every spot once.</b> The order is shuffled, but no spot repeats, even when its Broodling is long gone.</p></div>
+    <div class="rule"><div class="eyebrow">Rouses 2, 4, 6</div><div class="n">${evRep} / ${evN}</div>
+      <p><b>The second Rouse in a place reuses spots.</b> ${pct(evRep, evN)}% had a spot used twice <span class="tag x">×2</span>, leaving another empty. Never more than ${maxOn} on a spot. In ${freed} of ${pairs} repeats the first Broodling was already gone; the second came ${gapTxt} later.</p></div>`;
+})();
+
+// the six Rouses
+(function () {
+  const at = {};
+  P.logs.forEach(l => l.rouses.forEach(r => (at[r.n] ||= []).push(r.at)));
+  const med = xs => { const s = [...xs].sort((a, b) => a - b); return s[s.length >> 1]; };
+  document.getElementById("band").innerHTML = ["Corner 1 · opening arc", "Corner 2 · west or east", "Corner 3 · the other one"].map(t => `<div>${t}</div>`).join("");
+  document.getElementById("six").innerHTML = B.map(b => {
+    const p = pct(b.with_rep, b.mapped);
+    return `<div class="rz">
+      <div class="hd"><b>Rouse ${b.n}</b><span>${Math.round(med(at[b.n] || [0]))} s</span></div>
+      <div class="pl">${b.n % 2 ? "first in the place" : "second in the place"}</div>
+      <div class="big ${p ? "some" : "zero"}">${p}%</div>
+      <div class="meter"><i style="width:${p}%"></i></div>
+      <p>${b.with_rep} of ${b.mapped} Rouses repeat a spot${b.pairs ? `; ${b.pairs} repeats, all on a spot whose Broodling was gone` : ""}</p>
+    </div>`;
+  }).join("");
+})();
+
+// which Broodling repeats
+function drawOrder() {
+  const rows = P.by_order, svg = document.getElementById("order"); svg.innerHTML = "";
+  const W = 760, H = 220, L = 150, R = 60, T = 26, rowH = 36;
+  sizeSvg(svg, W, H);
+  const x = v => L + (W - L - R) * v;
+  [0, .25, .5, .75, 1].forEach(v => {
+    el("line", { x1: x(v), x2: x(v), y1: T - 8, y2: T + rowH * rows.length, stroke: css("--line") }, svg);
+    txt(svg, x(v), H - 6, Math.round(v * 100) + "%", { "text-anchor": "middle" });
+  });
+  rows.forEach((o, i) => {
+    const y = T + i * rowH, ob = o.rep / o.n, ra = o.random / o.n;
+    const tAt = ["0", "2", "4", "6", "8"][o.k - 1];
+    txt(svg, L - 10, y + 13, `${["1st", "2nd", "3rd", "4th", "5th"][o.k - 1]} on a side`, { "text-anchor": "end", fill: css("--fg"), "font-weight": 600 });
+    txt(svg, L - 10, y + 26, `+${tAt} s on that side`, { "text-anchor": "end" });
+    el("rect", { x: x(0), y: y + 3, width: Math.max(1, x(ob) - x(0)), height: 13, rx: 2, fill: css("--rep") }, svg);
+    el("rect", { x: x(0), y: y + 19, width: Math.max(1, x(ra) - x(0)), height: 9, rx: 2, fill: css("--ghost") }, svg);
+    txt(svg, x(ob) + 6, y + 14, `${Math.round(ob * 100)}%  (${o.rep} of ${o.n})`, { fill: css("--rep"), "font-weight": 600 });
+  });
+  const lg = el("g", {}, svg);
+  el("rect", { x: L, y: 4, width: 12, height: 10, rx: 2, fill: css("--rep") }, lg); txt(lg, L + 18, 13, "repeated a spot");
+  el("rect", { x: L + 150, y: 6, width: 12, height: 7, rx: 2, fill: css("--ghost") }, lg); txt(lg, L + 168, 13, "if it took any spot with no Broodling up");
+}
+(function () {
+  const o = Object.fromEntries(P.by_order.map(r => [r.k, r]));
+  document.getElementById("ordernote").textContent =
+    `In Rouses 2, 4 and 6, how often the k-th Broodling on a side lands on a spot that side already used. ` +
+    `The 2nd never does and the 3rd almost never (${o[3].rep} of ${o[3].n}): a spot does not come back while either of the last two Broodlings on that side is still on it. ` +
+    `From the 4th on it is a real chance, and the 5th lands on a used spot ${pct(o[5].rep, o[5].n)}% of the time. ` +
+    `Grey is what picking any spot without a living Broodling would give; the game repeats less than that, so it leans toward fresh spots.`;
+})();
+
+// advice
+(function () {
+  const o = Object.fromEntries(P.by_order.map(r => [r.k, r]));
+  document.getElementById("advice").innerHTML = [
+    `<b>Assign by side, not by spot.</b> Five a side, every two seconds, alternating, in every Rouse. That never changes.`,
+    `<b>Rouses 1, 3 and 5 are safe to call by spot.</b> Each spot gets exactly one Broodling, so a "you own L3" plan works.`,
+    `<b>In Rouses 2, 4 and 6 the last two on each side can land on a spot that already had one.</b> The 4th on a side (7.5 or 8.5 s) repeats ${pct(o[4].rep, o[4].n)}% of the time, the 5th (9.5 or 10.5 s) ${pct(o[5].rep, o[5].n)}%. The repeat comes 6 or 8 s after the first one there, about when that kicker's interrupt is back (Pummel, Kick and Mind Freeze are 15 s; Wind Shear 12 s). Have a floater on each side for the last two.`,
+    `<b>Nothing ever stacks three deep.</b> The worst case is two Broodlings on one spot, never at the same time.`,
+  ].map(s => `<li>${s}</li>`).join("");
+})();
+
+// pickers
+const pickLog = document.getElementById("pickLog"), pickRouse = document.getElementById("pickRouse"), gridLog = document.getElementById("gridLog");
+const LOGS = [{ key: "night", label: "Piian's Mid-Pressure, 5 Nov (20 pulls)", rouses: P.night }]
+  .concat(P.logs.map((l, i) => ({ key: "k" + i, label: `${l.label} (${l.region}) · kill ${Math.floor(l.dur / 60)}:${String(l.dur % 60).padStart(2, "0")}`, rouses: l.rouses })));
+for (const sel of [pickLog, gridLog]) {
+  LOGS.forEach((l, i) => { const o = document.createElement("option"); o.value = i; o.textContent = l.label; sel.appendChild(o); });
+}
+let curLog = 0, curRouse = 0;
+function rouseLabel(r) { return (r.pull ? `Pull ${r.pull} · ` : "") + `Rouse ${r.n} (${Math.round(r.at)} s, ${PLACE[r.place] || "?"})${r.reps.length ? " · repeat" : ""}`; }
+function fillRouses() {
+  pickRouse.innerHTML = "";
+  LOGS[curLog].rouses.forEach((r, i) => { const o = document.createElement("option"); o.value = i; o.textContent = rouseLabel(r); pickRouse.appendChild(o); });
+}
+pickLog.onchange = () => { curLog = +pickLog.value; fillRouses(); select(curLog, 0); };
+pickRouse.onchange = () => select(curLog, +pickRouse.value);
+gridLog.onchange = () => drawGrid(+gridLog.value);
+
+function drawMap(r) {
+  const svg = document.getElementById("map"); svg.innerHTML = "";
+  const spots = P.spots[r.place]; const W = 760, H = 240, pad = 40;
+  sizeSvg(svg, W, H);
+  if (!spots) { txt(svg, 20, 30, "No positions for this Rouse."); return; }
+  const xs = Object.values(spots).map(p => p[0]), ys = Object.values(spots).map(p => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const k = Math.min((W - 2 * pad) / (x1 - x0 || 1), (H - 2 * pad - 14) / (y1 - y0 || 1));
+  const ox = (W - (x1 - x0) * k) / 2, oy = (H - 14 - (y1 - y0) * k) / 2;
+  const at = p => [ox + (p[0] - x0) * k, oy + (y1 - p[1]) * k];  // north up
+  const order = SPOTS.map(s => at(spots[s]));
+  el("path", { d: order.map((p, i) => (i ? "L" : "M") + p[0] + " " + p[1]).join(" "), fill: "none", stroke: css("--line"), "stroke-width": 2, "stroke-dasharray": "4 4" }, svg);
+  SPOTS.forEach((s, i) => {
+    const [x, y] = order[i], v = r.by[s] || [], sd = side(s);
+    const col = v.length > 1 ? css("--rep") : v.length ? css(sd === "l" ? "--left" : "--right") : css("--line");
+    const soft = v.length > 1 ? css("--rep-soft") : v.length ? css(sd === "l" ? "--left-soft" : "--right-soft") : css("--empty");
+    el("circle", { cx: x, cy: y, r: 17, fill: soft, stroke: col, "stroke-width": 2 }, svg);
+    txt(svg, x, y + 4, v.length ? v.map(a => a.o).join("·") : "–", { "text-anchor": "middle", "font-size": v.length > 1 ? 11 : 13, "font-weight": 600, fill: v.length ? col : css("--muted") });
+    txt(svg, x, y + 31, s, { "text-anchor": "middle" });
+  });
+  txt(svg, 8, H - 6, `${PLACE[r.place]}, to scale, north up · L is the side nearer Vexhul`);
+}
+
+function drawLanes(r) {
+  const svg = document.getElementById("lanes"); svg.innerHTML = "";
+  const L = 44, R = 16, T = 22, rowH = 22, W = 760, X1 = 25, H = T + rowH * SPOTS.length + 26;
+  sizeSvg(svg, W, H);
+  const x = t => L + (W - L - R) * t / X1;
+  for (let t = 0; t <= X1; t += 5) {
+    el("line", { x1: x(t), x2: x(t), y1: T - 6, y2: H - 22, stroke: css("--line") }, svg);
+    txt(svg, x(t), H - 6, t + " s", { "text-anchor": "middle" });
+  }
+  txt(svg, L, 12, "seconds after the Rouse cast · bar runs from spawn to the last hit it took");
+  SPOTS.forEach((s, i) => {
+    const y = T + i * rowH, sd = side(s), v = r.by[s] || [];
+    txt(svg, L - 8, y + 14, s, { "text-anchor": "end", "font-weight": 600, fill: css(sd === "l" ? "--left" : "--right") });
+    if (i === 4) el("line", { x1: L, x2: W - R, y1: y + rowH + 0.5, y2: y + rowH + 0.5, stroke: css("--muted"), "stroke-dasharray": "2 3" }, svg);
+    for (const a of v) {
+      const col = v.length > 1 ? css("--rep") : css(sd === "l" ? "--left" : "--right");
+      const end = a.d != null ? Math.max(a.d, a.t + 0.3) : a.t + 0.3;
+      const g = el("g", {}, svg);
+      el("rect", { x: x(a.t), y: y + 4, width: Math.max(2, x(Math.min(end, X1)) - x(a.t)), height: rowH - 8, rx: 2, fill: col, opacity: 0.85 }, g);
+      txt(g, x(a.t) - 4, y + 15, a.o, { "text-anchor": "end", "font-size": 10, "font-weight": 600, fill: col });
+      el("title", {}, g).textContent = `#${a.o} at ${s}, spawned ${a.t} s, last hit ${a.d ?? "?"} s`;
+    }
+  });
+  const reps = r.reps.map(v => `${v[0].s}: #${v[0].o} came up at ${v[0].t} s and took its last hit at ${v[0].d ?? "?"} s, then #${v[1].o} came up on the same spot at ${v[1].t} s`);
+  const empty = SPOTS.filter(s => !r.by[s]);
+  let note = reps.length ? reps.join(". ") + "." : "No spot was used twice in this Rouse.";
+  if (empty.length) note += ` Empty: ${empty.join(", ")}${r.unk.length ? ` (${r.unk.length} Broodling${r.unk.length > 1 ? "s" : ""} with no position may have been there)` : ""}.`;
+  document.getElementById("lanenote").textContent = note;
+}
+
+function drawGrid(li) {
+  const g = document.getElementById("grid"), log = LOGS[li]; let h = `<div class="h"></div>`;
+  SPOTS.forEach((s, i) => { h += `<div class="h ${side(s)}">${s}</div>`; if (i === 4) h += `<div></div>`; });
+  h += `<div class="h">?</div>`;
+  const groups = {};
+  log.rouses.forEach((r, i) => (groups[log.key === "night" ? r.n : 0] ||= []).push([r, i]));
+  for (const [gk, rows] of Object.entries(groups)) {
+    if (log.key === "night") h += `<div class="grp">Rouse ${gk} <span>${gk % 2 ? "first in the place" : "second in the place"}</span></div>`;
+    for (const [r, i] of rows) {
+      const lab = log.key === "night" ? `Pull ${r.pull}` : `Rouse ${r.n} · ${(r.place || "?").slice(0, 4)}`;
+      h += `<div class="row" data-i="${i}" tabindex="0" role="button" aria-label="${rouseLabel(r)}"><div class="lab">${lab}</div>`;
+      SPOTS.forEach((s, j) => {
+        const v = r.by[s] || [];
+        h += `<div class="c ${v.length > 1 ? "x" : v.length ? side(s) : "e"}">${v.map(a => a.o).join("·")}</div>`;
+        if (j === 4) h += `<div></div>`;
+      });
+      h += `<div class="c u">${r.unk.length || ""}</div></div>`;
+    }
+  }
+  g.innerHTML = h;
+  g.querySelectorAll(".row").forEach(row => {
+    const go = () => { select(li, +row.dataset.i); pickLog.scrollIntoView({ behavior: "smooth", block: "center" }); };
+    row.addEventListener("click", go);
+    row.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+  });
+  markRows();
+}
+function markRows() {
+  const gl = +gridLog.value;
+  document.querySelectorAll(".row").forEach(row => row.classList.toggle("sel", gl === curLog && +row.dataset.i === curRouse));
+}
+function select(li, ri) {
+  if (li !== curLog || pickRouse.options.length === 0) { curLog = li; pickLog.value = li; fillRouses(); }
+  curRouse = ri; pickRouse.value = ri;
+  const r = LOGS[li].rouses[ri];
+  drawMap(r); drawLanes(r); markRows();
+}
+
+document.getElementById("method").textContent =
+  `Kills come from the Warcraft Logs speed rankings of every region, taking the ${P.kills} longest (one per guild) so that each reaches the sixth Rouse; regions: ${Object.entries(P.regions).map(([k, v]) => `${k} ${v}`).join(", ")}. ` +
+  `Spawn order and timing come from each Broodling's first Visceral Burst cast. Its spot is where it first took damage: the spots are fixed points in the room (the opening arc, and the west and east corners the bosses surface in after each Submerge), and their centres are learned from every Broodling across the logs. Positions sit a median ${Math.round(P.offset_median / 100 * 10) / 10} yd from their spot. ` +
+  `L is the five spots nearer Vexhul, numbered from the far end in. Broodlings log no death, so "gone" is the last hit a Broodling took (on the Piian night a median 2.4 s after its kick). ` +
+  `Broodlings that nothing hit have no position and show as ?.`;
+
+const startI = Math.max(0, P.night.findIndex(r => r.pull === 19 && r.n === 2));
+drawOrder(); drawGrid(0); select(0, startI);
+const redraw = () => { drawOrder(); select(curLog, curRouse); };
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
+new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
