@@ -134,6 +134,32 @@ def payloads(a: Analysis) -> tuple[dict, dict]:
         for r in a.rouses
     ]
 
+    # ---- side sequences, second Rouse in a place (2, 4, 6) ----
+    # One side at a time: its five spots in spawn order, lettered by first use
+    # (ABCDA = the 5th Broodling came back to the 1st one's spot). Sides
+    # alternate every Broodling, so a "?" Broodling's side is still known; a
+    # side with any "?" can't be lettered and is only counted.
+    seqs, seq_unread = [], 0
+    for r in a.rouses:
+        if r["n"] % 2:
+            continue
+        adds = r["adds"]
+        known = next((i for i, ad in enumerate(adds) if ad["spot"] != "?"), None)
+        if known is None:
+            seq_unread += 2
+            continue
+        other = {"L": "R", "R": "L"}
+        side_of = [adds[known]["spot"][0] if (i - known) % 2 == 0 else other[adds[known]["spot"][0]]
+                   for i in range(len(adds))]
+        for sd in "LR":
+            spots = [ad["spot"] for ad, x in zip(adds, side_of) if x == sd]
+            if len(spots) != 5 or "?" in spots:
+                seq_unread += 1
+                continue
+            m = {}
+            seqs.append({"pull": r["pull"], "rouse": r["n"], "side": sd, "spots": spots,
+                         "seq": "".join(m.setdefault(x, "ABCDE"[len(m)]) for x in spots)})
+
     # ---- globules ----
     waves = a.waves
     gl = defaultdict(lambda: {"waves": 0, "soaked": 0, "doubles": 0, "extra": 0, "idle": 0, "boom_waves": 0})
@@ -238,7 +264,7 @@ def payloads(a: Analysis) -> tuple[dict, dict]:
         "marks": MARKS,
         "cls_color": CLASS_COLOR,
         "deaths": death_rows,
-        "kicks": {"patterns": patterns, "missed": missed, "grid": grid},
+        "kicks": {"patterns": patterns, "missed": missed, "grid": grid, "seqs": seqs, "seq_unread": seq_unread},
         "spots": S.SPOTS,
         "waves": wave_rows,
         "globules": glob_rows,
@@ -318,6 +344,10 @@ def tokens(a: Analysis, payload: dict, raw: dict, *, date_long: str, night_title
     unknown = sum(1 for r in R for ad in r["adds"] if ad["spot"] == "?")
     t["spot_unknown"] = unknown
     M = raw["missed"]
+    sq = payload["kicks"]["seqs"]
+    t["seq_sides"] = len(sq)
+    t["seq_repeat"] = sum(1 for x in sq if x["seq"] != "ABCDE")
+    t["seq_unread"] = payload["kicks"]["seq_unread"]
     t["missed_n"] = len(M)
     t["missed_near"] = sum(1 for m in M if m["near"])
     t["missed_none"] = sum(1 for m in M if not m["near"] and not m["far"])

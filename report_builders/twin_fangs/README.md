@@ -45,3 +45,9 @@ Pulls are numbered 1..n within the boss, not by Warcraft Logs fight id.
 - **Snakes**: each dps's damage into Spawn of Vexhul while any were alive,
   over their total in that window; "on the first to die" is the share of their
   snake damage that went into the first one killed (about 33% means an even cleave).
+- **Side sequences**: second Rouse in a place (2, 4, 6), one side at a time,
+  its five spots lettered by first use (ABCDA = the 5th came back to the 1st's
+  spot). A "?" Broodling's side comes from the alternation; a side with one is
+  not lettered. The grey reference marks are the 80-kill shares from the
+  `rouse_spawns` page, typed into the template (`KILLS`); update them if that
+  page is rebuilt with different kills.

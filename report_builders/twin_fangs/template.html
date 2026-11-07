@@ -149,6 +149,11 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   </figure>
   <div class="tblwrap"><table class="grid" id="t-grid"><thead></thead><tbody></tbody></table></div>
   <p class="muted" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">One row per Rouse, spots left to right as in the room. A cell is who kicked that Broodling; the small number is the order of the kick in that Rouse. Red cells went off, with seconds after the Rouse. &ldquo;?&rdquo; holds Broodlings kicked before they took damage, so their spot is not known.</p>
+  <p><b>Where the second Rouse doubles up.</b> The first Rouse in a place puts one Broodling on every spot; the second can reuse one, but only from three or more Broodlings back on that side, so only the 4th and 5th on a side ever land on a used spot. Across 80 Mythic kills a side only ever runs one of the five sequences below (see <a href="/reports/twin-fangs-rouse-spawns">Rouse spawn pattern</a>). Tonight {{seq_repeat}} of the {{seq_sides}} sides read in full had a repeat; {{seq_unread}} more had a Broodling with no spot.</p>
+  <figure>
+    <svg id="c-seq" viewBox="0 0 900 290" role="img" aria-label="Spot sequences of each side in the second Rouse"></svg>
+    <figcaption>One side of a second Rouse at a time. Letters are spots in the order they were first used, so ABCDA means the 5th Broodling came back to the 1st one's spot (red, with an arc back to it). The bar is tonight's count; the grey mark is the count the 80 kills' shares would give for this many sides. Hover a tag for that side's spots.</figcaption>
+  </figure>
   <div class="tblwrap"><table id="t-kickers">
     <thead><tr><th class="l">Kicker</th><th class="l">Interrupt</th><th>Kicks</th><th>Rouses alive</th><th>Main spot</th><th>Same side</th><th>Median order</th><th>Order spread</th><th class="l">Pattern</th></tr></thead>
     <tbody></tbody></table></div>
@@ -364,6 +369,42 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
      <td class="l">${m.kicked_late?who(m.kicked_late):'<span class="muted">never</span>'}</td>
      <td class="l">${m.near.map(who).join(', ')||'<span class="muted">nobody</span>'}</td>
      <td class="l">${m.far.map(who).join(', ')||'<span class="muted">–</span>'}</td><td>${m.ended?'<span style="color:var(--crit)">yes</span>':''}</td></tr>`).join('');
+})();
+
+/* ---------- 2b. side sequences ---------- */
+(function(){
+  const s=document.getElementById('c-seq'),W=900,T=46,rowH=46,X0=60,dx=56,BX=360;
+  // share of each sequence across the 80 kills on the Rouse spawn pattern page
+  const KILLS={ABCDE:115,ABCDA:126,ABCDB:72,ABCAD:57,ABCAB:20},KT=390;
+  const rows=Object.keys(KILLS),Q=D.kicks.seqs;
+  const exp=k=>Q.length*KILLS[k]/KT;  // tonight's count if the sides ran like the kills
+  const max=Math.max(1,...rows.map(k=>Math.max(Q.filter(q=>q.seq===k).length,exp(k))));
+  ['1st','2nd','3rd','4th','5th'].forEach((l,i)=>txt(s,X0+i*dx,14,l));
+  txt(s,X0+2*dx,28,'Broodling on a side, 2 s apart',{size:10});
+  txt(s,BX,28,'tonight',{anchor:'start'});
+  rows.forEach((k,i)=>{
+    const y=T+14+i*rowH,first={};
+    [...k].forEach((ch,j)=>{
+      const x=X0+j*dx,rep=ch in first;
+      if(rep){const x0=X0+first[ch]*dx;
+        mk(s,'path',{d:`M${x0} ${y-15} C ${x0} ${y-32}, ${x} ${y-32}, ${x} ${y-15}`,fill:'none',stroke:'var(--crit)','stroke-width':1.5});}
+      else first[ch]=j;
+      mk(s,'circle',{cx:x,cy:y,r:14,fill:'var(--surface-2)',stroke:rep?'var(--crit)':'var(--s3)','stroke-width':1.5});
+      txt(s,x,y+4,ch,{fill:rep?'var(--crit)':'var(--s3)',size:12,attr:{'font-weight':600}});
+    });
+    const mine=Q.filter(q=>q.seq===k),bw=150,w=bw*mine.length/max;
+    mk(s,'rect',{x:BX,y:y-7,width:Math.max(2,w),height:14,rx:2,fill:k==='ABCDE'?'var(--s3)':'var(--crit)'});
+    const ks=bw*exp(k)/max;
+    mk(s,'line',{x1:BX+ks,x2:BX+ks,y1:y-11,y2:y+11,stroke:'var(--muted)','stroke-width':2});
+    txt(s,BX+bw+14,y+4,`${mine.length}`,{anchor:'start',fill:'var(--ink)',attr:{'font-weight':600}});
+    txt(s,BX+bw+34,y+4,`kills ${Math.round(100*KILLS[k]/KT)}%`,{anchor:'start',size:10});
+    let tx=BX+bw+100;
+    mine.forEach(q=>{const lab=`P${q.pull} ${q.side}`,g=mk(s,'g',{});
+      mk(g,'rect',{x:tx,y:y-9,width:lab.length*7+8,height:18,rx:3,fill:'var(--surface-2)',stroke:'var(--rule)'});
+      txt(g,tx+4,y+4,lab,{anchor:'start',fill:'var(--ink-2)'});
+      hook(g,`Pull ${q.pull}, Rouse ${q.rouse}, ${q.side} side: ${q.spots.join(' → ')}`);
+      tx+=lab.length*7+14;});
+  });
 })();
 
 /* ---------- 3/4. feast + tainted blood ---------- */
