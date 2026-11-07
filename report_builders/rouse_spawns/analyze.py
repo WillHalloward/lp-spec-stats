@@ -241,6 +241,36 @@ class Study:
                 o[2] += sum(1 for x in free if x in used) / len(free) if free else 0
         return [{"k": k, "n": v[0], "rep": v[1], "random": round(v[2], 1)} for k, v in sorted(acc.items())]
 
+    def patterns(self) -> dict:
+        """Rouses 2, 4 and 6, one side at a time, where all five spots are read:
+        the side's spots in spawn order, lettered by first use (ABCDA = the
+        5th Broodling came back to the 1st one's spot)."""
+        pat, both, adj, copy, copy_n = Counter(), Counter(), Counter(), 0, 0
+        prev = {(r["code"], r["fid"], r["n"]): r for r in self.kill_rouses()}
+        for r in self.kill_rouses():
+            if r["n"] % 2:
+                continue
+            both[len({a["side"] for v in r["by"].values() if len(v) > 1 for a in v})] += 1
+            o = prev.get((r["code"], r["fid"], r["n"] - 1))
+            for sd in "LR":
+                seq = [a["s"] for a in r["adds"] if a["side"] == sd]
+                if o:
+                    for x, y in zip(seq, [a["s"] for a in o["adds"] if a["side"] == sd]):
+                        if x != "?" and y != "?":
+                            copy_n += 1
+                            copy += x == y
+                if len(seq) != 5 or "?" in seq:
+                    continue
+                m = {}
+                pat["".join(m.setdefault(n, "ABCDE"[len(m)]) for n in seq)] += 1
+                # how far the skipped spot sits from the doubled one (1 = neighbours)
+                for i, x in enumerate(seq):
+                    if x in seq[:i]:
+                        for e in SIDE_SPOTS[sd]:
+                            if e not in seq:
+                                adj[abs(int(e[1]) - int(x[1]))] += 1
+        return {"seq": pat.most_common(), "both": dict(both), "adj": dict(adj), "copy": copy, "copy_n": copy_n}
+
     def payload(self) -> dict:
         def slim(r):
             return {"n": r["n"], "at": r["at"], "place": r["place"],
@@ -260,6 +290,7 @@ class Study:
             "by_n": self.by_n(),
             "night_by_n": self.by_n([r for r in self.rouses if r["label"] == NIGHT_LABEL]),
             "by_order": self.by_order(),
+            "patterns": self.patterns(),
             "kills": len(logs),
             "rouses": len(kr),
             "dates": [min(f["date"] for f in logs), max(f["date"] for f in logs)] if logs else None,

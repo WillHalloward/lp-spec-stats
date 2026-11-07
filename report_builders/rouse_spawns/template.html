@@ -111,6 +111,13 @@ ul.advice li::marker { color: var(--muted); }
   </section>
 
   <section>
+    <h2>The shape of a repeat</h2>
+    <p class="note" id="shapenote"></p>
+    <div class="scroll"><svg id="shapes" role="img" aria-label="The five spot sequences a side can have"></svg></div>
+    <p class="note" id="shapenote2"></p>
+  </section>
+
+  <section>
     <h2>For the kick plan</h2>
     <ul class="advice" id="advice"></ul>
   </section>
@@ -244,6 +251,54 @@ function drawOrder() {
     `The 2nd never does and the 3rd almost never (${o[3].rep} of ${o[3].n}): a spot does not come back while either of the last two Broodlings on that side is still on it. ` +
     `From the 4th on it is a real chance, and the 5th lands on a used spot ${pct(o[5].rep, o[5].n)}% of the time. ` +
     `Grey is what picking any spot without a living Broodling would give; the game repeats less than that, so it leans toward fresh spots.`;
+})();
+
+// the shape of a repeat
+function drawShapes() {
+  const S = P.patterns, rows = S.seq, svg = document.getElementById("shapes"); svg.innerHTML = "";
+  const never = ["ABA··", "ABCB·", "ABCDC"];
+  const total = rows.reduce((s, r) => s + r[1], 0);
+  const W = 760, T = 52, rowH = 46, H = T + rowH * (rows.length + never.length) + 18, X0 = 70, dx = 62, BX = 420;
+  sizeSvg(svg, W, H);
+  ["1st", "2nd", "3rd", "4th", "5th"].forEach((l, i) => txt(svg, X0 + i * dx, 14, l, { "text-anchor": "middle" }));
+  txt(svg, X0 + 2 * dx, 28, "Broodling on a side, 2 s apart", { "text-anchor": "middle", "font-size": 10 });
+  const draw = (seq, y, ghost) => {
+    const first = {};
+    [...seq].forEach((ch, i) => {
+      const x = X0 + i * dx;
+      if (ch === "·") { el("circle", { cx: x, cy: y, r: 14, fill: "none", stroke: css("--line"), "stroke-dasharray": "3 3" }, svg); return; }
+      const rep = ch in first;
+      if (rep) {
+        const x0 = X0 + first[ch] * dx;
+        el("path", { d: `M${x0} ${y - 15} C ${x0} ${y - 32}, ${x} ${y - 32}, ${x} ${y - 15}`, fill: "none", stroke: css(ghost ? "--ghost" : "--rep"), "stroke-width": 1.5, "stroke-dasharray": ghost ? "3 3" : "" }, svg);
+      } else first[ch] = i;
+      const col = ghost ? css("--ghost") : rep ? css("--rep") : css("--left");
+      el("circle", { cx: x, cy: y, r: 14, fill: ghost ? "none" : css(rep ? "--rep-soft" : "--left-soft"), stroke: col, "stroke-width": 1.5, "stroke-dasharray": ghost ? "3 3" : "" }, svg);
+      txt(svg, x, y + 4, ch, { "text-anchor": "middle", "font-weight": 600, fill: col, "font-size": 12 });
+    });
+  };
+  rows.forEach(([seq, n], i) => {
+    const y = T + 14 + i * rowH;
+    draw(seq, y, false);
+    const w = (W - BX - 110) * n / total;
+    el("rect", { x: BX, y: y - 7, width: Math.max(2, w), height: 14, rx: 2, fill: seq === "ABCDE" ? css("--left") : css("--rep") }, svg);
+    txt(svg, BX + w + 8, y + 4, `${Math.round(100 * n / total)}%  (${n})`, { fill: css("--fg"), "font-weight": 600 });
+  });
+  never.forEach((seq, i) => {
+    const y = T + 14 + (rows.length + i) * rowH;
+    draw(seq, y, true);
+    txt(svg, BX, y + 4, ["never: the 3rd reusing a spot", "never: the 4th reusing the 2nd's spot", "never: the 5th reusing the 3rd's spot"][i]);
+  });
+}
+(function () {
+  const S = P.patterns, total = S.seq.reduce((s, r) => s + r[1], 0), adjN = Object.values(S.adj).reduce((a, b) => a + b, 0);
+  document.getElementById("shapenote").textContent =
+    `One side of Rouses 2, 4 and 6 at a time, in the ${total} sides where all five spots were read. Letters are spots in the order they were first used, so ABCDA means the 5th Broodling came back to the 1st one's spot. ` +
+    `Only these five sequences ever happen. A spot can be reused only from three or more Broodlings back on that side, so only the 4th and 5th on a side (the last four Broodlings of the Rouse) can land on a used spot.`;
+  document.getElementById("shapenote2").textContent =
+    `A doubled spot always means an empty spot on the same side, since every side gets exactly five. Which spot is skipped looks random: it is the doubled spot's neighbour ${pct(S.adj[1] || 0, adjN)}% of the time, near the 40% chance would give. ` +
+    `Repeats came on both sides in ${S.both[2] || 0} of these Rouses, one side in ${S.both[1] || 0}, neither in ${S.both[0] || 0}. ` +
+    `The second Rouse does not copy the first: the k-th Broodling on a side lands where the k-th did in the Rouse before ${pct(S.copy, S.copy_n)}% of the time, the same as chance (20%).`;
 })();
 
 // advice
@@ -389,8 +444,8 @@ document.getElementById("method").textContent =
   `Broodlings that nothing hit have no position and show as ?.`;
 
 const startI = Math.max(0, P.night.findIndex(r => r.pull === 19 && r.n === 2));
-drawOrder(); drawGrid(0); select(0, startI);
-const redraw = () => { drawOrder(); select(curLog, curRouse); };
+drawOrder(); drawShapes(); drawGrid(0); select(0, startI);
+const redraw = () => { drawOrder(); drawShapes(); select(curLog, curRouse); };
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
 new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 </script>
