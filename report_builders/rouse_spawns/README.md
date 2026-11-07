@@ -24,5 +24,6 @@ cached under `cache/`; about 7 API points a kill.
   are learned (k-means) from every Broodling's first damaged position; positions
   land a median 0.5 yd from their spot. The arc keeps `twin_fangs.spells.SPOTS`'
   names; a corner's spots are ordered along the arc and the half nearer Vexhul is L.
-- **Gone**: Broodlings log no death or 0 hp hit, so their last damage taken.
+- **Gone**: a kicked Broodling dives at once, so its kick; one nobody kicked, its last direct hit.
+  Damage-over-time ticks log for a few seconds after the dive and are ignored.
 - **Rouse number**: 1-6 through the fight, two per place.

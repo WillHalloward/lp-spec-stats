@@ -248,9 +248,9 @@ function drawOrder() {
   const o = Object.fromEntries(P.by_order.map(r => [r.k, r]));
   document.getElementById("ordernote").textContent =
     `In Rouses 2, 4 and 6, how often the k-th Broodling on a side lands on a spot that side already used. ` +
-    `The 2nd never does and the 3rd almost never (${o[3].rep} of ${o[3].n}): a spot does not come back while either of the last two Broodlings on that side is still on it. ` +
+    `The 2nd never does and the 3rd almost never (${o[3].rep} of ${o[3].n}): a Broodling never takes the spot of either of the last two on its side, even when they were kicked straight away and the spot is empty. ` +
     `From the 4th on it is a real chance, and the 5th lands on a used spot ${pct(o[5].rep, o[5].n)}% of the time. ` +
-    `Grey is what picking any spot without a living Broodling would give; the game repeats less than that, so it leans toward fresh spots.`;
+    `Grey is what picking any spot without a living Broodling would give; the game repeats far less than that, so it leans toward fresh spots.`;
 })();
 
 // the shape of a repeat
@@ -378,7 +378,7 @@ function drawLanes(r) {
     el("line", { x1: x(t), x2: x(t), y1: T - 6, y2: H - 22, stroke: css("--line") }, svg);
     txt(svg, x(t), H - 6, t + " s", { "text-anchor": "middle" });
   }
-  txt(svg, L, 12, "seconds after the Rouse cast · bar runs from spawn to the last hit it took");
+  txt(svg, L, 12, "seconds after the Rouse cast · bar runs from spawn to its kick (or its last direct hit if nobody kicked it)");
   SPOTS.forEach((s, i) => {
     const y = T + i * rowH, sd = side(s), v = r.by[s] || [];
     txt(svg, L - 8, y + 14, s, { "text-anchor": "end", "font-weight": 600, fill: css(sd === "l" ? "--left" : "--right") });
@@ -389,10 +389,10 @@ function drawLanes(r) {
       const g = el("g", {}, svg);
       el("rect", { x: x(a.t), y: y + 4, width: Math.max(2, x(Math.min(end, X1)) - x(a.t)), height: rowH - 8, rx: 2, fill: col, opacity: 0.85 }, g);
       txt(g, x(a.t) - 4, y + 15, a.o, { "text-anchor": "end", "font-size": 10, "font-weight": 600, fill: col });
-      el("title", {}, g).textContent = `#${a.o} at ${s}, spawned ${a.t} s, last hit ${a.d ?? "?"} s`;
+      el("title", {}, g).textContent = `#${a.o} at ${s}, spawned ${a.t} s, gone at ${a.d ?? "?"} s`;
     }
   });
-  const reps = r.reps.map(v => `${v[0].s}: #${v[0].o} came up at ${v[0].t} s and took its last hit at ${v[0].d ?? "?"} s, then #${v[1].o} came up on the same spot at ${v[1].t} s`);
+  const reps = r.reps.map(v => `${v[0].s}: #${v[0].o} came up at ${v[0].t} s and was gone at ${v[0].d ?? "?"} s, then #${v[1].o} came up on the same spot at ${v[1].t} s`);
   const empty = SPOTS.filter(s => !r.by[s]);
   let note = reps.length ? reps.join(". ") + "." : "No spot was used twice in this Rouse.";
   if (empty.length) note += ` Empty: ${empty.join(", ")}${r.unk.length ? ` (${r.unk.length} Broodling${r.unk.length > 1 ? "s" : ""} with no position may have been there)` : ""}.`;
@@ -440,7 +440,7 @@ function select(li, ri) {
 document.getElementById("method").textContent =
   `Kills come from the Warcraft Logs speed rankings of every region, taking the ${P.kills} longest (one per guild) so that each reaches the sixth Rouse; regions: ${Object.entries(P.regions).map(([k, v]) => `${k} ${v}`).join(", ")}. ` +
   `Spawn order and timing come from each Broodling's first Visceral Burst cast. Its spot is where it first took damage: the spots are fixed points in the room (the opening arc, and the west and east corners the bosses surface in after each Submerge), and their centres are learned from every Broodling across the logs. Positions sit a median ${Math.round(P.offset_median / 100 * 10) / 10} yd from their spot. ` +
-  `L is the five spots nearer Vexhul, numbered from the far end in. Broodlings log no death, so "gone" is the last hit a Broodling took (on the Piian night a median 2.4 s after its kick). ` +
+  `L is the five spots nearer Vexhul, numbered from the far end in. A kicked Broodling dives the moment it is kicked, so "gone" is its kick; one nobody kicked is gone at the last direct hit it took. Damage-over-time ticks keep logging for a few seconds after the dive and are not counted. ` +
   `Broodlings that nothing hit have no position and show as ?.`;
 
 const startI = Math.max(0, P.night.findIndex(r => r.pull === 19 && r.n === 2));

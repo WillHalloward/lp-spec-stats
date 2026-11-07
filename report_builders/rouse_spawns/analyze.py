@@ -10,7 +10,9 @@ damaged position across all the logs, so the corners need no guessing.
 Sides: the five spots nearest Vexhul are "L", as on the opening arc, where
 L1..L5 run from the far end in to the bosses (`twin_fangs.spells.SPOTS`).
 Broodlings never log a death or a 0 hp hit, so a Broodling is "gone" at the
-last damage it took (on the Piian night a median 2.4 s after its kick).
+moment it is kicked (it dives at once), or for one nobody kicked at the last
+direct hit it took. Damage-over-time ticks keep logging for a few seconds after
+a Broodling has dived, so they are not counted.
 
 A Rouse is numbered 1-6 through the fight: two per corner, three corners.
 """
@@ -58,9 +60,14 @@ def read_fight(data: dict) -> list[dict]:
     first_hit, gone = {}, {}
     for e in hits:
         k = e.get("targetInstance", 1)
-        gone[k] = max(gone.get(k, 0), e["timestamp"])
+        if not e.get("tick"):  # dots tick on after the dive
+            gone[k] = max(gone.get(k, 0), e["timestamp"])
         if "x" in e and e.get("resourceActor", 2) == 2:
             first_hit.setdefault(k, (e["timestamp"], (e["x"], e["y"])))
+    kicked = {}
+    for e in data.get("kicks", []):
+        kicked.setdefault(e.get("targetInstance", 1), e["timestamp"])
+    gone.update(kicked)
 
     rouses = []
     for n, r in enumerate(rouse_ts, 1):

@@ -1,10 +1,10 @@
 """Kill logs for Mythic Twin Fangs off the Warcraft Logs rankings, and the few
 events per kill the Rouse spawn pattern needs. Cached on disk under cache/.
 
-Per kill it is the report's fight list plus two event queries limited to the
-kill's own window: enemy casts with positions (bosses and Broodlings), and
-damage into Broodlings with positions (where each one surfaced, and the hit
-that left it on 0 hp). Broodlings write no death events.
+Per kill it is the report's fight list plus three event queries limited to the
+kill's own window: enemy casts with positions (bosses and Broodlings), damage
+into Broodlings with positions (where each one surfaced), and interrupts on
+Broodlings (a kicked Broodling dives at once). Broodlings write no death events.
 """
 
 from __future__ import annotations
@@ -129,4 +129,6 @@ class KillFetcher(_Base):
                                  filter_expr=src, resources=True),
             "hits": self.window("hits", fid, start, end, "DamageDone", hostility="Friendlies",
                                 filter_expr=f'target.name = "{BROODLING}"', resources=True),
+            "kicks": self.window("kicks", fid, start, end, "Interrupts", hostility="Friendlies",
+                                 filter_expr=f'target.name = "{BROODLING}"'),
         }
