@@ -42,6 +42,7 @@ section { display: grid; gap: 14px; min-width: 0; }
 .picker { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
 .picker label { display: flex; gap: 8px; align-items: center; }
 select { font: 400 .95rem var(--body); padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--fg); max-width: 100%; }
+input[type="checkbox"] { accent-color: var(--left); width: 16px; height: 16px; margin: 0; }
 select:focus-visible, .row:focus-visible { outline: 2px solid var(--left); outline-offset: 2px; }
 .scroll { overflow-x: auto; }
 svg text { font-family: var(--mono); }
@@ -120,6 +121,7 @@ ul.advice li::marker { color: var(--muted); }
       <div class="picker">
         <label><span class="eyebrow">Log</span><select id="pickLog"></select></label>
         <label><span class="eyebrow">Rouse</span><select id="pickRouse"></select></label>
+        <label><input type="checkbox" id="toScale"> <span class="eyebrow">Real positions</span></label>
       </div>
       <div class="scroll"><svg id="map" role="img" aria-label="Spots to scale with spawn order"></svg></div>
       <div class="scroll"><svg id="lanes" role="img" aria-label="Broodling lifetimes by spot"></svg></div>
@@ -270,19 +272,34 @@ function fillRouses() {
 }
 pickLog.onchange = () => { curLog = +pickLog.value; fillRouses(); select(curLog, 0); };
 pickRouse.onchange = () => select(curLog, +pickRouse.value);
+document.getElementById("toScale").onchange = () => select(curLog, curRouse);
 gridLog.onchange = () => drawGrid(+gridLog.value);
 
 function drawMap(r) {
   const svg = document.getElementById("map"); svg.innerHTML = "";
-  const spots = P.spots[r.place]; const W = 760, H = 240, pad = 40;
+  // By default every place is drawn on the same schematic arc, evenly spaced:
+  // the spots carry the same names everywhere (L nearer Vexhul, 1 at the far
+  // end, 5 next to the bosses), so a corner reads like the opening arc. The
+  // box draws the place as it really is, to scale.
+  const real = document.getElementById("toScale").checked;
+  const W = 760, H = real ? 320 : 220, pad = 40;
   sizeSvg(svg, W, H);
-  if (!spots) { txt(svg, 20, 30, "No positions for this Rouse."); return; }
-  const xs = Object.values(spots).map(p => p[0]), ys = Object.values(spots).map(p => p[1]);
-  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-  const k = Math.min((W - 2 * pad) / (x1 - x0 || 1), (H - 2 * pad - 14) / (y1 - y0 || 1));
-  const ox = (W - (x1 - x0) * k) / 2, oy = (H - 14 - (y1 - y0) * k) / 2;
-  const at = p => [ox + (p[0] - x0) * k, oy + (y1 - p[1]) * k];  // north up
-  const order = SPOTS.map(s => at(spots[s]));
+  if (!r.place) { txt(svg, 20, 30, "No positions for this Rouse."); return; }
+  let order;
+  if (real) {
+    const spots = P.spots[r.place];
+    const xs = Object.values(spots).map(p => p[0]), ys = Object.values(spots).map(p => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const k = Math.min((W - 2 * pad) / (x1 - x0 || 1), (H - 2 * pad - 14) / (y1 - y0 || 1));
+    const ox = (W - (x1 - x0) * k) / 2, oy = (H - 14 - (y1 - y0) * k) / 2;
+    order = SPOTS.map(s => [ox + (spots[s][0] - x0) * k, oy + (y1 - spots[s][1]) * k]);  // north up
+  } else {
+    order = SPOTS.map((s, i) => { const u = (i - 4.5) / 4.5; return [W / 2 + u * 330 + (u < 0 ? -18 : 18), 34 + 120 * u * u]; });
+    [["Vexhul", W / 2 - 120], ["Ithraz", W / 2 + 120]].forEach(([nm, x]) => {
+      el("circle", { cx: x, cy: 110, r: 9, fill: css("--ghost") }, svg);
+      txt(svg, x, 136, nm, { "text-anchor": "middle" });
+    });
+  }
   el("path", { d: order.map((p, i) => (i ? "L" : "M") + p[0] + " " + p[1]).join(" "), fill: "none", stroke: css("--line"), "stroke-width": 2, "stroke-dasharray": "4 4" }, svg);
   SPOTS.forEach((s, i) => {
     const [x, y] = order[i], v = r.by[s] || [], sd = side(s);
@@ -292,7 +309,9 @@ function drawMap(r) {
     txt(svg, x, y + 4, v.length ? v.map(a => a.o).join("·") : "–", { "text-anchor": "middle", "font-size": v.length > 1 ? 11 : 13, "font-weight": 600, fill: v.length ? col : css("--muted") });
     txt(svg, x, y + 31, s, { "text-anchor": "middle" });
   });
-  txt(svg, 8, H - 6, `${PLACE[r.place]}, to scale, north up · L is the side nearer Vexhul`);
+  txt(svg, 8, H - 6, real
+    ? `${PLACE[r.place]}, to scale, north up · L is the side nearer Vexhul`
+    : `${PLACE[r.place]}, on the same schematic arc as every place · L is the side nearer Vexhul, 1 at the far end`);
 }
 
 function drawLanes(r) {
