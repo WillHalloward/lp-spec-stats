@@ -129,7 +129,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   <div class="head"><h2>How the fight runs</h2>
   <p>Read off this log. Both bosses are fought together, and Eternal Venom stacks are what ties the mechanics together.</p></div>
   <div class="mech">
-    <div><b>Blood Torrent &amp; globules (9s, 70s)</b>Vexhul&#39;s Caustic Deluge drops {{glob_lo}} to {{glob_hi}} Caustic Globules, each wrapped in Ithraz&#39;s Barbed Bulwark. Crowd control strips the shield, and one player walks into each globule for one Eternal Venom stack. An unsoaked globule explodes and gives everybody a stack.</div>
+    <div><b>Blood Torrent &amp; globules (9s, 70s)</b>Vexhul&#39;s Caustic Deluge drops {{glob_n}} Caustic Globules over five seconds, and Ithraz&#39;s spilled blood wraps most of them ({{shield_lo}} to {{shield_hi}} a wave this night) in a Barbed Bulwark. Crowd control strips the shield, and one player walks into each globule for one Eternal Venom stack. An unsoaked globule explodes and gives everybody a stack.</div>
     <div><b>Rouse the Brood (36s, 97s)</b>Ten Broodlings surface one by one at ten fixed spots in an arc, five per side, and start casting Visceral Burst. A kick sends one back into the water. A completed Burst hits the whole raid hard and leaves a stacking DoT.</div>
     <div><b>Venomous Emergence (with Rouse)</b>Three Spawn of Vexhul appear and give everyone a stack of Eternal Venom. Each one keeps casting Corrosive Spit lines that add stacks until it dies.</div>
     <div><b>Ravenous Feast (61s, 122s)</b>Three smashes, each split by at least four soakers. Every soak removes one Eternal Venom stack, and Feasted stops the same player soaking twice. Blood founts follow and have to be healed into within eight seconds, or Tainted Burst goes off on the raid.</div>
@@ -172,13 +172,13 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>Globules, shields and Eternal Venom</h2>
-  <p>{{waves}} globule waves came before a wipe, {{globules}} globules in all. {{shield_strips}} of the {{shield_total}} Barbed Bulwarks were stripped by crowd control, so the shields were never the problem. That job falls to whichever classes bring an area stun or fear, mostly {{shield_top}}. {{booms}} globules exploded unsoaked before a wipe, on {{boom_list}}. Another {{booms_after}} went off after a wipe had started. Those were mostly the globules dead players drop, which is a cost of wiping and not a soak problem.</p>
+  <p>{{waves}} globule waves came before a wipe. Each dropped {{glob_n}} globules{{glob_extra}}, {{globules}} in all. {{shield_total}} of them were shielded, and {{shield_strips}} of those {{shield_total}} Barbed Bulwarks were stripped by crowd control, so the shields were never the problem. That job falls to whichever classes bring an area stun or fear, mostly {{shield_top}}. {{booms}} globules exploded unsoaked before a wipe, on {{boom_list}}. Another {{booms_after}} went off after a wipe had started. Those were mostly the globules dead players drop, which is a cost of wiping and not a soak problem.</p>
   <p>Each globule is one stack for one player, so nobody should take two in a wave. <b>Took two or more in one wave:</b> {{soak_over}}. With fewer globules than players, that is usually someone covering a gap, and costs only the extra stack. <b>Soaked in under half the waves they were alive for:</b> {{soak_low}}. <b>Alive and without a globule that wave when one exploded:</b> {{soak_idle}}. Of all of these, that last list matters most.</p>
   <p><b>Where the stacks came from.</b> {{ev_total}} stacks before a wipe: {{ev_emergence_pct}}% from Venomous Emergence, which everyone takes, {{ev_soak_pct}}% from globule soaks, and {{ev_burst_pct}}% from globules exploding. {{ev_spit_pct}}% came from snake spit, and the Stir the Depths waves ({{ev_wave}}), Vile Flood ({{ev_flood}}) and Caustic Deluge on the tanks ({{ev_deluge}}) gave the rest. {{ev_other}} stacks ({{ev_other_pct}}%) had no hit that could be matched to them. Most spit and wave stacks: {{ev_avoid_top}}. On pull {{best_pull}}, {{best_venom_deaths}} players died to Venom ticks at {{best_venom_ev}} stacks, before the nine-stack limit. The wipe started at {{best_wipe}} seconds.</p></div>
   <figure>
-    <div class="legend"><span><i style="background:var(--cls-Hunter)"></i>soaked</span><span><i style="background:var(--rule)"></i>globules in the wave</span><span><i style="background:var(--crit)"></i>exploded</span></div>
+    <div class="legend"><span><i style="background:var(--cls-Hunter)"></i>soaked</span><span><i style="background:var(--rule)"></i>globules in the wave</span><span><i style="background:var(--ink-2);height:3px"></i>of them shielded</span><span><i style="background:var(--crit)"></i>exploded</span></div>
     <svg id="c-waves" viewBox="0 0 900 220" role="img" aria-label="Globules soaked per wave"></svg>
-    <figcaption>One bar per wave before a wipe. Soaks can outnumber globules: two players sometimes take the same one, and dead players drop extra globules.</figcaption>
+    <figcaption>One bar per wave before a wipe. Soaks can outnumber globules when two players walk into the same one, or when a dead player&#39;s globules land in the wave window.</figcaption>
   </figure>
   <figure>
     <svg id="c-shields" viewBox="0 0 900 200" role="img" aria-label="Barbed Bulwarks stripped by class"></svg>
@@ -391,9 +391,10 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
   for(let v=0;v<=mx;v+=5){mk(s,'line',{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:'var(--grid)'});txt(s,L-6,Y(v)+4,v,{anchor:'end'});}
   D.waves.forEach((w,i)=>{const x=L+cw*i;
     mk(s,'rect',{x:x+1,y:Y(w.globules),width:cw-2,height:Y(0)-Y(w.globules),fill:'var(--rule)'});
+    mk(s,'line',{x1:x+1,x2:x+cw-1,y1:Y(w.shielded),y2:Y(w.shielded),stroke:'var(--ink-2)','stroke-width':2});
     const r=mk(s,'rect',{x:x+cw*.25,y:Y(w.soaks),width:cw*.5,height:Y(0)-Y(w.soaks),fill:'var(--cls-Hunter)'});
     w.booms.forEach((b,k)=>mk(s,'circle',{cx:x+cw/2,cy:Y(w.globules)-6-k*9,r:3.5,fill:'var(--crit)'}));
-    hook(r,`<b>Pull ${w.pull}, wave ${w.wave}</b> (${w.t}s)<br>${w.globules} globules, ${w.stripped} shields stripped<br>${w.soaks} soaks`+
+    hook(r,`<b>Pull ${w.pull}, wave ${w.wave}</b> (${w.t}s)<br>${w.globules} globules, ${w.shielded} shielded, ${w.stripped} shields stripped<br>${w.soaks} soaks`+
       (w.doubles.length?`<br>took two: ${w.doubles.map(esc).join(', ')}`:'')+
       (w.booms.length?`<br><span style="color:var(--crit)">${w.booms.length} exploded (${w.booms.join('s, ')}s)</span><br>alive with no soak: ${w.idle.map(esc).join(', ')}`:''));
     if(w.wave===1)txt(s,x+cw/2,H-B+14,w.pull,{size:9.5});

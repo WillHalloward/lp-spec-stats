@@ -7,7 +7,8 @@ chart or a zero count rather than an error, so check against a log first.
 
 # --- boss casts: the fixed script every pull runs to ---
 BLOOD_TORRENT = 1303230  # Ithraz; opens each globule wave (with Caustic Deluge)
-CAUSTIC_DELUGE = 1289192  # Vexhul's cast that drops the globules
+CAUSTIC_DELUGE = 1289192  # Vexhul's cast that opens the wave
+GLOBULE_DROP = 1289994  # one Caustic Deluge 'cast' per globule dropped: 15 a wave on Mythic
 STONE_BREAKER = 1288538  # Ithraz; three tank soaks
 ROUSE = 1308356  # Ithraz; ten Broodlings
 EMERGENCE = 1291404  # Vexhul; three Spawn of Vexhul

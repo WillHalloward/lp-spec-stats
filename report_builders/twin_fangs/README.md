@@ -31,7 +31,10 @@ Pulls are numbered 1..n within the boss, not by Warcraft Logs fight id.
 - **Kick ready**: alive, and their most-used interrupt off cooldown
   (`spells.KICK_CD`) when the Burst completed. No range check. "On that side"
   means a kicker whose main spot is on the Broodling's side.
-- **Globules**: one Barbed Bulwark actor instance per globule.
+- **Globules**: 15 a wave on Mythic, dropped one every 0.33 s from 2 to 7 s after
+  Blood Torrent, counted off Vexhul's `1289994` casts (one per globule). A few
+  waves drop extras (16-19 here; mostly when the Deluge holder dies mid-drop). Only some get a Barbed Bulwark (10-15 a wave here), one actor
+  instance per shielded globule, so shields are not a globule count.
   `1289201` hits are soaks (one player), `1290338` hitting 3+ players inside
   0.6 s is an explosion. A shield strip is the Bulwark dropping within 0.4 s
   of a `SHIELD_CC` debuff on that instance; credited to the caster's class.

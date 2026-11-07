@@ -390,6 +390,12 @@ class Analysis:
                 if cut - w < WAVE_MIN_S * 1000:  # the wipe came before the globules landed
                     break
                 end = min(w + WAVE_S * 1000, cut)
+                # not every globule gets a shield, so globules are counted off the drops
+                drops = sum(
+                    1
+                    for e in self.enemy_casts[fid]
+                    if e["abilityGameID"] == S.GLOBULE_DROP and e["type"] == "cast" and w <= e["timestamp"] < w + 15000
+                )
                 inst = {e["targetInstance"] for e in buffs if e["type"] == "applybuff" and w <= e["timestamp"] < w + 15000}
                 strips = []
                 for e in buffs:
@@ -418,7 +424,8 @@ class Analysis:
                         "wave": i + 1,
                         "ts": w,
                         "t": round(self.rel(fid, w), 1),
-                        "globules": len(inst),
+                        "globules": drops,
+                        "shielded": len(inst),
                         "stripped": len(strips),
                         "strips": strips,
                         "soaks": sum(per.values()),

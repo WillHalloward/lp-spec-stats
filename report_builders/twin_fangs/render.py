@@ -171,7 +171,7 @@ def payloads(a: Analysis) -> tuple[dict, dict]:
             shields_cls[s["cls"]] += 1
             shields_spell[s["cls"]][s["spell"]] += 1
     wave_rows = [
-        {k: w[k] for k in ("pull", "wave", "t", "globules", "stripped", "soaks", "booms", "idle")}
+        {k: w[k] for k in ("pull", "wave", "t", "globules", "shielded", "stripped", "soaks", "booms", "idle")}
         | {"doubles": [n for n, k in w["soakers"].items() if k > 1]}
         for w in waves
     ]
@@ -365,7 +365,9 @@ def tokens(a: Analysis, payload: dict, raw: dict, *, date_long: str, night_title
     t["booms_after"] = a.booms_after_wipe()
     t["boom_list"] = names(f"pull {w['pull']} wave {w['wave']}" for w in boom_w)
     t["shield_strips"] = sum(w["stripped"] for w in W)
-    t["shield_total"] = sum(w["globules"] for w in W)
+    t["shield_total"] = sum(w["shielded"] for w in W)
+    sh = [w["shielded"] for w in W]
+    t["shield_lo"], t["shield_hi"] = (min(sh), max(sh)) if sh else (0, 0)
     sc = raw["shields_cls"]
     t["shield_top"] = names(f"{c}s ({n})" for c, n in sc.most_common(3))
     G = raw["glob"]
@@ -410,7 +412,15 @@ def tokens(a: Analysis, payload: dict, raw: dict, *, date_long: str, night_title
     t["snake_low"] = names(f"{r['name']} ({r['share']}%)" for r in lowr) or "nobody"
     t["flood_pulls"] = sum(1 for p in pulls if any(m["k"] == "flood" for m in p["marks"]))
     gw = [w["globules"] for w in W if w["globules"]]
-    t["glob_lo"], t["glob_hi"] = (min(gw), max(gw)) if gw else (0, 0)
+    # the scheduled drop is the commonest count; a few waves drop extras
+    base = Counter(gw).most_common(1)[0][0] if gw else 0
+    t["glob_n"] = base
+    extra = [w for w in W if w["globules"] > base]
+    t["glob_extra_n"] = len(extra)
+    t["glob_extra"] = (
+        f", and {len(extra)} waves dropped a few more ({names(f'{w['globules']} on pull {w['pull']}' for w in extra)})"
+        if extra else ""
+    )
     t["outcome"] = f"best {t['best_pct']}%"
     return t
 
