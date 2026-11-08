@@ -38,8 +38,8 @@ EV_SOURCES = {
     1293295: "spit",  # Corrosive Spit from a snake
     1292807: "wave",  # Stir the Depths wave
     1294605: "flood",  # Vile Flood beam
-    1289994: "deluge",  # Caustic Deluge on the tank
-    1289237: "deluge",
+    1289994: "deluge",  # Caustic Deluge: a globule landing on someone (GLOBULE_DROP)
+    1289237: "deluge",  # Caustic Deluge on the tank; rarely the hit a stack lines up with
 }
 EV_LABEL = {
     "soak": "globule soaked",
@@ -48,7 +48,7 @@ EV_LABEL = {
     "spit": "Corrosive Spit",
     "wave": "Stir the Depths wave",
     "flood": "Vile Flood",
-    "deluge": "Caustic Deluge (tank)",
+    "deluge": "globule landed on them",
     "other": "other",
 }
 
