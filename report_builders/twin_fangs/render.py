@@ -316,6 +316,29 @@ def tokens(a: Analysis, payload: dict, raw: dict, *, date_long: str, night_title
     fe = [p for p in pulls if p["wipe_cause"] in ("tainted", "feast")]
     t["feast_wipes"] = len(fe)
     t["feast_list"] = names(str(p["pull"]) for p in fe)
+    # Where each pull broke, by the stretch of the boss script its wipe (or its
+    # end, for a pull with no cascade) fell in. Times are the Mythic script.
+    stretches = [
+        (36, "before the first Rouse"),
+        (61, "the first Rouse"),
+        (97, "the first Feast and its founts"),
+        (122, "the second Rouse"),
+        (140, "the second Feast"),
+        (1e9, "after Submerge"),
+    ]
+    broke: dict[str, list[int]] = {}
+    for p in pulls:
+        if p.get("kill"):
+            continue
+        at = p["wipe"] if p["wipe"] is not None else p["dur"]
+        label = next(lab for end, lab in stretches if at < end)
+        broke.setdefault(label, []).append(p["pull"])
+    parts = []
+    for _, lab in stretches:
+        if lab in broke:
+            ps = broke[lab]
+            parts.append(f"{lab} ({'pull' if len(ps) == 1 else 'pulls'} {names(str(x) for x in ps)})")
+    t["walls"] = names(parts)
     last_r1 = max((p["pull"] for p in first_rouse), default=0)
     t["last_r1"] = last_r1
     reach2 = [p for p in pulls if p["dur"] > 100]
