@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 
 from .analyze import Analysis
-from .render import payloads, render, tokens
+from .render import night_summary, payloads, render, tokens
 
 REPO = Path(__file__).resolve().parents[2]
 REPORTS = REPO / "reports"
@@ -114,6 +114,8 @@ def main() -> None:
     ap.add_argument("--encounter", type=int, help="encounter id, if the report holds more than one boss")
     ap.add_argument("--difficulty", type=int, help="3 normal, 4 heroic, 5 mythic")
     ap.add_argument("--kick-plan", type=Path, help="JSON kick assignments for the night (see plans/)")
+    ap.add_argument("--previous", help="report code of the last night on this boss, for the comparison at the top")
+    ap.add_argument("--previous-date", help='how to name that night, e.g. "5 November"')
     ap.add_argument("--out", type=Path, help="write the HTML here instead of publishing")
     ap.add_argument(
         "--publish", action="store_true", help="write into reports/ and update reports/index.json"
@@ -126,7 +128,11 @@ def main() -> None:
     start = dt.datetime.fromtimestamp(a.meta["startTime"] / 1000)
     date = args.date or start.strftime("%Y-%m-%d")
     date_long = dt.datetime.strptime(date, "%Y-%m-%d").strftime("%-d %B")
-    tok = tokens(a, payload, raw, date_long=date_long, night_title=args.night)
+    prev = night_summary(Analysis(args.previous, args.encounter, args.difficulty)) if args.previous else None
+    tok = tokens(
+        a, payload, raw, date_long=date_long, night_title=args.night,
+        prev=prev, prev_date=args.previous_date or args.previous,
+    )
     page_html = render(payload, tok)
 
     boss_slug = "".join(c.lower() if c.isalnum() else "-" for c in tok["boss"]).strip("-")
@@ -137,7 +143,7 @@ def main() -> None:
     row_title = args.title or f"{tok['boss']} {tok['difficulty']}{team_bit} — where the pulls broke"
     row_summary = args.summary or (
         (f"{args.team}, " if args.team else "")
-        + f"{tok['pulls']} pulls at {tok['difficulty'].lower()} {tok['boss']}: "
+        + f"{tok['pulls']} {tok['difficulty']} pulls on {tok['boss']}: "
         "every pull on one clock, who kicked which Broodling and who had a kick ready when one "
         "went off, globule soaks and where the Eternal Venom stacks came from, the Feast founts, "
         "the snakes, and the deaths before each wipe."
@@ -145,7 +151,9 @@ def main() -> None:
     doc = standalone(
         page_html,
         args.report,
-        title=row_title,
+        # both nights on a boss share the index title, so the page's own title
+        # carries the date to tell browser tabs and link previews apart
+        title=f"{row_title} ({date_long})",
         description=row_summary,
         url=f"{SITE}/reports/{slug}",
     )

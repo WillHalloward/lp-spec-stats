@@ -311,7 +311,7 @@ class Analysis:
                         "player": self.name(pid),
                         "group": g,
                         "why": why,
-                        "ev": self.stack_at(fid, pid, d["timestamp"]),
+                        "ev": self.stacks_before(fid, pid, d["timestamp"]),
                     }
                 )
             out[fid] = L
@@ -335,15 +335,38 @@ class Analysis:
         """Where counting stops in a pull: the wipe, or the end."""
         return self.wipe[fid] or self.F[fid]["endTime"]
 
+    @cached_property
+    def _cast_times(self) -> dict[tuple[int, str], list[float]]:
+        out = defaultdict(list)
+        for e in self.ev("casts", "Casts", hostility="Friendlies"):
+            if e.get("fight") in self.F and self.is_player(e.get("sourceID")):
+                out[(e["fight"], self.name(e["sourceID"]))].append(e["timestamp"])
+        for v in out.values():
+            v.sort()
+        return out
+
+    @cached_property
+    def dead_spans(self) -> dict[tuple[int, str], list[tuple[float, float]]]:
+        """(fight, player) -> [(died, back)]. A battle rez shows up as the
+        player casting again; with no cast after a death they stay dead."""
+        out = defaultdict(list)
+        for fid in self.ids:
+            for d in self.deaths[fid]:
+                casts = self._cast_times.get((fid, d["player"]), [])
+                i = bisect_right(casts, d["ts"] + 500)
+                out[(fid, d["player"])].append((d["ts"], casts[i] if i < len(casts) else float("inf")))
+        return out
+
     def alive(self, fid, name, ts) -> bool:
-        return not any(d["player"] == name and d["ts"] <= ts for d in self.deaths[fid])
+        return not any(a <= ts < b for a, b in self.dead_spans.get((fid, name), []))
 
     def wipe_cause(self, fid) -> str | None:
         w = self.wipe[fid]
         if w is None:
             return None
-        c = Counter(d["group"] for d in self.deaths[fid] if w <= d["ts"] <= w + CASCADE_S * 1000)
-        return c.most_common(1)[0][0]
+        # the first death of the cascade: what started it, not what killed most
+        # people once it was going (a Feast finishing a broken raid)
+        return next(d["group"] for d in self.deaths[fid] if d["ts"] == w)
 
     # ---- Eternal Venom ----
 
@@ -372,6 +395,13 @@ class Analysis:
                     continue
                 out[k].append((e["timestamp"], cur[k]))
         return out
+
+    def stacks_before(self, fid, pid, ts) -> int:
+        """Eternal Venom stacks a player had going into a death. The debuff is
+        removed a few ms before the death event, so read the most stacks in the
+        1.5 s before, or what they carried into that window."""
+        win = [v for t, v in self.stacks.get((fid, pid), []) if ts - 1500 <= t <= ts]
+        return max(win + [self.stack_at(fid, pid, ts - 1500)])
 
     def stack_at(self, fid, pid, ts) -> int:
         s = 0
@@ -525,6 +555,42 @@ class Analysis:
                 )
         return rows
 
+    @cached_property
+    def loose_globules(self) -> dict:
+        """Globules before the wipe that no counted wave holds: dropped by deaths
+        away from a wave, or by a wave the wipe cut short. Their soaks and
+        explosions are counted here so the night's totals add up."""
+        out = {"globules": 0, "death_globules": 0, "soaks": 0, "booms": []}
+        for fid in self.ids:
+            cut = self.cut(fid)
+            mine = [w for w in self.waves if w["fight"] == fid]
+            drop_win = [(w["ts"], w["ts"] + 15000) for w in mine]
+            soak_win = [(w["ts"], min(w["ts"] + WAVE_S * 1000, cut)) for w in mine]
+
+            def outside(t, wins):
+                return not any(a <= t < b for a, b in wins)
+
+            drops = [
+                e["timestamp"]
+                for e in self.enemy_casts[fid]
+                if e["abilityGameID"] == S.GLOBULE_DROP and e["type"] == "cast" and e["timestamp"] < cut
+                and outside(e["timestamp"], drop_win)
+            ]
+            deaths = [d["ts"] for d in self.deaths[fid]]
+            dd = [t for t in drops if any(DEATH_DROP_MS[0] <= t - d <= DEATH_DROP_MS[1] for d in deaths)]
+            out["globules"] += len(drops)
+            out["death_globules"] += len(dd)
+            out["soaks"] += sum(
+                1
+                for e in self.taken[fid]
+                if e["abilityGameID"] == S.GLOBULE_SOAK and self.is_player(e["targetID"]) and e["timestamp"] < cut
+                and outside(e["timestamp"], soak_win)
+            )
+            for b in self.explosions(fid):
+                if b < cut and outside(b, soak_win):
+                    out["booms"].append({"pull": self.pull_no[fid], "t": round(self.rel(fid, b), 1)})
+        return out
+
     def booms_after_wipe(self) -> int:
         return sum(1 for fid in self.ids if self.wipe[fid] for b in self.explosions(fid) if b >= self.wipe[fid])
 
@@ -564,7 +630,9 @@ class Analysis:
                 ]
                 # the three smashes
                 hits = []
-                for e in sorted(fed, key=lambda e: e["timestamp"]):
+                # a smash a second into the wipe is the one that started it; later
+                # ones land on a raid that is already dying
+                for e in sorted((e for e in fed if e["timestamp"] <= cut + 1000), key=lambda e: e["timestamp"]):
                     if hits and e["timestamp"] - hits[-1][0] < 1000:
                         hits[-1][1].append(self.name(e["targetID"]))
                     else:
@@ -591,6 +659,7 @@ class Analysis:
                         "ts": t,
                         "hits": [{"t": round(self.rel(fid, a), 1), "who": w} for a, w in hits],
                         "soakers": sorted({n for _, w in hits for n in w}),
+                        "cut": len(hits) < 3,
                         "burst": bool(tburst),
                         "burst_t": round(self.rel(fid, min(tburst)), 1) if tburst else None,
                         "healed": {k: v for k, v in into.items() if k},
@@ -731,29 +800,37 @@ class Analysis:
         for g in plan["groups"]:
             if g.get("flex"):
                 row = " + ".join(g["flex"])
-                roles[row] = f"shared {'+'.join(g['spots'])}"
+                roles[row] = f"shared {'+'.join(sorted(g['spots']))}"
                 member.update({n: row for n in g["flex"]})
             for r in ("early", "late", "backup"):
                 if g.get(r):
-                    roles.setdefault(g[r], f"{r} {'+'.join(g['spots'])}")
+                    roles.setdefault(g[r], f"{r} {'+'.join(sorted(g['spots']))}")
             for c in g.get("centre") or []:
                 roles.setdefault(c, "centre backup")
         P = defaultdict(lambda: defaultdict(int))
         lost = defaultdict(Counter)
         helped = defaultdict(Counter)
         react = defaultdict(list)
+        skipped = 0
         for r in self.rouses:
             fid = r["fight"]
             t0 = self.F[fid]["startTime"] + r["t"] * 1000
             seen = Counter()
+            blind = set()  # sides where an unplaced Broodling has surfaced
             for b in sorted(r["adds"], key=lambda b: b["spawn_rank"]):
                 k = b["kicker"]
                 if b["spot"] == "?":
                     if k:
                         P[member.get(k, k)]["unplaced"] += 1
+                    blind |= {b["side"]} if b["side"] else {"L", "R"}
                     continue
                 g = pair_of.get(b["spot"])
                 if not g:
+                    continue
+                if any(sp[0] in blind for sp in g["spots"]):
+                    # it may have been this pair's first, so who is early and who
+                    # late from here on is a guess; leave these out
+                    skipped += 1
                     continue
                 key = tuple(g["spots"])
                 i = seen[key]
@@ -811,7 +888,7 @@ class Analysis:
                 }
             )
         return {"rows": [r for r in rows if r["role"] != "not in the plan" or r["helped"] or r["unplaced"]],
-                "note": plan.get("note", "")}
+                "note": plan.get("note", ""), "skipped": skipped}
 
     @cached_property
     def rouses(self) -> list[dict]:
@@ -824,10 +901,15 @@ class Analysis:
                 if self.wipe[fid] and r >= self.wipe[fid]:
                     break
                 end = r + ROUSE_S * 1000
+                # nothing after the wipe started counts: Broodlings that surface,
+                # Bursts that land and kicks that go out once the raid is dying
+                # (half a second of grace keeps the Burst whose hit is the wipe's
+                # first death: they land in the same millisecond)
+                lim = min(end, (self.wipe[fid] + 500) if self.wipe[fid] else end)
                 first = {}
                 bursts = defaultdict(list)
                 for e in ec:
-                    if not (r <= e["timestamp"] < end):
+                    if not (r <= e["timestamp"] < lim):
                         continue
                     k = e.get("sourceInstance", 1)
                     if e["type"] == "begincast":
@@ -836,7 +918,7 @@ class Analysis:
                         bursts[k].append(e["timestamp"])
                 kicked = {}
                 for e in kicks.get(fid, []):
-                    if r <= e["timestamp"] < end and e.get("targetID") == bid:
+                    if r <= e["timestamp"] < lim and e.get("targetID") == bid and e.get("targetInstance", 1) in first:
                         kicked.setdefault(
                             e.get("targetInstance", 1),
                             (e["timestamp"], self.name(self.owner(e["sourceID"])), self.ab.get(e["abilityGameID"])),
@@ -871,6 +953,8 @@ class Analysis:
                             "ready": ready,
                         }
                     )
+                if not adds:  # the wipe started before the first one surfaced
+                    continue
                 infer_spots(adds, i + 1)
                 w = self.wipe[fid]
                 rows.append(
@@ -882,7 +966,10 @@ class Analysis:
                         "adds": adds,
                         "kicked": sum(1 for a in adds if a["kicker"]),
                         "bursts": sum(a["bursts"] for a in adds),
-                        "ended": bool(w and r <= w < end + 5000),
+                        # a missed kick ended the pull: the wipe started inside this
+                        # Rouse and its first death was a Visceral Burst
+                        "ended": bool(w and r <= w < end and self.wipe_cause(fid) == "burst"),
+                        "cut": bool(w and w < end),
                     }
                 )
         return rows
@@ -957,8 +1044,10 @@ class Analysis:
             for i, t in enumerate(self.casts(fid, S.EMERGENCE)):
                 if t >= cut:
                     break
-                end = t + EMERGE_S * 1000
+                end = min(t + EMERGE_S * 1000, cut)
                 hits = [e for e in self.done[fid] if e.get("targetID") == sid and t <= e["timestamp"] < end]
+                if not hits:  # the wipe came before anyone touched them
+                    continue
                 death = {}
                 for e in hits:
                     if e.get("hitPoints") == 0:
@@ -1042,6 +1131,7 @@ class Analysis:
                     "kill": bool(self.F[fid].get("kill")),
                     "wipe": w and round(self.rel(fid, w), 1),
                     "wipe_cause": self.wipe_cause(fid),
+                    "rouses": sum(1 for t in self.casts(fid, S.ROUSE) if t < self.cut(fid)),
                     "marks": self.marks(fid),
                     "deaths": [{k: d[k] for k in ("t", "player", "group", "why", "ev")} for d in self.deaths[fid]],
                     "soaks": dict(soaks),

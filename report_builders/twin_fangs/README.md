@@ -29,8 +29,23 @@ than spot did (e.g. 80 of 84 vs 52 on L1+L2, 8 Nov). See
 
 ## Reading the log
 
-- **Wipe**: starts at the first death of the first run of 4 deaths within 8 s.
-  Deaths and mechanics from there on are not held against anyone. A kill has none.
+- **Wipe start and cause**: the wipe starts at the first death of the first run
+  of 4 deaths within 8 s. What started it is that first death's cause, not the
+  commonest cause in the cascade (a Feast often finishes a raid already falling).
+- **After the wipe**: nothing after the wipe start counts, also inside a Rouse,
+  Feast or Emergence that opened before it (the Burst that is the wipe's first
+  death lands in the same ms, so Rouses keep 0.5 s of grace).
+- **Alive**: dead from a death until the player next casts something, so a
+  battle rez brings them back (`dead_spans`).
+- **Stacks at death**: Eternal Venom is removed a few ms before the death event,
+  so a death's stacks are the most in the 1.5 s before (`stacks_before`).
+- **Globules outside waves**: drops before the wipe that no counted wave holds
+  (deaths away from a wave, waves cut short) are in `loose_globules` and in the
+  night's totals.
+- **The lead**: `--previous <code> --previous-date "5 November"` adds the
+  comparison with the last night on the boss.
+
+
 - **Death cause**: the killing ability. Toxic Fumes / Rouse the Brood / Stagger
   kills are blamed on the biggest real hit in the 5 s before.
 - **Broodling spots**: ten fixed spots, five per side (`spells.SPOTS`). They

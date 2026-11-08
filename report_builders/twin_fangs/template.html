@@ -7,7 +7,9 @@
   --accent:#5f7a0d;
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --crit:#c93b3a;
   --fatal:#4b0a17; --inter:#9aa595;
-  --cls-Warlock:#5d60c8; --cls-Druid:#b45900; --cls-Hunter:#5f8a24;
+  --cls-DeathKnight:#b0182f; --cls-DemonHunter:#8a26ab; --cls-Druid:#b45900; --cls-Evoker:#23786a;
+  --cls-Hunter:#5f8a24; --cls-Mage:#1a7fa0; --cls-Monk:#00875a; --cls-Paladin:#b8487a; --cls-Priest:#5c5c5c;
+  --cls-Rogue:#8a7a00; --cls-Shaman:#0063c4; --cls-Warlock:#5d60c8; --cls-Warrior:#8a6235;
   --grid:#d7dfd0;
   color-scheme:light;
 }
@@ -17,7 +19,9 @@
   --accent:#a9c93c;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
   --fatal:#ffc2cd; --inter:#4d5a50;
-  --cls-Warlock:#8788ee; --cls-Druid:#ff7c0a; --cls-Hunter:#aad372;
+  --cls-DeathKnight:#f0505f; --cls-DemonHunter:#c45ce8; --cls-Druid:#ff7c0a; --cls-Evoker:#3fb39b;
+  --cls-Hunter:#aad372; --cls-Mage:#3fc7eb; --cls-Monk:#00ff98; --cls-Paladin:#f48cba; --cls-Priest:#e8e8e8;
+  --cls-Rogue:#fff468; --cls-Shaman:#3d9bff; --cls-Warlock:#8788ee; --cls-Warrior:#c69b6d;
   --grid:#26312a;
   color-scheme:dark;
 }}
@@ -27,7 +31,9 @@
   --accent:#a9c93c;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --crit:#e66767;
   --fatal:#ffc2cd; --inter:#4d5a50;
-  --cls-Warlock:#8788ee; --cls-Druid:#ff7c0a; --cls-Hunter:#aad372;
+  --cls-DeathKnight:#f0505f; --cls-DemonHunter:#c45ce8; --cls-Druid:#ff7c0a; --cls-Evoker:#3fb39b;
+  --cls-Hunter:#aad372; --cls-Mage:#3fc7eb; --cls-Monk:#00ff98; --cls-Paladin:#f48cba; --cls-Priest:#e8e8e8;
+  --cls-Rogue:#fff468; --cls-Shaman:#3d9bff; --cls-Warlock:#8788ee; --cls-Warrior:#c69b6d;
   --grid:#26312a;
   color-scheme:dark;
 }
@@ -72,7 +78,7 @@ td.l,th.l{text-align:left}
 .mech{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
 .mech div{background:var(--surface);padding:14px 16px;font-size:14.5px;color:var(--ink-2)}
 .mech b{font-family:"Barlow Condensed",sans-serif;font-size:16px;letter-spacing:.04em;color:var(--ink);display:block;margin-bottom:4px}
-.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--ink);color:var(--ground);
+.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--surface-2);color:var(--ink);border:1px solid var(--rule);box-shadow:0 2px 8px rgba(0,0,0,.25);
   font-family:"IBM Plex Mono",monospace;font-size:11.5px;line-height:1.45;padding:7px 9px;z-index:9;max-width:260px}
 .role{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;
   border:1px solid currentColor;padding:0 3px;margin-right:5px;opacity:.75;vertical-align:1px}
@@ -84,7 +90,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   border:1px solid var(--rule);padding:3px 8px;cursor:pointer;border-radius:2px}
 .chips button.on{background:var(--accent);color:var(--ground);border-color:var(--accent)}
 .chips button.ko{border-bottom:2px solid var(--crit)}
-.grid td{padding:4px 3px;text-align:center;font-size:10.5px}
+.grid td{padding:4px 2px;text-align:center;font-size:10.5px}
 .grid th{padding:9px 3px}
 .grid td.c{min-width:52px}
 td.names{white-space:normal;min-width:150px;line-height:1.35}
@@ -93,6 +99,17 @@ td.names .nm{display:inline-block;white-space:nowrap;margin-right:8px}
 .grid th{text-align:center}
 .burst{background:color-mix(in srgb,var(--crit) 30%,transparent);color:var(--ink);font-weight:600}
 .sm{font-size:10px;color:var(--muted)}
+.key{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);max-width:none}
+.lead ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;max-width:78ch;color:var(--ink-2)}
+.lead b{color:var(--ink)}
+/* charts keep a readable size on a phone and scroll sideways instead */
+figure{overflow-x:auto}
+figure svg{min-width:640px}
+/* the first column stays put when a wide table scrolls */
+.tblwrap th:first-child,.tblwrap td:first-child{position:sticky;left:0;background:var(--surface);z-index:1}
+tbody tr:hover td:first-child{background:var(--surface-2)}
+#t-glob th,#t-deaths th,#t-plan th{white-space:normal;vertical-align:bottom}
+td.wrap{white-space:normal;min-width:220px}
 .pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11px;padding:0 6px;border:1px solid var(--rule);border-radius:9px;color:var(--ink-2)}
 .bar{display:inline-block;height:9px;background:var(--accent);vertical-align:-1px;margin-right:6px;border-radius:1px}
 </style>
@@ -111,16 +128,21 @@ td.names .nm{display:inline-block;white-space:nowrap;margin-right:8px}
 
 <div class="tiles">
   <div class="tile"><span class="lab">Best pull</span><span class="n">{{best_pct}}<small>%</small></span><span class="muted">pull {{best_pull}}, {{best_dur}}: Vexhul {{best_vex}}%, Ithraz {{best_ith}}%</span></div>
-  <div class="tile"><span class="lab">Pulls ended by a missed kick</span><span class="n">{{ended_burst}}<small> / {{pulls}}</small></span><span class="muted">Visceral Burst started the wipe</span></div>
-  <div class="tile"><span class="lab">Broodlings kicked</span><span class="n">{{kicked}}<small> / {{broodlings}}</small></span><span class="muted">{{clean_rouses}} of {{rouses}} Rouses without a burst</span></div>
-  <div class="tile"><span class="lab">Globules exploded</span><span class="n">{{booms}}<small> / {{globules}}</small></span><span class="muted">before the wipe, {{boom_waves}} waves</span></div>
-  <div class="tile"><span class="lab">Deaths before a wipe</span><span class="n">{{pre_deaths}}</span><span class="muted">{{clean_pulls}} pulls had none at all</span></div>
+  <div class="tile"><span class="lab">Wipes started by a missed kick</span><span class="n">{{ended_burst}}<small> / {{pulls}}</small></span><span class="muted">first death of the wipe a Visceral Burst</span></div>
+  <div class="tile"><span class="lab">Broodlings that went off</span><span class="n">{{went_off}}<small> / {{broodlings}}</small></span><span class="muted">{{bursts}} Bursts, in {{burst_rouses}} of {{rouses}} Rouses</span></div>
+  <div class="tile"><span class="lab">Globules exploded</span><span class="n">{{booms}}<small> / {{globules}}</small></span><span class="muted">before the wipe</span></div>
+  <div class="tile"><span class="lab">Deaths before a wipe</span><span class="n">{{pre_deaths}}</span><span class="muted">{{clean_pulls_line}}</span></div>
 </div>
+
+<section class="lead">
+  <div class="head"><h2>The night in short</h2></div>
+  <ul>{{lead}}</ul>
+</section>
 
 <section>
   <div class="head"><h2>The night on one clock</h2>
-  <p>Every pull of Mythic Twin Fangs runs to the same script, so every pull can share one time axis, capped at the longest pull ({{tmax}} seconds). A pull&#39;s row ends where it ended. <b>The wipe</b> starts at the first death of the first run of {{cascade_n}} deaths within {{cascade_s}} seconds. Deaths from there on are drawn small and faded and are not held against anyone. Pick a pull to see it player by player, with soaks, kicks and Feast hits.</p>
-  <p>Where the pulls broke: {{walls}}. What started the wipes: {{ended_top}}. {{reach_r2}} pulls reached the second Rouse, the first of them pull {{first_r2}}.</p></div>
+  <p>Every pull of Mythic Twin Fangs runs to the same script, so every pull can share one time axis, running to the length of the longest pull ({{tmax}} seconds). A pull&#39;s row ends where it ended. <b>The wipe</b> starts at the first death of the first run of {{cascade_n}} deaths within {{cascade_s}} seconds. Deaths from there on are drawn small and faded and are not held against anyone. Pick a pull to see it player by player, with soaks, kicks and Feast hits.</p>
+  <p>Where the pulls broke: {{walls}}. What started the wipes, by the first death of each: {{ended_top}}. {{reach_r2_line}}</p></div>
   <figure>
     <div class="chips" id="tl-pick"></div>
     <div class="legend" id="lg-tl"></div>
@@ -131,55 +153,57 @@ td.names .nm{display:inline-block;white-space:nowrap;margin-right:8px}
 
 <section>
   <div class="head"><h2>How the fight runs</h2>
-  <p>Read off this log. Both bosses are fought together, and Eternal Venom stacks are what ties the mechanics together.</p></div>
+  <p>Timings are from this log. Both bosses are fought together, and Eternal Venom stacks tie the mechanics together.</p></div>
   <div class="mech">
     <div><b>Blood Torrent &amp; globules (9s, 70s)</b>Vexhul&#39;s Caustic Deluge drops {{glob_n}} Caustic Globules over five seconds, and Ithraz&#39;s spilled blood wraps most of them ({{shield_lo}} to {{shield_hi}} a wave this night) in a Barbed Bulwark. Crowd control strips the shield, and one player walks into each globule for one Eternal Venom stack. An unsoaked globule explodes and gives everybody a stack.</div>
-    <div><b>Rouse the Brood (36s, 97s)</b>Ten Broodlings surface one by one at ten fixed spots in an arc, five per side, and start casting Visceral Burst. A kick sends one back into the water. A completed Burst hits the whole raid hard and leaves a stacking DoT.</div>
+    <div><b>Rouse the Brood (36s, 97s)</b>Ten Broodlings surface one by one, five per side, on ten fixed spots in an arc, and start casting Visceral Burst. In the second Rouse at a boss position a spot can be used twice. A kick sends one back into the water. A completed Burst hits the whole raid hard and leaves a stacking DoT.</div>
     <div><b>Venomous Emergence (with Rouse)</b>Three Spawn of Vexhul appear and give everyone a stack of Eternal Venom. Each one keeps casting Corrosive Spit lines that add stacks until it dies.</div>
     <div><b>Ravenous Feast (61s, 122s)</b>Three smashes, each split by at least four soakers. Every soak removes one Eternal Venom stack, and Feasted stops the same player soaking twice. Blood founts follow and have to be healed into within eight seconds, or Tainted Burst goes off on the raid.</div>
-    <div><b>Eternal Venom</b>A permanent stacking DoT. Its ticks grow with the stacks, and guides put the one-shot at nine stacks on Mythic. On Mythic, a player who dies to it drops more globules, so one Venom death feeds the next.</div>
-    <div><b>Submerge (140s)</b>Sanguine Storm, then Vexhul&#39;s Vile Flood beam sweeps the room. Every beam tick is a stack. {{flood_pulls}} pulls reached it.</div>
+    <div><b>Eternal Venom</b>A permanent stacking DoT. Its ticks grow with the stacks, and guides put the one-shot at nine stacks on Mythic. A player who dies drops up to three globules that have to be soaked, so one death feeds the next.</div>
+    <div><b>Submerge (140s)</b>Sanguine Storm, then Vexhul&#39;s Vile Flood beam sweeps the room. Every beam tick is a stack. {{flood_pulls}} reached it before the wipe.</div>
+    {{after_sub_card}}
   </div>
 </section>
 
 <section>
   <div class="head"><h2>Rouse the Brood: who kicked what</h2>
-  <p>{{rouses}} Rouses before a wipe, {{broodlings}} Broodlings, {{kicked}} kicked. {{bursts}} Visceral Bursts went off, and {{clean_rouses}} Rouses had none. The misses came late: half of the {{missed_n}} Broodlings that went off did so {{miss_after_med}} seconds or more into the Rouse, after the first round of kicks was on cooldown. Misses came most often from {{miss_spots}}.</p>
-  <p><b>Fixed spots.</b> A Broodling is placed at the nearest of the ten spots by where it first took damage. {{spot_unknown}} were kicked before anything hit them, so the log has no position for them. Sides always alternate, so their side is known. {{spot_inferred}} of them could also be placed, because only one spot fits the spawn rules (the first Rouse in a place uses every spot once). The other {{spot_side_only}} are known by side only. Kicking the same spot most of the night (60% or more): {{fixed_kickers}}. Kicking one side but no fixed spot: {{side_kickers}}. Kicking in under 40% of the Rouses they were alive for: {{rare_kickers}}.</p>
-  <p><b>A kick ready when it went off.</b> For each Burst, the table lists every kicker who was alive with their interrupt off cooldown. &ldquo;On that side&rdquo; means a kicker who normally kicks the side the Broodling was on. For {{missed_near}} of the {{missed_n}} missed Broodlings, at least one such kicker was ready. Across the Bursts in Rouses that ended a pull, the kickers most often ready on that side were {{near_ready_top}}. The log has no range check, so &ldquo;ready&rdquo; means the cooldown was up, not that the Broodling was in reach.</p></div>
+  <p>{{rouses}} Rouses before a wipe, with {{broodlings}} Broodlings. {{went_off}} of them got at least one Visceral Burst off{{bursts_note}}, and {{clean_rouses}} Rouses had none. Nothing after a wipe started is counted. {{late_line}}{{miss_r2_line}} {{miss_spots_line}}</p>
+  <p><b>Fixed spots.</b> A Broodling is placed at the nearest of the ten spots by where it first took damage. {{spot_unknown}} were kicked before anything hit them, so the log has no position for them. Sides always alternate, so their side is known. {{spot_inferred}} of them could also be placed, because only one spot fits the spawn rules (the first Rouse at each boss position, before Submerge and again in the corner after it, uses every spot once). The other {{spot_side_only}} are known by side only. {{fixed_line}} {{rare_line}}</p>
+  <p><b>Was a kick available?</b> For each Broodling that went off, the table at the end of this section lists every kicker who was alive with their interrupt off cooldown. &ldquo;On that side&rdquo; means a kicker who normally kicks the side the Broodling was on. {{missed_near_line}}, at least one such kicker was ready. {{near_ready_line}} The log has no range check, so &ldquo;ready&rdquo; means the cooldown was up, not that the Broodling was in reach.</p></div>
   <figure>
     <svg id="c-spots" viewBox="0 0 900 330" role="img" aria-label="Broodling spots and who kicked them"></svg>
-    <figcaption>The ten spots in room order, drawn evenly spaced (in the room, neighbours are 8 to 22 yards apart), bosses at the top. After Submerge the bosses and the arc move together, and the spots are read relative to them. Under each spot: who kicked there most and how many times. The red number is the Bursts that went off from that spot.</figcaption>
+    <figcaption>The ten spots in room order, drawn evenly spaced (in the room, neighbours are 8 to 22 yards apart), bosses at the top. After Submerge the bosses and the arc move together, and the spots are read relative to them. Under each spot: who kicked there most and how many times. The red number is the Broodlings that went off from that spot.</figcaption>
   </figure>
+  <p class="key">One row per Rouse, spots left to right as in the room. A cell is who kicked that Broodling. The small number after the name is the kick order in that Rouse, so <i>Vesemirr 4</i> means Vesemirr kicked the 4th Broodling to be kicked; it is not seconds. Red cells went off, with the seconds after the Rouse. <span class="inf">Dotted underline</span>: there is no position in the log, so the spot is the only one the spawn rules allow. &ldquo;?&rdquo; holds the ones even the rules cannot place, with their side (L or R). <span style="color:var(--crit)">wipe</span> after a row: a missed kick in that Rouse started the wipe.</p>
   <div class="tblwrap"><table class="grid" id="t-grid"><thead></thead><tbody></tbody></table></div>
-  <p class="muted" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">One row per Rouse, spots left to right as in the room. A cell is who kicked that Broodling. The small number after the name is the kick order in that Rouse, so <i>Vesemirr 4</i> means Vesemirr kicked the 4th Broodling to be kicked; it is not seconds. Red cells went off, with the seconds after the Rouse. <span class="inf">Dotted underline</span>: there's no position in the log, so the spot is the only one the spawn rules allow. &ldquo;?&rdquo; holds the ones even the rules can't place, with their side (L or R).</p>
-  <p><b>Where the second Rouse doubles up.</b> The first Rouse in a place puts one Broodling on every spot; the second can reuse one, but only from three or more Broodlings back on that side, so only the 4th and 5th on a side ever land on a used spot. Across 80 Mythic kills a side only ever runs one of the five sequences below (see <a href="/reports/twin-fangs-rouse-spawns">Rouse spawn pattern</a>). Tonight {{seq_repeat}} of the {{seq_sides}} sides read in full had a repeat; {{seq_unread}} more had a Broodling with no spot.</p>
+  <p><b>Where the second Rouse doubles up.</b> The first Rouse at each boss position puts one Broodling on every spot; the second can reuse one, but only from three or more Broodlings back on that side, so only the 4th and 5th on a side ever land on a used spot. Across 80 Mythic kills a side only ever runs one of the five sequences below (see <a href="/reports/twin-fangs-rouse-spawns">Rouse spawn pattern</a>). This night {{seq_repeat}} of the {{seq_sides}} sides read in full had a repeat; {{seq_unread}} more had a Broodling with no spot. Tags read pull and side: <i>P3 L</i> is the left side of pull 3&rsquo;s second Rouse.</p>
   <figure>
     <svg id="c-seq" viewBox="0 0 900 290" role="img" aria-label="Spot sequences of each side in the second Rouse"></svg>
-    <figcaption>One side of a second Rouse at a time. Letters are spots in the order they were first used, so ABCDA means the 5th Broodling came back to the 1st one's spot (red, with an arc back to it). The bar is tonight's count; the grey mark is the count the 80 kills' shares would give for this many sides. Hover a tag for that side's spots.</figcaption>
+    <figcaption>One side of a second Rouse at a time. Letters are spots in the order they were first used, so ABCDA means the 5th Broodling came back to the 1st one's spot (red, with an arc back to it). The bar is this night&rsquo;s count; the grey mark is the count the 80 kills' shares would give for this many sides. Hover a tag for that side's spots.</figcaption>
   </figure>
+  <p class="key"><b>Kickers.</b> Main spot: where they kicked most, with its share. Same side: share of their kicks on their usual side. Median order: which Broodling of the Rouse they usually kicked (1 = the first kicked). Order spread: how much that varied. Pattern: a one-line reading of the three.</p>
   <div class="tblwrap"><table id="t-kickers">
     <thead><tr><th class="l">Kicker</th><th class="l">Interrupt</th><th>Kicks</th><th>Rouses alive</th><th>Main spot</th><th>Same side</th><th>Median order</th><th>Order spread</th><th class="l">Pattern</th></tr></thead>
     <tbody></tbody></table></div>
   <div id="plan-block">
   <p><b>Against the kick plan.</b> Each pair of spots has an early kicker (the first Broodling to surface there), a late one (the second) and a backup (a third, or one whose kicker is dead). The tanks share the front pair however the mechanics let them, so they count as one. Centre backups cover a side and the front. {{plan_line}}</p>
+  <p class="key">Theirs: the placed Broodlings the plan gave this player, by spawn order in their pair; a dead kicker&rsquo;s go to the backup, then the centre backup. Broodlings with no spot (&ldquo;?&rdquo;) are left out, and so are {{plan_skipped}} that came after one on the same side, since the unplaced one may have been the first in their pair. Kicked: theirs they kicked. Taken: theirs someone else kicked; &hellip;ready: of those, how many came while their own interrupt was off cooldown (cooldown only: the log cannot tell whether they were in range). Off: theirs that finished a Visceral Burst. Helped: kicks on Broodlings the plan gave someone else. Speed: median seconds from a Broodling surfacing to their kick, on their own ones.</p>
   <div class="tblwrap"><table id="t-plan">
     <thead><tr><th class="l">Kicker</th><th class="l">Job</th><th>Theirs</th><th>Kicked</th><th>Taken</th><th>&hellip;ready</th><th>Off</th><th>Helped</th><th>Speed</th><th class="l">Taken most by</th></tr></thead>
     <tbody></tbody></table></div>
-  <p class="muted" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">Theirs: the placed Broodlings the plan gave this player, by spawn order in their pair; a dead kicker&rsquo;s go to the backup, then the centre backup. Broodlings with no spot (&ldquo;?&rdquo;) are left out. Kicked: theirs they kicked. Taken: theirs someone else kicked; &hellip;ready: of those, how many came while their own interrupt was off cooldown. Off: theirs that finished a Visceral Burst. Helped: kicks on Broodlings the plan gave someone else. Speed: median seconds from a Broodling surfacing to their kick, on their own ones.</p>
   </div>
   <div class="tblwrap"><table id="t-missed">
-    <thead><tr><th class="l">Pull &middot; Rouse</th><th>Spot</th><th>Went off at</th><th>Surfaced</th><th class="l">Kicked after</th><th class="l">Ready on that side</th><th class="l">Ready elsewhere</th><th>Ended it</th></tr></thead>
+    <thead><tr><th class="l">Pull &middot; Rouse</th><th>Spot</th><th>Went off at</th><th>Surfaced</th><th class="l">Kicked after</th><th class="l">Ready on that side</th><th class="l">Ready elsewhere</th><th>Started the wipe</th></tr></thead>
     <tbody></tbody></table></div>
 </section>
 
 <section>
   <div class="head"><h2>Ravenous Feast and the founts</h2>
-  <p><b>Soaks.</b> {{feasts}} Feasts before a wipe; {{feast_short}} smashes landed with fewer than four soakers. {{feast_soak_line}}. Every soak takes one Eternal Venom stack off, so a skipped Feast is a stack kept.</p>
-  <p><b>Tainted Blood.</b> {{tainted_bursts}} of the {{feasts}} Feasts ended in Tainted Burst. Healing absorbed by Tainted Blood on the players standing in the founts came from {{tb_healers}}; everyone else together gave {{tb_nonhealer}}%.</p></div>
+  <p><b>Soaks.</b> {{feasts}} Feasts before a wipe. {{feast_short_line}}{{feast_wipe_line}} {{feast_soak_line}}. Every soak takes one Eternal Venom stack off, so a skipped Feast is a stack kept.</p>
+  <p><b>Tainted Blood.</b> {{tainted_bursts}} of the {{feasts}} Feasts ended in Tainted Burst. Healing into the founts came from {{tb_healers}}; everyone else together gave {{tb_nonhealer}}%.</p></div>
   <figure>
     <svg id="c-tb" viewBox="0 0 900 200" role="img" aria-label="Healing into Tainted Blood by player"></svg>
-    <figcaption>Healing absorbed by Tainted Blood across the night, in millions. Each bar is split per Feast. Hover a segment for the pull.</figcaption>
+    <figcaption>Healing into the founts across the night, in millions. Each bar is split per Feast; red segments are Feasts that ended in Tainted Burst. Hover a segment for the pull.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-feast">
     <thead><tr><th class="l">Pull</th><th>Feast at</th><th>Soakers per smash</th><th>Founts</th><th class="l">Healed most</th></tr></thead>
@@ -188,9 +212,9 @@ td.names .nm{display:inline-block;white-space:nowrap;margin-right:8px}
 
 <section>
   <div class="head"><h2>Globules, shields and Eternal Venom</h2>
-  <p>{{waves}} globule waves came before a wipe. Each dropped {{glob_n}} globules{{glob_extra}}. That makes {{globules}} in all. {{shield_total}} of them were shielded, and {{shield_strips}} of those {{shield_total}} Barbed Bulwarks were stripped by crowd control, so the shields were never the problem. That job falls to whichever classes bring an area stun or fear, mostly {{shield_top}}. {{booms}} globules exploded unsoaked before a wipe, on {{boom_list}}. Another {{booms_after}} went off after a wipe had started. Those were mostly the globules dead players drop, which is a cost of wiping and not a soak problem.</p>
-  <p>Each globule is one stack for one player, so nobody should take two in a wave. <b>Took two or more in one wave:</b> {{soak_over}}. With fewer globules than players, that is usually someone covering a gap, and costs only the extra stack. <b>Soaked in under half the waves they were alive for:</b> {{soak_low}}. <b>Alive and without a globule that wave when one exploded:</b> {{soak_idle}}. Of all of these, that last list matters most.</p>
-  <p><b>Where the stacks came from.</b> {{ev_total}} stacks before a wipe: {{ev_emergence_pct}}% from Venomous Emergence, which everyone takes, {{ev_soak_pct}}% from globule soaks, and {{ev_burst_pct}}% from globules exploding. {{ev_wave_pct}}% came from Stir the Depths waves and {{ev_spit_pct}}% from snake spit, and Vile Flood ({{ev_flood}}) and globules landing on someone as they dropped ({{ev_deluge}}) gave the rest. {{ev_other}} stacks had nothing that could be matched to them. Most spit and wave stacks: {{ev_avoid_top}}. On pull {{best_pull}}, {{best_venom_deaths}} players died to Venom ticks at {{best_venom_ev}} stacks, before the nine-stack limit. The wipe started at {{best_wipe}} seconds.</p></div>
+  <p>{{waves}} globule waves came before a wipe. Each dropped {{glob_n}} globules{{glob_extra}}.{{glob_loose}} That makes {{globules}} in all. {{shield_strips}} of the {{shield_total}} Barbed Bulwarks were stripped by crowd control{{shield_verdict}}. That job falls to whichever classes bring an area stun or fear, mostly {{shield_top}}. {{boom_line}} {{booms_after_line}}</p>
+  <p>Each globule is one stack for one player. With about {{alive_med}} alive and 15 globules a wave, about {{skip_n}} people go without one in every wave by design, so these lists only mean something when the same name keeps coming up. Tanks are left out. <b>Most important: alive and without a globule in a wave where one exploded:</b> {{soak_idle}}. <b>Soaked in under half the waves they were alive for:</b> {{soak_low}}. <b>Took two or more in one wave:</b> {{soak_over}}; usually someone covering a gap, at the cost of the extra stack.</p>
+  <p><b>Where the stacks came from.</b> {{ev_total}} stacks before a wipe: {{ev_emergence_pct}}% from Venomous Emergence, which everyone takes, {{ev_soak_pct}}% from globule soaks, and {{ev_burst_pct}}% from globules exploding. {{ev_wave_pct}}% came from Stir the Depths waves and {{ev_spit_pct}}% from snake spit, and Vile Flood ({{ev_flood_pct}}%) and globules landing on someone as they dropped ({{ev_deluge_pct}}%) gave the rest.{{ev_other_line}} Most spit and wave stacks: {{ev_avoid_top}}. {{venom_line}}</p></div>
   <figure>
     <div class="legend"><span><i style="background:var(--cls-Hunter)"></i>soaked</span><span><i style="background:var(--rule)"></i>globules in the wave</span><span><i style="background:var(--ink-2);height:3px"></i>of them shielded</span><span><i style="background:var(--crit)"></i>exploded</span></div>
     <svg id="c-waves" viewBox="0 0 900 220" role="img" aria-label="Globules soaked per wave"></svg>
@@ -201,14 +225,14 @@ td.names .nm{display:inline-block;white-space:nowrap;margin-right:8px}
     <figcaption>Barbed Bulwarks stripped, by the class whose crowd control landed on the globule as the shield dropped. Hover for the spells.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-glob">
-    <thead><tr><th class="l">Player</th><th>Waves alive</th><th>Soaked</th><th>Took 2+</th><th>No soak, one exploded</th><th>Feasts soaked</th><th>Stacks: soaks</th><th>exploded</th><th>Emergence</th><th>spit</th><th>waves / flood</th><th>landed on</th><th>other</th></tr></thead>
+    <thead><tr><th class="l">Player</th><th>Waves alive</th><th>Soaked</th><th>Waves with 2+</th><th>No soak, one exploded</th><th>Feasts soaked</th><th>Stacks: soaks</th><th>exploded</th><th>Emergence</th><th>spit</th><th>waves / flood</th><th>landed on</th><th>other</th></tr></thead>
     <tbody></tbody></table></div>
 </section>
 
 <section>
   <div class="head"><h2>The snakes</h2>
-  <p>{{emergences}} Venomous Emergences before a wipe. All three snakes died in {{snake_full}} of them, the last at a median of {{snake_kill_med}} seconds after they surfaced. They got off {{snake_spits}} Corrosive Spits, {{snake_spits_med}} at the median per Emergence. Every spit that lands is a stack.</p>
-  <p>Below is each dps&#39;s share of their own damage that went into the snakes while any were alive. Most of it: {{snake_top}}. Barely touched them: {{snake_low}}. The snakes were cleaved down together, not taken one at a time. For nearly everyone, about a third of their snake damage went into the first one to die, which is an even split across the three.</p></div>
+  <p>{{emergences}} Venomous Emergences before a wipe. All three snakes died in {{snake_full}} of them, the last at a median of {{snake_kill_med}} seconds after they surfaced. They got off {{snake_spits}} Corrosive Spits, a median of {{snake_spits_med}} per Emergence. Every spit that lands is a stack, and spit was {{ev_spit_pct}}% of the night&rsquo;s stacks.</p>
+  <p>Below is each dps&#39;s share of their own damage that went into the snakes while any were alive. Most of it: {{snake_top}}. {{snake_low_line}} {{snake_focus_line}}</p></div>
   <div class="tblwrap"><table id="t-snakes">
     <thead><tr><th class="l">Player</th><th>Emergences</th><th>Hit a snake</th><th class="l">Share of damage into snakes</th><th>On the first to die</th><th>First hit (median)</th></tr></thead>
     <tbody></tbody></table></div>
@@ -216,15 +240,15 @@ td.names .nm{display:inline-block;white-space:nowrap;margin-right:8px}
 
 <section>
   <div class="head"><h2>Deaths</h2>
-  <p>{{pre_deaths}} deaths came before a wipe started, and {{post_deaths}} after. The wipes were sudden: {{clean_pulls}} of {{pulls}} pulls had nobody dead until the cascade, so these pulls were lost to one mechanic, not to bleeding players. Most deaths before a wipe: {{death_top}}. First to die in a pull: {{first_top}}. A death by Toxic Fumes (the room&#39;s constant damage) is blamed on the biggest hit in the five seconds before it.</p></div>
+  <p>{{pre_deaths}} deaths came before a wipe started, and {{post_deaths}} after. {{deaths_line}} Most deaths before a wipe: {{death_top}}. First to die in a pull: {{first_top}}. A death by Toxic Fumes (the room&#39;s constant damage) is counted as the biggest hit in the five seconds before it.</p></div>
   <div class="tblwrap"><table id="t-deaths">
-    <thead><tr><th class="l">Player</th><th>Pulls</th><th>Deaths before wipe</th><th>First death</th><th class="l">Causes</th></tr></thead>
+    <thead><tr><th class="l">Player</th><th>Deaths before wipe</th><th>First to die</th><th class="l">Causes</th></tr></thead>
     <tbody></tbody></table></div>
 </section>
 
 <section>
   <div class="note">
-    <p><b>How this is read.</b> <b>A wipe</b> starts at the first death of the first run of {{cascade_n}} deaths within {{cascade_s}} seconds; the kill, if there is one, has none. A mechanic that opens after the wipe started is not counted. Neither is a globule wave cut off by the wipe within ten seconds. <b>A Broodling&#39;s spot</b> is the nearest of the ten spots to where it first took damage, within six yards. <b>A kick ready</b> means the kicker was alive and their interrupt&#39;s cooldown was up when the Burst completed; the night&#39;s most-used interrupt counts for each player. <b>A globule soak</b> is a Caustic Globule hit on one player. <b>An explosion</b> is the other Caustic Globule spell hitting three or more players within 0.6 seconds. <b>A stack&#39;s source</b> is the hit that landed within 0.15 seconds of the stack. <b>A shield strip</b> is a Barbed Bulwark dropping within 0.4 seconds of a stun, fear or incapacitate on that globule. <b>Healing into a fount</b> is healing absorbed on a player while they carry Tainted Blood, leaving out anyone also under Blood Torrent&#39;s absorb.</p>
+    <p><b>How this is read.</b> <b>A wipe</b> starts at the first death of the first run of {{cascade_n}} deaths within {{cascade_s}} seconds; the kill, if there is one, has none. A mechanic that opens after the wipe started is not counted, and inside one that was already running, nothing after the wipe start counts (Broodlings, Bursts, kicks, smashes, snake damage). A globule wave cut off by the wipe within ten seconds is not a wave; its globules are counted on their own. <b>What started a wipe</b> is the cause of its first death. <b>Alive</b>: a player is dead from their death until they next cast something, so a battle rez brings them back. <b>A Broodling&#39;s spot</b> is the nearest of the ten spots to where it first took damage, within seven yards. <b>A kick ready</b> means the kicker was alive and their interrupt&#39;s cooldown was up when the Burst completed; the night&#39;s most-used interrupt counts for each player. <b>A globule soak</b> is a Caustic Globule hit on one player. <b>An explosion</b> is the other Caustic Globule spell hitting three or more players within 0.6 seconds. <b>A stack&#39;s source</b> is the hit that landed within 0.15 seconds of the stack. <b>A shield strip</b> is a Barbed Bulwark dropping within 0.4 seconds of a stun, fear or incapacitate on that globule. <b>Healing into a fount</b> is healing absorbed on a player while they carry Tainted Blood, leaving out anyone also under Blood Torrent&#39;s absorb.</p>
   </div>
 </section>
 
@@ -251,7 +275,10 @@ const G=Object.fromEntries(D.groups.map(([k,l,c])=>[k,{l,c}]));
 const MK=Object.fromEntries(D.marks.map(([k,l,c])=>[k,{l,c}]));
 const PL=Object.fromEntries(D.players.map(p=>[p.name,p]));
 const ccol=n=>D.cls_color[(PL[n]||{}).cls]||'var(--muted)';
-const role=n=>{const r=(PL[n]||{}).role;return r?`<span class="role">${r==='healer'?'HEAL':r.toUpperCase()}</span>`:'';};
+const role=n=>{const r=(PL[n]||{}).role;return r?`<span class="role">${r==='healer'?'HEAL':r.toUpperCase()}</span> `:'';};
+// cut a name to k characters with an ellipsis; the full name goes in a title
+const short=(n,k)=>{n=n||'';return [...n].length>k?[...n].slice(0,k-1).join('')+'…':n;};
+const f1=x=>x==null?'–':(+x).toFixed(1);
 const who=n=>`${role(n)}<span style="color:${ccol(n)}">${esc(n)}</span>`;
 // a name in a list that wraps: no role badge, never split across lines
 const nm=n=>`<span class="nm" style="color:${ccol(n)}" title="${esc(((PL[n]||{}).role)||'')}">${esc(n)}</span>`;
@@ -263,7 +290,7 @@ const TL={sel:null};
   const all=document.createElement('button');all.textContent='All pulls';all.className='on';pick.appendChild(all);
   const btns=[all];
   D.pulls.forEach(p=>{const b=document.createElement('button');b.textContent=p.pull;
-    if(p.wipe_cause)b.className='ko';b.title=`${p.pct}% · ${p.wipe_cause?G[p.wipe_cause].l:''}`;pick.appendChild(b);btns.push(b);});
+    if(p.wipe_cause)b.className='ko';b.title=p.wipe_cause?`${f1(p.pct)}% · wipe started by ${G[p.wipe_cause].l}`:`${f1(p.pct)}%`;pick.appendChild(b);btns.push(b);});
   btns.forEach((b,i)=>b.addEventListener('click',()=>{btns.forEach(x=>x.classList.remove('on'));b.classList.add('on');
     TL.sel=i?D.pulls[i-1]:null;draw();}));
   const used=[...new Set(D.pulls.flatMap(p=>p.deaths.map(d=>d.group)))];
@@ -314,7 +341,7 @@ const TL={sel:null};
           hook(c,`<b>Pull ${p.pull}</b> · ${d.t}s<br>${who(d.player)}<br>${esc(d.why||G[d.group].l)} · ${d.ev} Venom stacks${pre?'':'<br><i>in the wipe</i>'}`);});
         const pl=txt(s,X(p.dur)+6,yy+4,`${p.pct.toFixed(1)}%`,{anchor:'start',size:10,fill:'var(--ink-2)'});
         const hit=mk(s,'rect',{x:0,y:yy-rh/2,width:L,height:rh,fill:'transparent',style:'cursor:pointer'});
-        hook(hit,`<b>Pull ${p.pull}</b> · ${p.dur}s · ${p.pct}%<br>Vexhul ${p.vex}% · Ithraz ${p.ith}%<br>`+(p.wipe!=null?`wipe from ${p.wipe}s: ${G[p.wipe_cause].l}`:'no wipe cascade')+'<br><i>click for the pull</i>');
+        hook(hit,`<b>Pull ${p.pull}</b> · ${f1(p.dur)}s · ${f1(p.pct)}%<br>Vexhul ${p.vex}% · Ithraz ${p.ith}%<br>`+(p.wipe!=null?`wipe from ${f1(p.wipe)}s, started by ${G[p.wipe_cause].l}`:'no wipe cascade')+'<br><i>click for the pull</i>');
         hit.addEventListener('click',()=>btns[j+1].click());
       } else {
         const p=single,n=r,dead=p.deaths.find(d=>d.player===n);
@@ -329,9 +356,10 @@ const TL={sel:null};
       }
     });
     if(single&&single.wipe!=null){const x=X(single.wipe);mk(s,'line',{x1:x,x2:x,y1:T-4,y2:H-22,stroke:G[single.wipe_cause].c,'stroke-width':2});
-      txt(s,x+4,T-8,`wipe ${single.wipe}s`,{anchor:'start',fill:G[single.wipe_cause].c,size:10});}
+      txt(s,x+4,H-38,`wipe ${f1(single.wipe)}s`,{anchor:'start',fill:G[single.wipe_cause].c,size:10});}
     if(single){mk(s,'line',{x1:X(single.dur),x2:X(single.dur),y1:T-4,y2:H-22,stroke:'var(--ink-2)','stroke-dasharray':'4 3'});
-      txt(s,X(single.dur)+4,H-24,`end ${single.dur}s · ${single.pct}%`,{anchor:'start',size:10,fill:'var(--ink-2)'});}
+      const xe=X(single.dur),nearEdge=xe>W-150;
+      txt(s,nearEdge?xe-4:xe+4,H-24,`end ${f1(single.dur)}s · ${f1(single.pct)}%`,{anchor:nearEdge?'end':'start',size:10,fill:'var(--ink-2)'});}
     document.getElementById('tl-cap').textContent=single
       ?`Pull ${single.pull}, player by player, on the same ${Math.round(tmax)}-second axis. Rows end at the death; the dashed line is the end of the pull.`
       :'One row per pull. The coloured ticks along the top are the boss script of the longest pull; the faint lines carry them down through every row. The shaded tail of a row is the wipe. Click a pull label for the detail.';
@@ -354,10 +382,10 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
     mk(s,'circle',{cx,cy,r:9,fill:'var(--surface-2)',stroke:'var(--ink-2)'});
     txt(s,cx,cy+3.5,k,{size:9,fill:'var(--ink)'});
     const top=Object.entries(per[k]||{}).sort((a,b)=>b[1]-a[1]);
-    top.slice(0,4).forEach(([n,c],i)=>txt(s,cx,cy+26+i*13,`${n.slice(0,9)} ${c}`,{size:9.5,fill:ccol(n)}));
-    if(miss[k])txt(s,cx,cy-14,`${miss[k]} burst${miss[k]>1?'s':''}`,{size:9.5,fill:'var(--crit)'});
+    top.slice(0,4).forEach(([n,c],i)=>txt(s,cx,cy+26+i*13,`${short(n,10)} ${c}`,{size:9.5,fill:ccol(n)}));
+    if(miss[k])txt(s,cx,cy-14,`${miss[k]} went off`,{size:9.5,fill:'var(--crit)'});
     const hit=mk(s,'circle',{cx,cy,r:14,fill:'transparent'});
-    hook(hit,`<b>${k}</b><br>`+top.map(([n,c])=>`${who(n)}: ${c}`).join('<br>')+(miss[k]?`<br><span style="color:var(--crit)">${miss[k]} Visceral Burst</span>`:''));
+    hook(hit,`<b>${k}</b><br>`+top.map(([n,c])=>`${who(n)}: ${c}`).join('<br>')+(miss[k]?`<br><span style="color:var(--crit)">${miss[k]} went off</span>`:''));
   });
   txt(s,70,H-8,'← left side',{size:10,anchor:'start'});txt(s,W-70,H-8,'right side →',{size:10,anchor:'end'});
 })();
@@ -368,8 +396,8 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
     const by={};r.cells.forEach(c=>(by[c.spot]=by[c.spot]||[]).push(c));
     const cell=cs=>!cs?'<td class="c"></td>':`<td class="c${cs.some(c=>c.b)?' burst':''}">`+cs.map(c=>{
       const tag=c.spot==='?'&&c.side?`<span class="sm">${c.side}</span> `:'';
-      const body=c.b&&!c.who?`✗ ${c.bt}s`:
-        `<span style="color:${ccol(c.who)}">${esc((c.who||'').slice(0,7))}</span><span class="sm">${c.rank||''}</span>${c.b?` ✗${c.bt}s`:''}`;
+      const body=c.b&&!c.who?`✗ ${f1(c.bt)}s`:
+        `<span style="color:${ccol(c.who)}" title="${esc(c.who||'')}">${esc(short(c.who,7))}</span><span class="sm">${c.rank||''}</span>${c.b?` ✗ ${f1(c.bt)}s`:''}`;
       return c.inf?`<span class="inf" title="No position in the log; the only spot the spawn rules allow">${body}</span>`:tag+body;}).join('<br>')+'</td>';
     return `<tr><td class="l">${r.pull} · ${r.rouse}${r.ended?' <span style="color:var(--crit)">wipe</span>':''}</td>`+SP.map(k=>cell(by[k])).join('')+cell(by['?'])+'</tr>';
   }).join('');
@@ -379,17 +407,17 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
     const known=Object.values(k.spots).reduce((a,b)=>a+b,0);
     return `<tr><td class="l">${who(k.player)}</td><td class="l">${esc(k.spell)}</td><td>${k.kicks}</td><td>${k.rouses}</td>
       <td>${k.top_spot} <span class="sm">${known?Math.round(100*k.spots[k.top_spot]/known):0}%</span></td><td>${Math.round(100*k.side_share)}%</td>
-      <td>${k.rank_med??'–'}</td><td>${k.rank_sd===false?'–':k.rank_sd}</td><td class="l"><span class="pill">${esc(k.label)}</span></td></tr>`;}).join('');
+      <td>${k.rank_med==null?'–':f1(k.rank_med)}</td><td>${k.rank_sd===false?'–':f1(k.rank_sd)}</td><td class="l"><span class="pill">${esc(k.label)}</span></td></tr>`;}).join('');
   if(!D.kicks.plan){document.getElementById('plan-block').hidden=true;}else{
     document.querySelector('#t-plan tbody').innerHTML=D.kicks.plan.rows.map(r=>{
       const pc=r.theirs?Math.round(100*r.kicked/r.theirs):0;
       return `<tr><td class="l">${r.player.split(' + ').map(who).join(' + ')}</td><td class="l"><span class="pill">${esc(r.role)}</span></td><td>${r.theirs||'–'}</td>
       <td>${r.theirs?`${r.kicked} <span class="sm">${pc}%</span>`:'–'}</td><td>${r.taken||'–'}</td><td>${r.taken_ready||'–'}</td>
-      <td>${r.off?`<span style="color:var(--crit)">${r.off}</span>`:'–'}</td><td>${r.helped||'–'}</td><td>${r.react==null?'–':r.react+'s'}</td>
+      <td>${r.off?`<span style="color:var(--crit)">${r.off}</span>`:'–'}</td><td>${r.helped||'–'}</td><td>${r.react==null?'–':f1(r.react)+'s'}</td>
       <td class="l names">${r.lost_to.slice(0,2).map(([n,c])=>`<span class="nm">${nm(n)} <span class="sm">${c}</span></span>`).join(' ')||'<span class="muted">–</span>'}</td></tr>`;}).join('');
   }
   document.querySelector('#t-missed tbody').innerHTML=D.kicks.missed.map(m=>
-    `<tr><td class="l">${m.pull} · ${m.rouse}</td><td>${m.spot}</td><td>+${m.after}s</td><td>${m.spawn_rank} of 10</td>
+    `<tr><td class="l">${m.pull} · ${m.rouse}</td><td>${m.spot}</td><td>+${f1(m.after)}s</td><td>${m.spawn_rank} of 10</td>
      <td class="l">${m.kicked_late?who(m.kicked_late):'<span class="muted">never</span>'}</td>
      <td class="l names">${m.near.map(nm).join(' ')||'<span class="muted">nobody</span>'}</td>
      <td class="l names">${m.far.map(nm).join(' ')||'<span class="muted">–</span>'}</td><td>${m.ended?'<span style="color:var(--crit)">yes</span>':''}</td></tr>`).join('');
@@ -410,8 +438,8 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
       if(x&&x+w>TW){x=0;line++;}out.push({q,lab,x,line,w});x+=w+5;});
     return {tags:out,lines:out.length?out[out.length-1].line+1:1};});
   ['1st','2nd','3rd','4th','5th'].forEach((l,i)=>txt(s,X0+i*dx,14,l));
-  txt(s,X0+2*dx,28,'Broodling on a side, 2 s apart',{size:10});
-  txt(s,BX,28,'tonight',{anchor:'start'});
+  txt(s,X0+2*dx,28,'Broodling on a side, 2s apart',{size:10});
+  txt(s,BX,28,'this night',{anchor:'start'});
   txt(s,BX+bw+34,28,'80 kills',{anchor:'start',size:10});
   let y=T+14;
   rows.forEach((k,i)=>{
@@ -443,35 +471,38 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
 (function(){
   const s=document.getElementById('c-tb'),W=900,L=110,R=60;
   const tot=Object.entries(D.healed).sort((a,b)=>b[1]-a[1]).filter(([,v])=>v>=0.5);
-  const rh=18,H=10+tot.length*rh+20;s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const rh=18,H=10+tot.length*rh+6;s.setAttribute('viewBox',`0 0 ${W} ${H}`);
   const mx=Math.max(...tot.map(t=>t[1]));const X=v=>L+(W-L-R)*v/mx;
   tot.forEach(([n,v],j)=>{const yy=10+j*rh;txt(s,L-8,yy+12,n,{anchor:'end',size:10.5,fill:ccol(n)});
     let acc=0;D.feasts.forEach((f,i)=>{const h=f.healed[n]||0;if(!h)return;
-      const r=mk(s,'rect',{x:X(acc),y:yy+3,width:Math.max(.5,X(acc+h)-X(acc)-.6),height:rh-6,fill:f.burst?'var(--crit)':'var(--accent)',opacity:.55+.45*(i%2)});
+      const sw=X(acc+h)-X(acc),r=mk(s,'rect',{x:X(acc),y:yy+3,width:Math.max(.5,sw>4?sw-.6:sw),height:rh-6,fill:f.burst?'var(--crit)':'var(--accent)',opacity:.55+.45*(i%2)});
       hook(r,`${esc(n)}: ${h}M into the founts<br>pull ${f.pull}, Feast at ${f.t}s${f.burst?'<br><span style="color:var(--crit)">Tainted Burst went off</span>':''}`);acc+=h;});
-    txt(s,X(v)+6,yy+12,v+'M',{anchor:'start',size:10});});
+    txt(s,X(v)+6,yy+12,f1(v)+'M',{anchor:'start',size:10});});
   document.querySelector('#t-feast tbody').innerHTML=D.feasts.map(f=>{
     const top=Object.entries(f.healed).sort((a,b)=>b[1]-a[1]).slice(0,2);
-    return `<tr><td class="l">${f.pull}</td><td>${f.t}s</td><td>${f.hits.map(h=>h<4?`<span class="neg">${h}</span>`:h).join(' · ')}</td>
-      <td>${f.burst?`<span class="neg">Tainted Burst ${f.burst_t}s</span>`:'healed'}</td><td class="l">${top.map(([n,v])=>`${who(n)} ${v}M`).join(', ')}</td></tr>`;}).join('');
+    const founts=f.burst?`<span class="neg">Tainted Burst ${f1(f.burst_t)}s</span>`:f.cut?'<span class="muted">cut by the wipe</span>':'healed';
+    return `<tr><td class="l">${f.pull}</td><td>${f1(f.t)}s</td><td>${f.hits.map(h=>h<4?`<span class="neg">${h}</span>`:h).join(' · ')||'–'}</td>
+      <td>${founts}</td><td class="l">${top.map(([n,v])=>`${who(n)} ${f1(v)}M`).join(', ')||'<span class="muted">–</span>'}</td></tr>`;}).join('');
 })();
 
 /* ---------- 5/6. globules ---------- */
 (function(){
-  const s=document.getElementById('c-waves'),W=900,L=34,R=8,T=12,B=34,H=220,N=D.waves.length,cw=(W-L-R)/N;
+  const s=document.getElementById('c-waves'),W=900,L=34,R=8,T=12,B=34,H=220,N=D.waves.length,cw=(W-L-R)/N;let lastLab=-99;
   const tot=w=>w.globules+(w.death_globules||0);
   const mx=Math.max(...D.waves.map(w=>Math.max(tot(w),w.soaks)))+1;
   const Y=v=>T+(H-T-B)*(1-v/mx);
   for(let v=0;v<=mx;v+=5){mk(s,'line',{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:'var(--grid)'});txt(s,L-6,Y(v)+4,v,{anchor:'end'});}
   D.waves.forEach((w,i)=>{const x=L+cw*i;
     mk(s,'rect',{x:x+1,y:Y(tot(w)),width:cw-2,height:Y(0)-Y(tot(w)),fill:'var(--rule)'});
-    mk(s,'line',{x1:x+1,x2:x+cw-1,y1:Y(w.shielded),y2:Y(w.shielded),stroke:'var(--ink-2)','stroke-width':2});
+    mk(s,'line',{x1:x+1,x2:x+cw-1,y1:Y(w.shielded),y2:Y(w.shielded),stroke:'var(--ink)','stroke-width':2.5});
     const r=mk(s,'rect',{x:x+cw*.25,y:Y(w.soaks),width:cw*.5,height:Y(0)-Y(w.soaks),fill:'var(--cls-Hunter)'});
     w.booms.forEach((b,k)=>mk(s,'circle',{cx:x+cw/2,cy:Y(tot(w))-6-k*9,r:3.5,fill:'var(--crit)'}));
     hook(r,`<b>Pull ${w.pull}, wave ${w.wave}</b> (${w.t}s)<br>${w.globules} globules${w.death_globules?` + ${w.death_globules} dropped by ${w.death_droppers.join(', ')} dying`:''}, ${w.shielded} shielded, ${w.stripped} shields stripped<br>${w.soaks} soaks`+
       (w.doubles.length?`<br>took two: ${w.doubles.map(esc).join(', ')}`:'')+
-      (w.booms.length?`<br><span style="color:var(--crit)">${w.booms.length} exploded (${w.booms.join('s, ')}s)</span><br>alive with no soak: ${w.idle.map(esc).join(', ')}`:''));
-    if(w.wave===1)txt(s,x+cw/2,H-B+14,w.pull,{size:9.5});
+      (w.booms.length?`<br><span style="color:var(--crit)">${w.booms.length} exploded (${w.booms.join('s, ')}s)</span><br>alive with no soak: ${w.idle.map(esc).join(', ')||'nobody'}`:''));
+    // label a pull where it starts, unless the last label is too close
+    if(w.wave===1&&x+cw/2-lastLab>=16){txt(s,x+cw/2,H-B+14,w.pull,{size:9.5});lastLab=x+cw/2;}
+    if(w.wave===1)mk(s,'line',{x1:x,x2:x,y1:Y(0),y2:Y(0)+5,stroke:'var(--muted)'});
   });
   txt(s,L,H-4,'pull →',{anchor:'start',size:9.5});
 })();
@@ -479,9 +510,9 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
   const s=document.getElementById('c-shields'),W=900,L=110,R=60;
   const rows=Object.entries(D.shields.cls).sort((a,b)=>b[1]-a[1]);const rh=18,H=10+rows.length*rh+10;
   s.setAttribute('viewBox',`0 0 ${W} ${H}`);const mx=Math.max(...rows.map(r=>r[1]));const X=v=>L+(W-L-R)*v/mx;
-  rows.forEach(([c,v],j)=>{const yy=10+j*rh;txt(s,L-8,yy+12,c,{anchor:'end',size:10.5,fill:D.cls_color[c]||'var(--ink-2)'});
+  rows.forEach(([c,v],j)=>{const yy=10+j*rh;txt(s,L-8,yy+12,D.cls_name[c]||c,{anchor:'end',size:10.5,fill:D.cls_color[c]||'var(--ink-2)'});
     const r=mk(s,'rect',{x:L,y:yy+3,width:X(v)-L,height:rh-6,fill:D.cls_color[c]||'var(--accent)',opacity:.8});
-    hook(r,`<b>${c}</b>: ${v}<br>`+Object.entries(D.shields.spell[c]).sort((a,b)=>b[1]-a[1]).map(([sp,n])=>`${esc(sp)} ${n}`).join('<br>'));
+    hook(r,`<b>${esc(D.cls_name[c]||c)}</b>: ${v}<br>`+Object.entries(D.shields.spell[c]).sort((a,b)=>b[1]-a[1]).map(([sp,n])=>`${esc(sp)} ${n}`).join('<br>'));
     txt(s,X(v)+6,yy+12,v,{anchor:'start',size:10});});
 })();
 (function(){
@@ -489,23 +520,23 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
   document.querySelector('#t-glob tbody').innerHTML=D.globules.slice().sort((a,b)=>(a.soaked/a.waves)-(b.soaked/b.waves)).map(g=>{
     const f=D.feast[g.name]||{feasts:0,soaked:0},S=g.src;
     return `<tr><td class="l">${who(g.name)}</td><td>${g.waves}</td><td${g.soaked/g.waves<.5?' class="neg"':''}>${g.soaked} <span class="sm">${rate(g.soaked,g.waves)}</span></td>
-      <td>${g.doubles||''}</td><td${g.idle>=4?' class="neg"':''}>${g.idle?`${g.idle} of ${g.boom_waves}`:''}</td>
+      <td>${g.doubles||'–'}</td><td${g.idle>=4?' class="neg"':''}>${g.idle?`${g.idle} of ${g.boom_waves}`:'–'}</td>
       <td${f.feasts&&f.soaked/f.feasts<.75?' class="neg"':''}>${f.soaked} / ${f.feasts}</td>
-      <td>${S.soak||0}</td><td>${S.burst||0}</td><td>${S.emergence||0}</td><td>${S.spit||0}</td><td>${(S.wave||0)+(S.flood||0)}</td><td>${S.deluge||0}</td><td>${S.other||0}</td></tr>`;}).join('');
+      <td>${S.soak||'–'}</td><td>${S.burst||'–'}</td><td>${S.emergence||'–'}</td><td>${S.spit||'–'}</td><td>${(S.wave||0)+(S.flood||0)||'–'}</td><td>${S.deluge||'–'}</td><td>${S.other||'–'}</td></tr>`;}).join('');
 })();
 
 /* ---------- 7. snakes ---------- */
 (function(){
   document.querySelector('#t-snakes tbody').innerHTML=D.snakes.map(r=>
     `<tr><td class="l">${who(r.name)}</td><td>${r.emergences}</td><td>${r.hit}</td>
-     <td class="l"><span class="bar" style="width:${r.share*1.6}px"></span>${r.share}%</td><td>${r.focus}%</td><td>${r.react==null?'–':r.react+'s'}</td></tr>`).join('');
+     <td class="l"><span class="bar" style="width:${r.share*1.6}px"></span>${Math.round(r.share)}%</td><td>${Math.round(r.focus)}%</td><td>${r.react==null?'–':f1(r.react)+'s'}</td></tr>`).join('');
 })();
 
 /* ---------- 9. deaths ---------- */
 (function(){
   document.querySelector('#t-deaths tbody').innerHTML=D.deaths.slice().sort((a,b)=>b.n-a.n||b.first-a.first).map(d=>
-    `<tr><td class="l">${who(d.name)}</td><td>${d.pulls}</td><td>${d.n||''}</td><td>${d.first||''}</td>
-     <td class="l">${Object.entries(d.pre).sort((a,b)=>b[1]-a[1]).map(([g,n])=>`<span style="color:${G[g].c}">●</span> ${esc(G[g].l)}${n>1?' ×'+n:''}`).join(' &nbsp; ')}</td></tr>`).join('');
+    `<tr><td class="l">${who(d.name)}</td><td>${d.n||'–'}</td><td>${d.first||'–'}</td>
+     <td class="l wrap">${Object.entries(d.pre).sort((a,b)=>b[1]-a[1]).map(([g,n])=>`<span style="color:${G[g].c}">●</span> ${esc(G[g].l)}${n>1?' ×'+n:''}`).join(' &nbsp; ')}</td></tr>`).join('');
 })();
 })();
 </script>
