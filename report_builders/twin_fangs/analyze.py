@@ -17,6 +17,7 @@ import math
 import statistics
 from bisect import bisect_right
 from collections import Counter, defaultdict
+from itertools import product
 from functools import cached_property
 
 from . import spells as S
@@ -71,6 +72,56 @@ GROUP_LABEL = {
 
 def _dist(a, b) -> float:
     return math.hypot(a[0] - b[0], a[1] - b[1])
+
+
+# The side sequences a Rouse can run, from the 80 kills on the rouse_spawns
+# page: the first Rouse in a place (1, 3, 5) uses each spot on a side once, the
+# second (2, 4, 6) runs one of five. Letters are spots in order of first use.
+FIRST_SEQS = ("ABCDE",)
+SECOND_SEQS = ("ABCDE", "ABCDA", "ABCDB", "ABCAD", "ABCAB")
+
+
+def _letters(spots: list[str]) -> str:
+    seen: dict[str, str] = {}
+    return "".join(seen.setdefault(x, "ABCDE"[len(seen)]) for x in spots)
+
+
+def infer_spots(adds: list[dict], n: int) -> None:
+    """Give every Broodling a side, and place the ones with no position.
+
+    A Broodling kicked before it was hit or finished a Burst has no position in
+    the log. Sides alternate in spawn order, so its side is known from any
+    placed Broodling. Its spot is filled in when exactly one spot fits the
+    side sequences above; those get `inferred`. The rest keep spot "?".
+    """
+    order = sorted(adds, key=lambda a: a["spawn_rank"])
+    known = next((j for j, a in enumerate(order) if a["spot"] != "?"), None)
+    for a in order:
+        a["side"], a["inferred"] = None, False
+    if known is None:
+        return
+    flip = {"L": "R", "R": "L"}
+    k_side = order[known]["spot"][0]
+    for j, a in enumerate(order):
+        a["side"] = k_side if (j - known) % 2 == 0 else flip[k_side]
+    seqs = FIRST_SEQS if n % 2 else SECOND_SEQS
+    for side in "LR":
+        mine = [a for a in order if a["side"] == side]
+        unk = [j for j, a in enumerate(mine) if a["spot"] == "?"]
+        if not unk or len(unk) > 3:
+            continue
+        names = [f"{side}{x}" for x in range(1, 6)]
+        fits: list[tuple[str, ...]] = []
+        for combo in product(names, repeat=len(unk)):
+            spots = [a["spot"] for a in mine]
+            for j, x in zip(unk, combo):
+                spots[j] = x
+            if any(q.startswith(_letters(spots)) for q in seqs):
+                fits.append(combo)
+        for pos, j in enumerate(unk):
+            options = {c[pos] for c in fits}
+            if len(options) == 1:
+                mine[j]["spot"], mine[j]["inferred"] = options.pop(), True
 
 
 class Analysis:
@@ -683,6 +734,7 @@ class Analysis:
                             "ready": ready,
                         }
                     )
+                infer_spots(adds, i + 1)
                 w = self.wipe[fid]
                 rows.append(
                     {
@@ -714,7 +766,7 @@ class Analysis:
             ks = per[n]
             spots = Counter(a["spot"] for a in ks if a["spot"] != "?")
             ranks = [a["kick_rank"] for a in ks]
-            side = Counter(a["spot"][0] for a in ks if a["spot"] != "?")
+            side = Counter(a["side"] for a in ks if a["side"])
             top_spot, top_n = spots.most_common(1)[0] if spots else ("?", 0)
             known = sum(spots.values())
             spot_share = top_n / known if known else 0

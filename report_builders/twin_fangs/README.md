@@ -27,7 +27,12 @@ Pulls are numbered 1..n within the boss, not by Warcraft Logs fight id.
   Broodling's first-damaged position is put in the frame the two bosses make
   at that Rouse, tried both ways round (a half turn, not a mirror, so the
   raid's left stays left), and matched to the nearest spot within 7 yd.
-  Broodlings kicked before anything hit them have no position: spot `?`.
+  Broodlings kicked before anything hit them have no position. Their side
+  comes from the alternation, and their spot is filled in (`inferred`, dotted
+  underline) when only one spot fits the side sequences from the
+  `rouse_spawns` page (`analyze.infer_spots`). The rest stay `?`, with a side.
+  The side-sequence chart treats inferred spots as `?`, so it isn't counting
+  its own assumption.
 - **Kick ready**: alive, and their most-used interrupt off cooldown
   (`spells.KICK_CD`) when the Burst completed. No range check. "On that side"
   means a kicker whose main spot is on the Broodling's side.

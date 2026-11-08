@@ -84,8 +84,10 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
   border:1px solid var(--rule);padding:3px 8px;cursor:pointer;border-radius:2px}
 .chips button.on{background:var(--accent);color:var(--ground);border-color:var(--accent)}
 .chips button.ko{border-bottom:2px solid var(--crit)}
-.grid td{padding:4px 5px;text-align:center;font-size:11px}
-.grid td.c{min-width:62px}
+.grid td{padding:4px 3px;text-align:center;font-size:10.5px}
+.grid th{padding:9px 3px}
+.grid td.c{min-width:52px}
+.inf{text-decoration:underline dotted;text-underline-offset:3px}
 .grid th{text-align:center}
 .burst{background:color-mix(in srgb,var(--crit) 30%,transparent);color:var(--ink);font-weight:600}
 .sm{font-size:10px;color:var(--muted)}
@@ -141,14 +143,14 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 <section>
   <div class="head"><h2>Rouse the Brood: who kicked what</h2>
   <p>{{rouses}} Rouses before a wipe, {{broodlings}} Broodlings, {{kicked}} kicked. {{bursts}} Visceral Bursts went off, and {{clean_rouses}} Rouses had none. The misses came late: half of the {{missed_n}} Broodlings that went off did so {{miss_after_med}} seconds or more into the Rouse, after the first round of kicks was on cooldown. Misses came most often from {{miss_spots}}.</p>
-  <p><b>Fixed spots.</b> A Broodling is placed at the nearest of the ten spots by where it first took damage; {{spot_unknown}} were kicked before anything hit them and have no spot. Kicking the same spot most of the night (60% or more): {{fixed_kickers}}. Kicking one side but no fixed spot: {{side_kickers}}. Kicking in under 40% of the Rouses they were alive for: {{rare_kickers}}.</p>
+  <p><b>Fixed spots.</b> A Broodling is placed at the nearest of the ten spots by where it first took damage. {{spot_unknown}} were kicked before anything hit them, so the log has no position for them. Sides always alternate, so their side is known. {{spot_inferred}} of them could also be placed, because only one spot fits the spawn rules (the first Rouse in a place uses every spot once). The other {{spot_side_only}} are known by side only. Kicking the same spot most of the night (60% or more): {{fixed_kickers}}. Kicking one side but no fixed spot: {{side_kickers}}. Kicking in under 40% of the Rouses they were alive for: {{rare_kickers}}.</p>
   <p><b>A kick ready when it went off.</b> For each Burst, the table lists every kicker who was alive with their interrupt off cooldown. &ldquo;On that side&rdquo; means a kicker who normally kicks the side the Broodling was on. For {{missed_near}} of the {{missed_n}} missed Broodlings, at least one such kicker was ready. Across the Bursts in Rouses that ended a pull, the kickers most often ready on that side were {{near_ready_top}}. The log has no range check, so &ldquo;ready&rdquo; means the cooldown was up, not that the Broodling was in reach.</p></div>
   <figure>
     <svg id="c-spots" viewBox="0 0 900 330" role="img" aria-label="Broodling spots and who kicked them"></svg>
     <figcaption>The ten spots in room order, drawn evenly spaced (in the room, neighbours are 8 to 22 yards apart), bosses at the top. After Submerge the bosses and the arc move together, and the spots are read relative to them. Under each spot: who kicked there most and how many times. The red number is the Bursts that went off from that spot.</figcaption>
   </figure>
   <div class="tblwrap"><table class="grid" id="t-grid"><thead></thead><tbody></tbody></table></div>
-  <p class="muted" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">One row per Rouse, spots left to right as in the room. A cell is who kicked that Broodling; the small number is the order of the kick in that Rouse. Red cells went off, with seconds after the Rouse. &ldquo;?&rdquo; holds Broodlings kicked before they took damage, so their spot is not known.</p>
+  <p class="muted" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">One row per Rouse, spots left to right as in the room. A cell is who kicked that Broodling. The small number after the name is the kick order in that Rouse, so <i>Vesemirr 4</i> means Vesemirr kicked the 4th Broodling to be kicked; it is not seconds. Red cells went off, with the seconds after the Rouse. <span class="inf">Dotted underline</span>: there's no position in the log, so the spot is the only one the spawn rules allow. &ldquo;?&rdquo; holds the ones even the rules can't place, with their side (L or R).</p>
   <p><b>Where the second Rouse doubles up.</b> The first Rouse in a place puts one Broodling on every spot; the second can reuse one, but only from three or more Broodlings back on that side, so only the 4th and 5th on a side ever land on a used spot. Across 80 Mythic kills a side only ever runs one of the five sequences below (see <a href="/reports/twin-fangs-rouse-spawns">Rouse spawn pattern</a>). Tonight {{seq_repeat}} of the {{seq_sides}} sides read in full had a repeat; {{seq_unread}} more had a Broodling with no spot.</p>
   <figure>
     <svg id="c-seq" viewBox="0 0 900 290" role="img" aria-label="Spot sequences of each side in the second Rouse"></svg>
@@ -353,8 +355,11 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
   t.querySelector('thead').innerHTML='<tr><th class="l">Pull · Rouse</th>'+SP.map(k=>`<th>${k}</th>`).join('')+'<th>?</th></tr>';
   t.querySelector('tbody').innerHTML=D.kicks.grid.map(r=>{
     const by={};r.cells.forEach(c=>(by[c.spot]=by[c.spot]||[]).push(c));
-    const cell=cs=>!cs?'<td class="c"></td>':`<td class="c${cs.some(c=>c.b)?' burst':''}">`+cs.map(c=>c.b&&!c.who?`✗ ${c.bt}s`:
-      `<span style="color:${ccol(c.who)}">${esc((c.who||'').slice(0,7))}</span><span class="sm">${c.rank||''}</span>${c.b?` ✗${c.bt}s`:''}`).join('<br>')+'</td>';
+    const cell=cs=>!cs?'<td class="c"></td>':`<td class="c${cs.some(c=>c.b)?' burst':''}">`+cs.map(c=>{
+      const tag=c.spot==='?'&&c.side?`<span class="sm">${c.side}</span> `:'';
+      const body=c.b&&!c.who?`✗ ${c.bt}s`:
+        `<span style="color:${ccol(c.who)}">${esc((c.who||'').slice(0,7))}</span><span class="sm">${c.rank||''}</span>${c.b?` ✗${c.bt}s`:''}`;
+      return c.inf?`<span class="inf" title="No position in the log; the only spot the spawn rules allow">${body}</span>`:tag+body;}).join('<br>')+'</td>';
     return `<tr><td class="l">${r.pull} · ${r.rouse}${r.ended?' <span style="color:var(--crit)">wipe</span>':''}</td>`+SP.map(k=>cell(by[k])).join('')+cell(by['?'])+'</tr>';
   }).join('');
 })();

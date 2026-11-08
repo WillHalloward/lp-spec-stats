@@ -104,7 +104,7 @@ def payloads(a: Analysis) -> tuple[dict, dict]:
     for r in a.rouses:
         for ad in r["adds"]:
             if ad["bursts"]:
-                side = ad["spot"][0] if ad["spot"] != "?" else None
+                side = ad["side"]
                 missed.append(
                     {
                         "pull": r["pull"],
@@ -127,7 +127,8 @@ def payloads(a: Analysis) -> tuple[dict, dict]:
             "ended": r["ended"],
             "cells": [
                 {"spot": ad["spot"], "who": ad["kicker"], "rank": ad["kick_rank"], "spawn": ad["spawn_rank"],
-                 "t": ad["kick"], "b": ad["bursts"], "bt": ad["burst_t"]}
+                 "t": ad["kick"], "b": ad["bursts"], "bt": ad["burst_t"],
+                 "inf": ad["inferred"], "side": ad["side"]}
                 for ad in r["adds"]
             ],
         }
@@ -138,7 +139,8 @@ def payloads(a: Analysis) -> tuple[dict, dict]:
     # One side at a time: its five spots in spawn order, lettered by first use
     # (ABCDA = the 5th Broodling came back to the 1st one's spot). Sides
     # alternate every Broodling, so a "?" Broodling's side is still known; a
-    # side with any "?" can't be lettered and is only counted.
+    # side with any "?" can't be lettered and is only counted. Spots filled in
+    # from the sequences themselves count as "?" here, or they'd count twice.
     seqs, seq_unread = [], 0
     for r in a.rouses:
         if r["n"] % 2:
@@ -152,7 +154,7 @@ def payloads(a: Analysis) -> tuple[dict, dict]:
         side_of = [adds[known]["spot"][0] if (i - known) % 2 == 0 else other[adds[known]["spot"][0]]
                    for i in range(len(adds))]
         for sd in "LR":
-            spots = [ad["spot"] for ad, x in zip(adds, side_of) if x == sd]
+            spots = [("?" if ad["inferred"] else ad["spot"]) for ad, x in zip(adds, side_of) if x == sd]
             if len(spots) != 5 or "?" in spots:
                 seq_unread += 1
                 continue
@@ -364,8 +366,10 @@ def tokens(a: Analysis, payload: dict, raw: dict, *, date_long: str, night_title
     t["bursts"] = sum(r["bursts"] for r in R)
     t["clean_rouses"] = sum(1 for r in R if not r["bursts"])
     t["rouses_ended"] = sum(1 for r in R if r["ended"])
-    unknown = sum(1 for r in R for ad in r["adds"] if ad["spot"] == "?")
-    t["spot_unknown"] = unknown
+    no_pos = [ad for r in R for ad in r["adds"] if ad["spot"] == "?" or ad["inferred"]]
+    t["spot_unknown"] = len(no_pos)
+    t["spot_inferred"] = sum(1 for ad in no_pos if ad["inferred"])
+    t["spot_side_only"] = sum(1 for ad in no_pos if not ad["inferred"])
     M = raw["missed"]
     sq = payload["kicks"]["seqs"]
     t["seq_sides"] = len(sq)
