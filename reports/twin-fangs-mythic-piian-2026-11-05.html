@@ -196,7 +196,7 @@ td.names .nm{display:inline-block;white-space:nowrap;margin-right:8px}
     <thead><tr><th class="l">Kicker</th><th class="l">Interrupt</th><th>Kicks</th><th>Rouses alive</th><th>Main spot</th><th>Same side</th><th>Median order</th><th>Order spread</th><th class="l">Pattern</th></tr></thead>
     <tbody></tbody></table></div>
   <div id="plan-block">
-  <p><b>Against the kick plan.</b> Each pair of spots has an early kicker (the first Broodling to surface there), a late one (the second) and a backup (a third, or one whose kicker is dead); centre backups cover a side and the front. </p>
+  <p><b>Against the kick plan.</b> Each pair of spots has an early kicker (the first Broodling to surface there), a late one (the second) and a backup (a third, or one whose kicker is dead). The tanks share the front pair however the mechanics let them, so they count as one. Centre backups cover a side and the front. </p>
   <div class="tblwrap"><table id="t-plan">
     <thead><tr><th class="l">Kicker</th><th class="l">Job</th><th>Theirs</th><th>Kicked</th><th>Taken</th><th>&hellip;ready</th><th>Off</th><th>Helped</th><th>Speed</th><th class="l">Taken most by</th></tr></thead>
     <tbody></tbody></table></div>
@@ -417,7 +417,7 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
   if(!D.kicks.plan){document.getElementById('plan-block').hidden=true;}else{
     document.querySelector('#t-plan tbody').innerHTML=D.kicks.plan.rows.map(r=>{
       const pc=r.theirs?Math.round(100*r.kicked/r.theirs):0;
-      return `<tr><td class="l">${who(r.player)}</td><td class="l"><span class="pill">${esc(r.role)}</span></td><td>${r.theirs||'–'}</td>
+      return `<tr><td class="l">${r.player.split(' + ').map(who).join(' + ')}</td><td class="l"><span class="pill">${esc(r.role)}</span></td><td>${r.theirs||'–'}</td>
       <td>${r.theirs?`${r.kicked} <span class="sm">${pc}%</span>`:'–'}</td><td>${r.taken||'–'}</td><td>${r.taken_ready||'–'}</td>
       <td>${r.off?`<span style="color:var(--crit)">${r.off}</span>`:'–'}</td><td>${r.helped||'–'}</td><td>${r.react==null?'–':r.react+'s'}</td>
       <td class="l names">${r.lost_to.slice(0,2).map(([n,c])=>`<span class="nm">${nm(n)} <span class="sm">${c}</span></span>`).join(' ')||'<span class="muted">–</span>'}</td></tr>`;}).join('');
@@ -431,17 +431,25 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
 
 /* ---------- 2b. side sequences ---------- */
 (function(){
-  const s=document.getElementById('c-seq'),W=900,T=46,rowH=46,X0=60,dx=56,BX=360;
+  const s=document.getElementById('c-seq'),W=900,T=46,rowH=46,X0=60,dx=56,BX=360,bw=150;
   // share of each sequence across the 80 kills on the Rouse spawn pattern page
   const KILLS={ABCDE:115,ABCDA:126,ABCDB:72,ABCAD:57,ABCAB:20},KT=390;
   const rows=Object.keys(KILLS),Q=D.kicks.seqs;
   const exp=k=>Q.length*KILLS[k]/KT;  // tonight's count if the sides ran like the kills
   const max=Math.max(1,...rows.map(k=>Math.max(Q.filter(q=>q.seq===k).length,exp(k))));
+  // the pull tags wrap inside the chart; a row grows by one tag line per wrap
+  const TX=BX+bw+96,TW=W-6-TX,tagW=lab=>lab.length*6.4+8,LH=21;
+  const lay=rows.map(k=>{let x=0,line=0;const out=[];
+    Q.filter(q=>q.seq===k).forEach(q=>{const lab=`P${q.pull} ${q.side}`,w=tagW(lab);
+      if(x&&x+w>TW){x=0;line++;}out.push({q,lab,x,line,w});x+=w+5;});
+    return {tags:out,lines:out.length?out[out.length-1].line+1:1};});
   ['1st','2nd','3rd','4th','5th'].forEach((l,i)=>txt(s,X0+i*dx,14,l));
   txt(s,X0+2*dx,28,'Broodling on a side, 2 s apart',{size:10});
   txt(s,BX,28,'tonight',{anchor:'start'});
+  txt(s,BX+bw+34,28,'80 kills',{anchor:'start',size:10});
+  let y=T+14;
   rows.forEach((k,i)=>{
-    const y=T+14+i*rowH,first={};
+    const first={};
     [...k].forEach((ch,j)=>{
       const x=X0+j*dx,rep=ch in first;
       if(rep){const x0=X0+first[ch]*dx;
@@ -450,19 +458,19 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
       mk(s,'circle',{cx:x,cy:y,r:14,fill:'var(--surface-2)',stroke:rep?'var(--crit)':'var(--s3)','stroke-width':1.5});
       txt(s,x,y+4,ch,{fill:rep?'var(--crit)':'var(--s3)',size:12,attr:{'font-weight':600}});
     });
-    const mine=Q.filter(q=>q.seq===k),bw=150,w=bw*mine.length/max;
+    const n=lay[i].tags.length,w=bw*n/max;
     mk(s,'rect',{x:BX,y:y-7,width:Math.max(2,w),height:14,rx:2,fill:k==='ABCDE'?'var(--s3)':'var(--crit)'});
     const ks=bw*exp(k)/max;
     mk(s,'line',{x1:BX+ks,x2:BX+ks,y1:y-11,y2:y+11,stroke:'var(--muted)','stroke-width':2});
-    txt(s,BX+bw+14,y+4,`${mine.length}`,{anchor:'start',fill:'var(--ink)',attr:{'font-weight':600}});
-    txt(s,BX+bw+34,y+4,`kills ${Math.round(100*KILLS[k]/KT)}%`,{anchor:'start',size:10});
-    let tx=BX+bw+100;
-    mine.forEach(q=>{const lab=`P${q.pull} ${q.side}`,g=mk(s,'g',{});
-      mk(g,'rect',{x:tx,y:y-9,width:lab.length*7+8,height:18,rx:3,fill:'var(--surface-2)',stroke:'var(--rule)'});
-      txt(g,tx+4,y+4,lab,{anchor:'start',fill:'var(--ink-2)'});
-      hook(g,`Pull ${q.pull}, Rouse ${q.rouse}, ${q.side} side: ${q.spots.join(' → ')}`);
-      tx+=lab.length*7+14;});
+    txt(s,BX+bw+14,y+4,`${n}`,{anchor:'start',fill:'var(--ink)',attr:{'font-weight':600}});
+    txt(s,BX+bw+34,y+4,`${Math.round(100*KILLS[k]/KT)}%`,{anchor:'start',size:10});
+    lay[i].tags.forEach(({q,lab,x,line,w})=>{const g=mk(s,'g',{}),yy=y+line*LH;
+      mk(g,'rect',{x:TX+x,y:yy-9,width:w,height:18,rx:3,fill:'var(--surface-2)',stroke:'var(--rule)'});
+      txt(g,TX+x+4,yy+4,lab,{anchor:'start',fill:'var(--ink-2)',size:10.5});
+      hook(g,`Pull ${q.pull}, Rouse ${q.rouse}, ${q.side} side: ${q.spots.join(' → ')}`);});
+    y+=Math.max(rowH,(lay[i].lines-1)*LH+rowH);
   });
+  s.setAttribute('viewBox',`0 0 ${W} ${y-14}`);
 })();
 
 /* ---------- 3/4. feast + tainted blood ---------- */

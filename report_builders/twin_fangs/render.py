@@ -507,7 +507,7 @@ def plan_line(plan: dict | None) -> str:
     kicked = sum(r["kicked"] for r in rows)
     by_pair: dict[str, list[int]] = {}
     for r in rows:
-        if r["role"].split(" ")[0] in ("early", "late", "backup"):
+        if r["role"].split(" ")[0] in ("early", "late", "backup", "shared"):
             pair = r["role"].split(" ", 1)[1]
             v = by_pair.setdefault(pair, [0, 0])
             v[0] += r["kicked"]

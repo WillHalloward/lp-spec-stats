@@ -1,10 +1,67 @@
 {
-  "note": "Piian's Mid-Pressure kick assignments, 8 Nov 2026. Each pair of spots: early takes the first Broodling to surface there, late the second, backup a third (a repeat) or one whose kicker is dead. The centre backups cover their side and the front when the backup can't. The tanks share the front pair; the screenshot lists them without order, so early/late is taken from who kicked first most often (Laradendusk).",
+  "note": "Piian's Mid-Pressure kick assignments, 8 Nov 2026. Each pair of spots: early takes the first Broodling to surface there, late the second, backup a third (a repeat) or one whose kicker is dead. The centre backups cover their side and the front when the backup can't. The tanks share the front pair and sort it out between them (it moves with tank soaks and the like), so they are one row.",
   "groups": [
-    {"spots": ["L1", "L2"], "early": "Piiaan", "late": "Niydra", "backup": "Шамшыммыч", "centre": ["Arozax"]},
-    {"spots": ["L3", "L4"], "early": "Mattiseppo", "late": "Aelyssar", "backup": "Taranus", "centre": ["Arozax"]},
-    {"spots": ["L5", "R5"], "early": "Laradendusk", "late": "Vesemirr", "backup": null, "centre": ["Arozax", "Huibalast"]},
-    {"spots": ["R4", "R3"], "early": "Alfi", "late": "Indris", "backup": "Angryde", "centre": ["Huibalast"]},
-    {"spots": ["R2", "R1"], "early": "Atheniás", "late": "Preng", "backup": "Squashiclysm", "centre": ["Huibalast"]}
+    {
+      "spots": [
+        "L1",
+        "L2"
+      ],
+      "early": "Piiaan",
+      "late": "Niydra",
+      "backup": "Шамшыммыч",
+      "centre": [
+        "Arozax"
+      ]
+    },
+    {
+      "spots": [
+        "L3",
+        "L4"
+      ],
+      "early": "Mattiseppo",
+      "late": "Aelyssar",
+      "backup": "Taranus",
+      "centre": [
+        "Arozax"
+      ]
+    },
+    {
+      "spots": [
+        "L5",
+        "R5"
+      ],
+      "flex": [
+        "Laradendusk",
+        "Vesemirr"
+      ],
+      "centre": [
+        "Arozax",
+        "Huibalast"
+      ]
+    },
+    {
+      "spots": [
+        "R4",
+        "R3"
+      ],
+      "early": "Alfi",
+      "late": "Indris",
+      "backup": "Angryde",
+      "centre": [
+        "Huibalast"
+      ]
+    },
+    {
+      "spots": [
+        "R2",
+        "R1"
+      ],
+      "early": "Atheniás",
+      "late": "Preng",
+      "backup": "Squashiclysm",
+      "centre": [
+        "Huibalast"
+      ]
+    }
   ]
 }

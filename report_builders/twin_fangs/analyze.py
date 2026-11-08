@@ -727,7 +727,12 @@ class Analysis:
         """
         pair_of = {sp: g for g in plan["groups"] for sp in g["spots"]}
         roles: dict[str, str] = {}
+        member: dict[str, str] = {}  # a flexible pair's kickers -> its shared row
         for g in plan["groups"]:
+            if g.get("flex"):
+                row = " + ".join(g["flex"])
+                roles[row] = f"shared {'+'.join(g['spots'])}"
+                member.update({n: row for n in g["flex"]})
             for r in ("early", "late", "backup"):
                 if g.get(r):
                     roles.setdefault(g[r], f"{r} {'+'.join(g['spots'])}")
@@ -745,7 +750,7 @@ class Analysis:
                 k = b["kicker"]
                 if b["spot"] == "?":
                     if k:
-                        P[k]["unplaced"] += 1
+                        P[member.get(k, k)]["unplaced"] += 1
                     continue
                 g = pair_of.get(b["spot"])
                 if not g:
@@ -759,8 +764,14 @@ class Analysis:
                 def up(n):
                     return bool(n) and n in self.present[fid] and self.alive(fid, n, spawn)
 
-                owner = g.get(role)
-                if not up(owner):
+                if g.get("flex"):
+                    # either of them, in whatever order they sort it out
+                    alive = any(up(m) for m in g["flex"])
+                    owner = " + ".join(g["flex"]) if alive else None
+                else:
+                    owner = g.get(role)
+                    alive = up(owner)
+                if not alive:
                     owner = g.get("backup") if up(g.get("backup")) else next((c for c in g.get("centre") or [] if up(c)), None)
                 if not owner:
                     continue
@@ -768,16 +779,17 @@ class Analysis:
                 o["theirs"] += 1
                 if b["bursts"]:
                     o["off"] += 1
-                if k == owner:
+                if k == owner or member.get(k) == owner:
                     o["kicked"] += 1
                     react[owner].append(b["kick"] - b["spawn"])
                 elif k:
                     o["taken"] += 1
                     lost[owner][k] += 1
-                    helped[k][owner] += 1
-                    P[k]["helped"] += 1
+                    helped[member.get(k, k)][owner] += 1
+                    P[member.get(k, k)]["helped"] += 1
                     kt = t0 + b["kick"] * 1000
-                    if owner in self.kick_spell and self.alive(fid, owner, kt) and self.kick_ready(fid, owner, kt):
+                    mates = g["flex"] if g.get("flex") and owner == " + ".join(g["flex"]) else [owner]
+                    if any(m in self.kick_spell and self.alive(fid, m, kt) and self.kick_ready(fid, m, kt) for m in mates):
                         o["taken_ready"] += 1
         rows = []
         for n in sorted(set(P) | set(roles), key=lambda n: (list(roles).index(n) if n in roles else 99, n)):

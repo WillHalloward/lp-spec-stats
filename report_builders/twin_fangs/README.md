@@ -22,7 +22,8 @@ Pulls are numbered 1..n within the boss, not by Warcraft Logs fight id.
 section: each placed Broodling against the night's assignments. Per pair of
 spots: `early` takes the first Broodling to surface there, `late` the second,
 `backup` a third (a repeat) or one whose kicker is dead; `centre` backups come
-after that. Spawn order is how the raid reads it, and it fits the kicks better
+after that. A pair whose kickers sort it out between them (the tanks on the
+front) takes `flex: [names]` instead and is one shared row. Spawn order is how the raid reads it, and it fits the kicks better
 than spot did (e.g. 80 of 84 vs 52 on L1+L2, 8 Nov). See
 `plans/piian-2026-11-08.json`. Without the flag the block is hidden.
 
