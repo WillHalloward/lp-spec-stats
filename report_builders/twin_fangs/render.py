@@ -405,6 +405,15 @@ def tokens(a: Analysis, payload: dict, raw: dict, *, date_long: str, night_title
     low = [n for n, x in fp.items() if x["feasts"] >= 4 and 0 < x["soaked"] / x["feasts"] < 0.75]
     t["feast_never"] = names(never) or "nobody"
     t["feast_low"] = names(f"{n} ({fp[n]['soaked']} of {fp[n]['feasts']})" for n in low) or "nobody"
+    if never:
+        lead = f"{names(never)} never soaked a Feast they were alive for"
+    else:
+        lead = "Everyone soaked: nobody missed every Feast they were alive for"
+    if low:
+        tail = f"only {t['feast_low']} soaked fewer than three in four"
+    else:
+        tail = "everyone soaked at least three in four"
+    t["feast_soak_line"] = f"{lead}, and {tail}"
     H = raw["healed"]
     hh = sorted(((n, v) for n, v in H.items() if a.roles.get(n) == "healer"), key=lambda x: -x[1])
     tot = sum(H.values())

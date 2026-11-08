@@ -87,6 +87,8 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 .grid td{padding:4px 3px;text-align:center;font-size:10.5px}
 .grid th{padding:9px 3px}
 .grid td.c{min-width:52px}
+td.names{white-space:normal;min-width:150px;line-height:1.35}
+td.names .nm{display:inline-block;white-space:nowrap;margin-right:8px}
 .inf{text-decoration:underline dotted;text-underline-offset:3px}
 .grid th{text-align:center}
 .burst{background:color-mix(in srgb,var(--crit) 30%,transparent);color:var(--ink);font-weight:600}
@@ -166,7 +168,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>Ravenous Feast and the founts</h2>
-  <p><b>Soaks.</b> {{feasts}} Feasts before a wipe; {{feast_short}} smashes landed with fewer than four soakers. Everyone soaked: nobody missed every Feast they were alive for ({{feast_never}}), and only {{feast_low}} soaked fewer than three in four. Every soak takes one Eternal Venom stack off, so a skipped Feast is a stack kept.</p>
+  <p><b>Soaks.</b> {{feasts}} Feasts before a wipe; {{feast_short}} smashes landed with fewer than four soakers. {{feast_soak_line}}. Every soak takes one Eternal Venom stack off, so a skipped Feast is a stack kept.</p>
   <p><b>Tainted Blood.</b> {{tainted_bursts}} of the {{feasts}} Feasts ended in Tainted Burst. Healing absorbed by Tainted Blood on the players standing in the founts came from {{tb_healers}}; everyone else together gave {{tb_nonhealer}}%.</p></div>
   <figure>
     <svg id="c-tb" viewBox="0 0 900 200" role="img" aria-label="Healing into Tainted Blood by player"></svg>
@@ -244,6 +246,8 @@ const PL=Object.fromEntries(D.players.map(p=>[p.name,p]));
 const ccol=n=>D.cls_color[(PL[n]||{}).cls]||'var(--muted)';
 const role=n=>{const r=(PL[n]||{}).role;return r?`<span class="role">${r==='healer'?'HEAL':r.toUpperCase()}</span>`:'';};
 const who=n=>`${role(n)}<span style="color:${ccol(n)}">${esc(n)}</span>`;
+// a name in a list that wraps: no role badge, never split across lines
+const nm=n=>`<span class="nm" style="color:${ccol(n)}" title="${esc(((PL[n]||{}).role)||'')}">${esc(n)}</span>`;
 
 /* ---------- 1. timeline ---------- */
 const TL={sel:null};
@@ -372,8 +376,8 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
   document.querySelector('#t-missed tbody').innerHTML=D.kicks.missed.map(m=>
     `<tr><td class="l">${m.pull} · ${m.rouse}</td><td>${m.spot}</td><td>+${m.after}s</td><td>${m.spawn_rank} of 10</td>
      <td class="l">${m.kicked_late?who(m.kicked_late):'<span class="muted">never</span>'}</td>
-     <td class="l">${m.near.map(who).join(', ')||'<span class="muted">nobody</span>'}</td>
-     <td class="l">${m.far.map(who).join(', ')||'<span class="muted">–</span>'}</td><td>${m.ended?'<span style="color:var(--crit)">yes</span>':''}</td></tr>`).join('');
+     <td class="l names">${m.near.map(nm).join(' ')||'<span class="muted">nobody</span>'}</td>
+     <td class="l names">${m.far.map(nm).join(' ')||'<span class="muted">–</span>'}</td><td>${m.ended?'<span style="color:var(--crit)">yes</span>':''}</td></tr>`).join('');
 })();
 
 /* ---------- 2b. side sequences ---------- */
