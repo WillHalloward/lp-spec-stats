@@ -71,7 +71,7 @@ def pct(a, b):
     return round(100 * a / b) if b else 0
 
 
-def payloads(a: Analysis) -> tuple[dict, dict]:
+def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
     pulls = a.pull_rows()
     roster = sorted(a.roles, key=lambda n: (ROLE_ORDER[a.roles[n]], a.cls[n], n))
     players = [{"name": n, "cls": a.cls[n], "role": a.roles[n], "spec": a.spec.get(n, "")} for n in roster]
@@ -266,7 +266,8 @@ def payloads(a: Analysis) -> tuple[dict, dict]:
         "marks": MARKS,
         "cls_color": CLASS_COLOR,
         "deaths": death_rows,
-        "kicks": {"patterns": patterns, "missed": missed, "grid": grid, "seqs": seqs, "seq_unread": seq_unread},
+        "kicks": {"patterns": patterns, "missed": missed, "grid": grid, "seqs": seqs, "seq_unread": seq_unread,
+                  "plan": a.kick_plan(plan) if plan else None},
         "spots": S.SPOTS,
         "waves": wave_rows,
         "globules": glob_rows,
@@ -491,8 +492,44 @@ def tokens(a: Analysis, payload: dict, raw: dict, *, date_long: str, night_title
         + ")"
         if dw else ""
     )
+    t["plan_line"] = plan_line(payload["kicks"]["plan"])
     t["outcome"] = f"best {t['best_pct']}%"
     return t
+
+
+def plan_line(plan: dict | None) -> str:
+    """One paragraph on how the night went against the kick plan."""
+    if not plan:
+        return ""
+    rows = plan["rows"]
+    main = [r for r in rows if r["role"].startswith(("early", "late")) and r["theirs"] >= 10]
+    theirs = sum(r["theirs"] for r in rows)
+    kicked = sum(r["kicked"] for r in rows)
+    by_pair: dict[str, list[int]] = {}
+    for r in rows:
+        if r["role"].split(" ")[0] in ("early", "late", "backup"):
+            pair = r["role"].split(" ", 1)[1]
+            v = by_pair.setdefault(pair, [0, 0])
+            v[0] += r["kicked"]
+            v[1] += r["theirs"]
+    pairs = sorted(((k / n, p) for p, (k, n) in by_pair.items() if n), reverse=True)
+    tight = sorted(main, key=lambda r: -r["kicked"] / r["theirs"])
+    ready = sorted((r for r in rows if r["taken_ready"] >= 5), key=lambda r: -r["taken_ready"])
+    backs = sorted((r for r in rows if r["role"].startswith(("backup", "centre")) and r["helped"]), key=lambda r: -r["helped"])
+    out = (
+        f"{kicked} of the {theirs} placed Broodlings ({pct(kicked, theirs)}%) were kicked by the player the plan gave them to. "
+        f"Tightest pair: {pairs[0][1]} ({round(100 * pairs[0][0])}%); loosest: {pairs[-1][1]} ({round(100 * pairs[-1][0])}%). "
+        f"Kicked most of their own: {names(f'{r['player']} ({r['kicked']} of {r['theirs']})' for r in tight[:3])}. "
+    )
+    if ready:
+        out += (
+            "Had their Broodling kicked by someone else while their own kick was ready, so another kicker spent a cooldown that was theirs to spend: "
+            + names(f"{r['player']} ({r['taken_ready']})" for r in ready[:4])
+            + ". "
+        )
+    if backs:
+        out += "Backups filling in: " + names(f"{r['player']} ({r['helped']})" for r in backs[:4]) + "."
+    return out
 
 
 def render(payload: dict, tok: dict, template: Path | None = None) -> str:

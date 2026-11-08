@@ -12,9 +12,19 @@ python -m report_builders.twin_fangs.build --report gfvXpCWVRj43anTH \
 python -m report_builders.twin_fangs.build --report <code> ... --publish
 ```
 
-Same flags as the other builders (`--slug`, `--title`, `--summary`, `--team`,
+Pass `--kick-plan` if the night had assignments (below). Same flags as the other builders (`--slug`, `--title`, `--summary`, `--team`,
 `--encounter`, `--difficulty`). Everything is cached under `cache/<code>/`.
 Pulls are numbered 1..n within the boss, not by Warcraft Logs fight id.
+
+## Kick plan (optional)
+
+`--kick-plan plans/<file>.json` adds "Against the kick plan" to the Rouse
+section: each placed Broodling against the night's assignments. Per pair of
+spots: `early` takes the first Broodling to surface there, `late` the second,
+`backup` a third (a repeat) or one whose kicker is dead; `centre` backups come
+after that. Spawn order is how the raid reads it, and it fits the kicks better
+than spot did (e.g. 80 of 84 vs 52 on L1+L2, 8 Nov). See
+`plans/piian-2026-11-08.json`. Without the flag the block is hidden.
 
 ## Reading the log
 

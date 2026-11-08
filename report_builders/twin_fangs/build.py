@@ -113,6 +113,7 @@ def main() -> None:
     ap.add_argument("--summary", help="summary line for the reports index (default: the standard one)")
     ap.add_argument("--encounter", type=int, help="encounter id, if the report holds more than one boss")
     ap.add_argument("--difficulty", type=int, help="3 normal, 4 heroic, 5 mythic")
+    ap.add_argument("--kick-plan", type=Path, help="JSON kick assignments for the night (see plans/)")
     ap.add_argument("--out", type=Path, help="write the HTML here instead of publishing")
     ap.add_argument(
         "--publish", action="store_true", help="write into reports/ and update reports/index.json"
@@ -120,7 +121,8 @@ def main() -> None:
     args = ap.parse_args()
 
     a = Analysis(args.report, args.encounter, args.difficulty)
-    payload, raw = payloads(a)
+    plan = json.loads(args.kick_plan.read_text()) if args.kick_plan else None
+    payload, raw = payloads(a, plan)
     start = dt.datetime.fromtimestamp(a.meta["startTime"] / 1000)
     date = args.date or start.strftime("%Y-%m-%d")
     date_long = dt.datetime.strptime(date, "%Y-%m-%d").strftime("%-d %B")

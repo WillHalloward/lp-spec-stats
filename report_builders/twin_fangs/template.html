@@ -161,6 +161,13 @@ td.names .nm{display:inline-block;white-space:nowrap;margin-right:8px}
   <div class="tblwrap"><table id="t-kickers">
     <thead><tr><th class="l">Kicker</th><th class="l">Interrupt</th><th>Kicks</th><th>Rouses alive</th><th>Main spot</th><th>Same side</th><th>Median order</th><th>Order spread</th><th class="l">Pattern</th></tr></thead>
     <tbody></tbody></table></div>
+  <div id="plan-block">
+  <p><b>Against the kick plan.</b> Each pair of spots has an early kicker (the first Broodling to surface there), a late one (the second) and a backup (a third, or one whose kicker is dead); centre backups cover a side and the front. {{plan_line}}</p>
+  <div class="tblwrap"><table id="t-plan">
+    <thead><tr><th class="l">Kicker</th><th class="l">Job</th><th>Theirs</th><th>Kicked</th><th>Taken</th><th>&hellip;ready</th><th>Off</th><th>Helped</th><th>Speed</th><th class="l">Taken most by</th></tr></thead>
+    <tbody></tbody></table></div>
+  <p class="muted" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">Theirs: the placed Broodlings the plan gave this player, by spawn order in their pair; a dead kicker&rsquo;s go to the backup, then the centre backup. Broodlings with no spot (&ldquo;?&rdquo;) are left out. Kicked: theirs they kicked. Taken: theirs someone else kicked; &hellip;ready: of those, how many came while their own interrupt was off cooldown. Off: theirs that finished a Visceral Burst. Helped: kicks on Broodlings the plan gave someone else. Speed: median seconds from a Broodling surfacing to their kick, on their own ones.</p>
+  </div>
   <div class="tblwrap"><table id="t-missed">
     <thead><tr><th class="l">Pull &middot; Rouse</th><th>Spot</th><th>Went off at</th><th>Surfaced</th><th class="l">Kicked after</th><th class="l">Ready on that side</th><th class="l">Ready elsewhere</th><th>Ended it</th></tr></thead>
     <tbody></tbody></table></div>
@@ -373,6 +380,14 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
     return `<tr><td class="l">${who(k.player)}</td><td class="l">${esc(k.spell)}</td><td>${k.kicks}</td><td>${k.rouses}</td>
       <td>${k.top_spot} <span class="sm">${known?Math.round(100*k.spots[k.top_spot]/known):0}%</span></td><td>${Math.round(100*k.side_share)}%</td>
       <td>${k.rank_med??'–'}</td><td>${k.rank_sd===false?'–':k.rank_sd}</td><td class="l"><span class="pill">${esc(k.label)}</span></td></tr>`;}).join('');
+  if(!D.kicks.plan){document.getElementById('plan-block').hidden=true;}else{
+    document.querySelector('#t-plan tbody').innerHTML=D.kicks.plan.rows.map(r=>{
+      const pc=r.theirs?Math.round(100*r.kicked/r.theirs):0;
+      return `<tr><td class="l">${who(r.player)}</td><td class="l"><span class="pill">${esc(r.role)}</span></td><td>${r.theirs||'–'}</td>
+      <td>${r.theirs?`${r.kicked} <span class="sm">${pc}%</span>`:'–'}</td><td>${r.taken||'–'}</td><td>${r.taken_ready||'–'}</td>
+      <td>${r.off?`<span style="color:var(--crit)">${r.off}</span>`:'–'}</td><td>${r.helped||'–'}</td><td>${r.react==null?'–':r.react+'s'}</td>
+      <td class="l names">${r.lost_to.slice(0,2).map(([n,c])=>`<span class="nm">${nm(n)} <span class="sm">${c}</span></span>`).join(' ')||'<span class="muted">–</span>'}</td></tr>`;}).join('');
+  }
   document.querySelector('#t-missed tbody').innerHTML=D.kicks.missed.map(m=>
     `<tr><td class="l">${m.pull} · ${m.rouse}</td><td>${m.spot}</td><td>+${m.after}s</td><td>${m.spawn_rank} of 10</td>
      <td class="l">${m.kicked_late?who(m.kicked_late):'<span class="muted">never</span>'}</td>
