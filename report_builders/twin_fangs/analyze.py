@@ -333,9 +333,16 @@ class Analysis:
     def stack_gains(self) -> list[dict]:
         """Every Eternal Venom stack gained, with the hit that gave it."""
         out = []
+        # A Stir the Depths wave gives its stack with a debuff, mostly with no
+        # damage event, so its applications count as hits too.
+        waves = defaultdict(list)
+        for fid in self.ids:
+            for e in self.debuffs[fid]:
+                if e["abilityGameID"] == S.STIR_DEBUFF and e["type"] == "applydebuff":
+                    waves[(fid, e["targetID"])].append(e)
         for (fid, pid), series in self.stacks.items():
             prev = 0
-            hits = self.taken_by_player[(fid, pid)]
+            hits = self.taken_by_player[(fid, pid)] + waves[(fid, pid)]
             for ts, v in series:
                 if v > prev:
                     src = "other"

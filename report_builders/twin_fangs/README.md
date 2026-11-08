@@ -39,7 +39,10 @@ Pulls are numbered 1..n within the boss, not by Warcraft Logs fight id.
   0.6 s is an explosion. A shield strip is the Bulwark dropping within 0.4 s
   of a `SHIELD_CC` debuff on that instance; credited to the caster's class.
 - **Eternal Venom sources**: each stack gain is matched to a hit within 0.15 s
-  (`spells.EV_SOURCES`). About 6% have no matching hit and show as "other".
+  (`spells.EV_SOURCES`). A Stir the Depths wave mostly gives its stack with
+  its debuff (`STIR_DEBUFF`) and no damage event, so that debuff counts as a
+  hit too. 1289994 is the hit as a globule drops onto someone (anyone, not
+  only tanks). Only a handful of stacks a night match nothing ("other").
 - **Tainted Blood**: healing `absorbed` on a player while they carry Tainted
   Blood, excluding anyone also under Blood Torrent's heal absorb.
 - **Snakes**: each dps's damage into Spawn of Vexhul while any were alive,

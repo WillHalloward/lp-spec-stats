@@ -30,7 +30,10 @@ BARBED_BULWARK = 1303378  # the shield on each globule; one actor instance per g
 FEASTED = 1310096  # the debuff a Feast soaker gets
 TAINTED_BLOOD = 1310102  # heal absorb on players standing in a blood fount
 
-# stack sources, by the damage that lands with the stack
+# Stir the Depths: the wave debuff, applied with its stack (rarely with damage)
+STIR_DEBUFF = 1292807
+
+# stack sources, by the damage (or, for waves, the debuff) that lands with the stack
 EV_SOURCES = {
     GLOBULE_SOAK: "soak",
     GLOBULE_BURST: "burst",
