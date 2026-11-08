@@ -27,6 +27,7 @@ CASCADE_N = 4  # deaths ...
 CASCADE_S = 8.0  # ... inside this many seconds start the wipe
 BURST_CLUSTER_MS = 600  # globule explosion hits closer than this are one explosion
 WAVE_S = 20.0  # a globule wave's window after Blood Torrent
+DEATH_DROP_MS = (1960, 2040)  # a dead player's globules land 2.00 s after the death, to the ms
 WAVE_MIN_S = 10.0  # a wave cut off sooner than this by the wipe is not counted
 FEAST_S = 15.0  # Feast plus its founts
 ROUSE_S = 25.0  # a Rouse's window: every Broodling has surfaced and cast by then
@@ -428,6 +429,10 @@ class Analysis:
         return [c[0] for c in out if len(c) >= 3]
 
     @cached_property
+    def death_events(self) -> dict[int, list[dict]]:
+        return self.by_fight(self.ev("deaths", "Deaths", hostility="Friendlies"), lambda e: self.is_player(e.get("targetID")))
+
+    @cached_property
     def waves(self) -> list[dict]:
         """One row per globule wave that opened before the wipe."""
         bulwark_id = next((a["id"] for a in self.actors.values() if a["name"] == S.BULWARK), None)
@@ -448,12 +453,23 @@ class Analysis:
                 if cut - w < WAVE_MIN_S * 1000:  # the wipe came before the globules landed
                     break
                 end = min(w + WAVE_S * 1000, cut)
-                # not every globule gets a shield, so globules are counted off the drops
-                drops = sum(
-                    1
+                # not every globule gets a shield, so globules are counted off the
+                # drops. A player who dies drops up to three more, 2.0 s after the
+                # death, through the same spell; those are kept apart.
+                dropped = [
+                    e["timestamp"]
                     for e in self.enemy_casts[fid]
                     if e["abilityGameID"] == S.GLOBULE_DROP and e["type"] == "cast" and w <= e["timestamp"] < w + 15000
-                )
+                ]
+                died = [
+                    (e["timestamp"], self.name(e["targetID"]))
+                    for e in self.death_events.get(fid, [])
+                    if any(DEATH_DROP_MS[0] <= t - e["timestamp"] <= DEATH_DROP_MS[1] for t in dropped)
+                ]
+                from_deaths = [
+                    t for t in dropped if any(DEATH_DROP_MS[0] <= t - d <= DEATH_DROP_MS[1] for d, _ in died)
+                ]
+                drops = len(dropped) - len(from_deaths)
                 inst = {e["targetInstance"] for e in buffs if e["type"] == "applybuff" and w <= e["timestamp"] < w + 15000}
                 strips = []
                 for e in buffs:
@@ -483,6 +499,8 @@ class Analysis:
                         "ts": w,
                         "t": round(self.rel(fid, w), 1),
                         "globules": drops,
+                        "death_globules": len(from_deaths),
+                        "death_droppers": [n for _, n in died],
                         "shielded": len(inst),
                         "stripped": len(strips),
                         "strips": strips,

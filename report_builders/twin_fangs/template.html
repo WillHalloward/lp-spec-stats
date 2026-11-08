@@ -179,7 +179,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;font-family:"IBM Plex M
 
 <section>
   <div class="head"><h2>Globules, shields and Eternal Venom</h2>
-  <p>{{waves}} globule waves came before a wipe. Each dropped {{glob_n}} globules{{glob_extra}}, {{globules}} in all. {{shield_total}} of them were shielded, and {{shield_strips}} of those {{shield_total}} Barbed Bulwarks were stripped by crowd control, so the shields were never the problem. That job falls to whichever classes bring an area stun or fear, mostly {{shield_top}}. {{booms}} globules exploded unsoaked before a wipe, on {{boom_list}}. Another {{booms_after}} went off after a wipe had started. Those were mostly the globules dead players drop, which is a cost of wiping and not a soak problem.</p>
+  <p>{{waves}} globule waves came before a wipe. Each dropped {{glob_n}} globules{{glob_extra}}. That makes {{globules}} in all. {{shield_total}} of them were shielded, and {{shield_strips}} of those {{shield_total}} Barbed Bulwarks were stripped by crowd control, so the shields were never the problem. That job falls to whichever classes bring an area stun or fear, mostly {{shield_top}}. {{booms}} globules exploded unsoaked before a wipe, on {{boom_list}}. Another {{booms_after}} went off after a wipe had started. Those were mostly the globules dead players drop, which is a cost of wiping and not a soak problem.</p>
   <p>Each globule is one stack for one player, so nobody should take two in a wave. <b>Took two or more in one wave:</b> {{soak_over}}. With fewer globules than players, that is usually someone covering a gap, and costs only the extra stack. <b>Soaked in under half the waves they were alive for:</b> {{soak_low}}. <b>Alive and without a globule that wave when one exploded:</b> {{soak_idle}}. Of all of these, that last list matters most.</p>
   <p><b>Where the stacks came from.</b> {{ev_total}} stacks before a wipe: {{ev_emergence_pct}}% from Venomous Emergence, which everyone takes, {{ev_soak_pct}}% from globule soaks, and {{ev_burst_pct}}% from globules exploding. {{ev_wave_pct}}% came from Stir the Depths waves and {{ev_spit_pct}}% from snake spit, and Vile Flood ({{ev_flood}}) and globules landing on someone as they dropped ({{ev_deluge}}) gave the rest. {{ev_other}} stacks had nothing that could be matched to them. Most spit and wave stacks: {{ev_avoid_top}}. On pull {{best_pull}}, {{best_venom_deaths}} players died to Venom ticks at {{best_venom_ev}} stacks, before the nine-stack limit. The wipe started at {{best_wipe}} seconds.</p></div>
   <figure>
@@ -432,15 +432,16 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
 /* ---------- 5/6. globules ---------- */
 (function(){
   const s=document.getElementById('c-waves'),W=900,L=34,R=8,T=12,B=34,H=220,N=D.waves.length,cw=(W-L-R)/N;
-  const mx=Math.max(...D.waves.map(w=>Math.max(w.globules,w.soaks)))+1;
+  const tot=w=>w.globules+(w.death_globules||0);
+  const mx=Math.max(...D.waves.map(w=>Math.max(tot(w),w.soaks)))+1;
   const Y=v=>T+(H-T-B)*(1-v/mx);
   for(let v=0;v<=mx;v+=5){mk(s,'line',{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:'var(--grid)'});txt(s,L-6,Y(v)+4,v,{anchor:'end'});}
   D.waves.forEach((w,i)=>{const x=L+cw*i;
-    mk(s,'rect',{x:x+1,y:Y(w.globules),width:cw-2,height:Y(0)-Y(w.globules),fill:'var(--rule)'});
+    mk(s,'rect',{x:x+1,y:Y(tot(w)),width:cw-2,height:Y(0)-Y(tot(w)),fill:'var(--rule)'});
     mk(s,'line',{x1:x+1,x2:x+cw-1,y1:Y(w.shielded),y2:Y(w.shielded),stroke:'var(--ink-2)','stroke-width':2});
     const r=mk(s,'rect',{x:x+cw*.25,y:Y(w.soaks),width:cw*.5,height:Y(0)-Y(w.soaks),fill:'var(--cls-Hunter)'});
-    w.booms.forEach((b,k)=>mk(s,'circle',{cx:x+cw/2,cy:Y(w.globules)-6-k*9,r:3.5,fill:'var(--crit)'}));
-    hook(r,`<b>Pull ${w.pull}, wave ${w.wave}</b> (${w.t}s)<br>${w.globules} globules, ${w.shielded} shielded, ${w.stripped} shields stripped<br>${w.soaks} soaks`+
+    w.booms.forEach((b,k)=>mk(s,'circle',{cx:x+cw/2,cy:Y(tot(w))-6-k*9,r:3.5,fill:'var(--crit)'}));
+    hook(r,`<b>Pull ${w.pull}, wave ${w.wave}</b> (${w.t}s)<br>${w.globules} globules${w.death_globules?` + ${w.death_globules} dropped by ${w.death_droppers.join(', ')} dying`:''}, ${w.shielded} shielded, ${w.stripped} shields stripped<br>${w.soaks} soaks`+
       (w.doubles.length?`<br>took two: ${w.doubles.map(esc).join(', ')}`:'')+
       (w.booms.length?`<br><span style="color:var(--crit)">${w.booms.length} exploded (${w.booms.join('s, ')}s)</span><br>alive with no soak: ${w.idle.map(esc).join(', ')}`:''));
     if(w.wave===1)txt(s,x+cw/2,H-B+14,w.pull,{size:9.5});

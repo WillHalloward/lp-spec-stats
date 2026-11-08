@@ -199,7 +199,7 @@ def payloads(a: Analysis) -> tuple[dict, dict]:
             shields_cls[s["cls"]] += 1
             shields_spell[s["cls"]][s["spell"]] += 1
     wave_rows = [
-        {k: w[k] for k in ("pull", "wave", "t", "globules", "shielded", "stripped", "soaks", "booms", "idle")}
+        {k: w[k] for k in ("pull", "wave", "t", "globules", "death_globules", "death_droppers", "shielded", "stripped", "soaks", "booms", "idle")}
         | {"doubles": [n for n, k in w["soakers"].items() if k > 1]}
         for w in waves
     ]
@@ -414,7 +414,7 @@ def tokens(a: Analysis, payload: dict, raw: dict, *, date_long: str, night_title
     # globules
     W = raw["waves"]
     t["waves"] = len(W)
-    t["globules"] = sum(w["globules"] for w in W)
+    t["globules"] = sum(w["globules"] + w["death_globules"] for w in W)
     t["glob_soaks"] = sum(w["soaks"] for w in W)
     boom_w = [w for w in W if w["booms"]]
     t["boom_waves"] = len(boom_w)
@@ -469,14 +469,18 @@ def tokens(a: Analysis, payload: dict, raw: dict, *, date_long: str, night_title
     t["snake_low"] = names(f"{r['name']} ({r['share']}%)" for r in lowr) or "nobody"
     t["flood_pulls"] = sum(1 for p in pulls if any(m["k"] == "flood" for m in p["marks"]))
     gw = [w["globules"] for w in W if w["globules"]]
-    # the scheduled drop is the commonest count; a few waves drop extras
+    # the scheduled drop is the commonest count; a short one is a wave the
+    # wipe cut into
     base = Counter(gw).most_common(1)[0][0] if gw else 0
     t["glob_n"] = base
-    extra = [w for w in W if w["globules"] > base]
-    t["glob_extra_n"] = len(extra)
+    dw = [w for w in W if w["death_globules"]]
+    t["glob_extra_n"] = len(dw)
     t["glob_extra"] = (
-        f", and {len(extra)} waves dropped a few more ({names(f'{w['globules']} on pull {w['pull']}' for w in extra)})"
-        if extra else ""
+        f". Players who died during a wave dropped {sum(w['death_globules'] for w in dw)} more, "
+        f"one to three each, two seconds after the death ("
+        + names(f"{', '.join(w['death_droppers'])} on pull {w['pull']}" for w in dw)
+        + ")"
+        if dw else ""
     )
     t["outcome"] = f"best {t['best_pct']}%"
     return t
