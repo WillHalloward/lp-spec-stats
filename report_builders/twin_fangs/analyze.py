@@ -670,24 +670,46 @@ class Analysis:
         return best[1]
 
     @cached_property
+    def _kick_events(self) -> list[tuple[int, str, int, float]]:
+        """(fight, kicker, spell, ts) for every interrupt used. Casts, plus the
+        interrupts that landed with no cast logged: a pet's own Spell Lock can
+        log only the interrupt (Niydra's felhunter on 8 Nov)."""
+        out = []
+        for e in self.ev("casts", "Casts", hostility="Friendlies"):
+            if e["type"] == "cast" and e["abilityGameID"] in S.KICK_CD and e.get("fight") in self.F:
+                out.append((e["fight"], self.name(self.owner(e["sourceID"])), e["abilityGameID"], e["timestamp"]))
+        cast_at = defaultdict(list)
+        for fid, who, _, ts in out:
+            cast_at[(fid, who)].append(ts)
+        for e in self.ev("interrupts", "Interrupts", hostility="Friendlies"):
+            fid, ab = e.get("fight"), e.get("abilityGameID")
+            if fid not in self.F or ab not in S.KICK_CD:
+                continue
+            who = self.name(self.owner(e["sourceID"]))
+            if not any(abs(e["timestamp"] - t) <= 300 for t in cast_at[(fid, who)]):
+                out.append((fid, who, ab, e["timestamp"]))
+        return out
+
+    @cached_property
     def kick_spell(self) -> dict[str, int]:
         """Each kicker's interrupt, the one they used most this night."""
         c = defaultdict(Counter)
-        for e in self.ev("casts", "Casts", hostility="Friendlies"):
-            if e["type"] == "cast" and e["abilityGameID"] in S.KICK_CD and e.get("fight") in self.F:
-                who = self.name(self.owner(e["sourceID"]))
-                if who in self.roles:
-                    c[who][e["abilityGameID"]] += 1
+        for _, who, ab, _ in self._kick_events:
+            if who in self.roles:
+                c[who][ab] += 1
         return {n: cc.most_common(1)[0][0] for n, cc in c.items()}
 
     @cached_property
     def kick_uses(self) -> dict[tuple[int, str], list[float]]:
+        # Spell Lock is one cooldown whichever way it is pressed
+        same = {19647: 119910, 119910: 19647}
         out = defaultdict(list)
-        for e in self.ev("casts", "Casts", hostility="Friendlies"):
-            if e["type"] == "cast" and e["abilityGameID"] in S.KICK_CD and e.get("fight") in self.F:
-                who = self.name(self.owner(e["sourceID"]))
-                if who in self.kick_spell and e["abilityGameID"] == self.kick_spell[who]:
-                    out[(e["fight"], who)].append(e["timestamp"])
+        for fid, who, ab, ts in self._kick_events:
+            mine = self.kick_spell.get(who)
+            if mine is not None and (ab == mine or same.get(ab) == mine):
+                out[(fid, who)].append(ts)
+        for v in out.values():
+            v.sort()
         return out
 
     def kick_ready(self, fid, who, ts) -> bool:
@@ -788,7 +810,7 @@ class Analysis:
             top_spot, top_n = spots.most_common(1)[0] if spots else ("?", 0)
             known = sum(spots.values())
             spot_share = top_n / known if known else 0
-            side_share = side.most_common(1)[0][1] / known if known else 0
+            side_share = side.most_common(1)[0][1] / sum(side.values()) if side else 0
             med = statistics.median(ranks) if ranks else None
             spread = (statistics.pstdev(ranks) if len(ranks) > 1 else 0) if ranks else None
             # the label: fixed spot first, then fixed side, then fixed order
