@@ -748,10 +748,18 @@ def tokens(
         t[f"ev_{k}_pct"] = pct(srcall.get(k, 0), stot)
 
     def dodge(g):
-        return g["src"].get("spit", 0) + g["src"].get("wave", 0) + g["src"].get("flood", 0)
+        return g["src"].get("spit", 0) + g["src"].get("wave", 0)
+
+    def flood(g):
+        return g["src"].get("flood", 0)
 
     spitters = top_ties([(g, dodge(g)) for g in sorted(G, key=lambda g: (-dodge(g), g["name"])) if dodge(g)], 4)
     t["ev_avoid_top"] = names_or(f"{g['name']} ({n})" for g, n in spitters)
+    flooders = top_ties([(g, flood(g)) for g in sorted(G, key=lambda g: (-flood(g), g["name"])) if flood(g)], 4)
+    t["ev_flood_top"] = (
+        f" Most Vile Flood stacks, from standing in the beam during Submerge: {names_or(f'{g["name"]} ({n})' for g, n in flooders)}."
+        if flooders else ""
+    )
     t["ev_other_line"] = (
         f" {plural(srcall.get('other', 0), 'stack')} had nothing that could be matched to {'it' if srcall.get('other', 0) == 1 else 'them'}."
         if srcall.get("other") else ""
