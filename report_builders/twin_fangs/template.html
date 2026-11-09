@@ -183,7 +183,7 @@ td.cellwrap{white-space:normal;min-width:220px}
     <svg id="c-spots" viewBox="0 0 900 330" role="img" aria-label="Broodling spots and who kicked them"></svg>
     <figcaption>The ten spots in room order, drawn evenly spaced (in the room, neighbours are 8 to 22 yards apart), bosses at the top. After Submerge the bosses and the arc move together, and the spots are read relative to them. Under each spot: who kicked there most and how many times. The red number is how many Broodlings went off from that spot.</figcaption>
   </figure>
-  <p class="key">One row per Rouse, spots left to right as in the room. A cell is who kicked that Broodling. The small number after the name is the kick order in that Rouse, so <i>Vesemirr 4</i> means Vesemirr kicked the 4th Broodling to be kicked; it is not seconds. Red cells went off, with the seconds after the Rouse. <span class="inf">Dotted underline</span>: there is no position in the log, so the spot is the only one the spawn rules allow. &ldquo;?&rdquo; holds the ones even the rules cannot place, with their side (L or R). <span style="color:var(--crit)">wipe</span> after a row: a missed kick in that Rouse started the wipe.</p>
+  <p class="key">One row per Rouse, spots left to right as in the room. A cell is who kicked that Broodling. The small number after the name is the kick order in that Rouse, so <i>Vesemirr 4</i> means Vesemirr kicked the 4th Broodling to be kicked; it is not seconds. Red cells went off. After the ✗ is when the first kick aimed at that Broodling came, measured from the Burst: <i>✗ +0.03s</i> missed by a hair, <i>✗ +2.5s</i> was sent after the Burst was seen and landed on its next cast. A name after the ✗ means someone else tried first. <i>✗ no kick</i>: nobody aimed one at it. <span class="inf">Dotted underline</span>: there is no position in the log, so the spot is the only one the spawn rules allow. &ldquo;?&rdquo; holds the ones even the rules cannot place, with their side (L or R). <span style="color:var(--crit)">wipe</span> after a row: a missed kick in that Rouse started the wipe.</p>
   <div class="tblwrap"><table class="grid" id="t-grid" aria-label="Who kicked each Broodling"><thead></thead><tbody></tbody></table></div>
   <p><b>Where the second Rouse doubles up.</b> The first Rouse at each boss position puts one Broodling on every spot; the second can reuse one, but only from three or more Broodlings back on that side, so only the 4th and 5th on a side ever land on a used spot. Across 80 Mythic kills a side only ever runs one of the five sequences below (see <a href="/reports/twin-fangs-rouse-spawns">Rouse spawn pattern</a>). This night {{seq_repeat}} of the {{seq_sides}} sides read in full had a repeat.{{seq_other_line}} Tags read pull and side: <i>P3 L</i> is the left side of pull 3&rsquo;s second Rouse.</p>
   <figure>
@@ -407,12 +407,17 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
 (function(){
   const t=document.getElementById('t-grid');
   t.querySelector('thead').innerHTML='<tr><th class="l">Pull · Rouse</th>'+SP.map(k=>`<th>${k}</th>`).join('')+'<th>?</th></tr>';
+  const gap=x=>(x<0?'−':'+')+Math.abs(x).toFixed(Math.abs(x)<1?2:1)+'s';
+  const miss=c=>{const tr=c.try;
+    if(!tr)return `<span title="Burst ${f1(c.bt)} s after the Rouse; nobody aimed a kick at it">✗ no kick</span>`;
+    const other=tr.who!==c.who;
+    return `<span title="${esc(tr.who)}'s kick came ${Math.abs(tr.late).toFixed(2)} s ${tr.late<0?'before':'after'} the Burst went off (Burst ${f1(c.bt)} s after the Rouse)">✗ ${other?`<span style="color:${ccol(tr.who)}">${esc(short(tr.who,6))}</span> `:''}${gap(tr.late)}</span>`;};
   t.querySelector('tbody').innerHTML=D.kicks.grid.map(r=>{
     const by={};r.cells.forEach(c=>(by[c.spot]=by[c.spot]||[]).push(c));
     const cell=cs=>!cs?'<td class="c"></td>':`<td class="c${cs.some(c=>c.b)?' burst':''}">`+cs.map(c=>{
       const tag=c.spot==='?'&&c.side?`<span class="sm">${c.side}</span> `:'';
-      const body=c.b&&!c.who?`✗ ${f1(c.bt)}s`:
-        `<span style="color:${ccol(c.who)}" title="${esc(c.who||'')}">${esc(short(c.who,7))}</span><span class="sm">${c.rank||''}</span>${c.b?` ✗ ${f1(c.bt)}s`:''}`;
+      const body=c.b&&!c.who?miss(c):
+        `<span style="color:${ccol(c.who)}" title="${esc(c.who||'')}">${esc(short(c.who,7))}</span><span class="sm">${c.rank||''}</span>${c.b?'<br>'+miss(c):''}`;
       return c.inf?`<span class="inf" title="No position in the log; the only spot the spawn rules allow">${body}</span>`:tag+body;}).join('<br>')+'</td>';
     return `<tr><td class="l">${r.pull} · ${r.rouse}${r.ended?' <span style="color:var(--crit)">wipe</span>':''}</td>`+SP.map(k=>cell(by[k])).join('')+cell(by['?'])+'</tr>';
   }).join('');

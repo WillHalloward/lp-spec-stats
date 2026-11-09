@@ -67,6 +67,11 @@ than spot did (e.g. 80 of 84 vs 52 on L1+L2, 8 Nov). See
 - **Kick ready**: alive, and their most-used interrupt off cooldown
   (`spells.KICK_CD`) when the Burst completed. No range check. "On that side"
   means a kicker whose main spot is on the Broodling's side.
+- **First try** (kick grid, red cells): the first interrupt *cast* aimed at that
+  Broodling from 0.5 s before its Burst until the wipe (`analyze.kick_aims`,
+  cast `targetInstance`, landed or not). Under ~0.5 s is a kick that just
+  missed; from ~2.2 s on, it went out after the Burst and landed on the next
+  cast. Nothing aimed at it shows as "no kick".
 - **Globules**: 15 a wave on Mythic, dropped one every 0.33 s from 2 to 7 s after
   Blood Torrent, counted off Vexhul's `1289994` casts (one per globule). A
   player who dies drops one to three more through the same spell, exactly 2.00 s after

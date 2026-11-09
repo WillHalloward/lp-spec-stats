@@ -782,6 +782,24 @@ class Analysis:
         return out
 
     @cached_property
+    def kick_aims(self) -> dict[tuple[int, int, int], list[tuple[float, str]]]:
+        """(fight, target, instance) -> [(ts, kicker)] for every kick aimed at
+        an enemy, landed or not. A kick that lands just after the cast
+        finished does nothing, so this is where the near misses show."""
+        out = defaultdict(list)
+        for kind, name in (("casts", "Casts"), ("interrupts", "Interrupts")):
+            for e in self.ev(kind, name, hostility="Friendlies"):
+                if e.get("fight") not in self.F or e.get("abilityGameID") not in S.KICK_CD:
+                    continue
+                if kind == "casts" and e["type"] != "cast":
+                    continue
+                key = (e["fight"], e.get("targetID"), e.get("targetInstance", 1))
+                out[key].append((e["timestamp"], self.name(self.owner(e["sourceID"]))))
+        for v in out.values():
+            v.sort()
+        return out
+
+    @cached_property
     def kick_spell(self) -> dict[str, int]:
         """Each kicker's interrupt, the one they used most this night."""
         c = defaultdict(Counter)
@@ -972,6 +990,19 @@ class Analysis:
                             "kick_rank": kick_rank.get(k),
                             "bursts": len(b),
                             "burst_t": b and round((b[0] - r) / 1000, 1),
+                            # the first kick aimed at it once the Burst was close:
+                            # +0.05 s is a near miss, +3 s a kick sent after the
+                            # Burst was noticed (it lands on the next cast)
+                            "try": next(
+                                (
+                                    {"who": w, "late": round((t - b[0]) / 1000, 2)}
+                                    for t, w in self.kick_aims.get((fid, bid, k), [])
+                                    if t >= b[0] - 500 and t < lim
+                                ),
+                                None,
+                            )
+                            if b
+                            else None,
                             "ready": ready,
                         }
                     )

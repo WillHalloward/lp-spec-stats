@@ -194,7 +194,7 @@ def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
             "ended": r["ended"],
             "cells": [
                 {"spot": ad["spot"], "who": ad["kicker"], "rank": ad["kick_rank"], "spawn": ad["spawn_rank"],
-                 "t": ad["kick"], "b": ad["bursts"], "bt": ad["burst_t"],
+                 "t": ad["kick"], "b": ad["bursts"], "bt": ad["burst_t"], "try": ad.get("try"),
                  "inf": ad["inferred"], "side": ad["side"]}
                 for ad in r["adds"]
             ],
