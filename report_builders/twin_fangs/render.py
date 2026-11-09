@@ -234,7 +234,8 @@ def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
 
     # ---- globules ----
     waves = a.waves
-    gl = defaultdict(lambda: {"waves": 0, "soaked": 0, "doubles": 0, "extra": 0, "idle": 0, "boom_waves": 0})
+    gl = defaultdict(lambda: {"waves": 0, "soaked": 0, "doubles": 0, "extra": 0, "idle": 0, "boom_waves": 0,
+                              "wave_soaks": 0, "death_soaks": 0})
     for w in waves:
         fid = w["fight"]
         for n in a.present[fid]:
@@ -242,8 +243,11 @@ def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
                 continue
             g = gl[n]
             g["waves"] += 1
-            k = w["soakers"].get(n, 0)
+            ds = w["death_soaks"].get(n, 0)
+            k = w["soakers"].get(n, 0) - ds  # wave globules only
             g["soaked"] += 1 if k else 0
+            g["wave_soaks"] += k
+            g["death_soaks"] += ds
             if k > 1:
                 g["doubles"] += 1
                 g["extra"] += k - 1
@@ -251,6 +255,8 @@ def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
                 g["boom_waves"] += 1
                 if n in w["idle"]:
                     g["idle"] += 1
+    for n, c in a.death_soaks_loose.items():
+        gl[n]["death_soaks"] += c
     # stacks gained by source, before the wipe
     src = defaultdict(Counter)
     for g in a.stack_gains:
@@ -270,7 +276,7 @@ def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
             shields_spell[s["cls"]][s["spell"]] += 1
     wave_rows = [
         {k: w[k] for k in ("pull", "wave", "t", "globules", "death_globules", "death_droppers", "shielded", "stripped", "soaks", "booms")}
-        | {"doubles": [n for n, k in w["soakers"].items() if k > 1],
+        | {"doubles": [n for n, k in w["soakers"].items() if k - w["death_soaks"].get(n, 0) > 1],
            "idle": [n for n in w["idle"] if a.roles.get(n) != "tank"]}
         for w in waves
     ]
@@ -731,6 +737,7 @@ def tokens(
     alive_n = [sum(1 for n in a.present[w["fight"]] if a.alive(w["fight"], n, w["ts"])) for w in W]
     t["skip_n"] = max(0, round(med(alive_n)) - 15) if alive_n else 0
     t["alive_med"] = round(med(alive_n)) if alive_n else 0
+    t["per_wave_fair"] = f"{15 / t['alive_med']:.2f}" if t["alive_med"] else "&ndash;"
     srcall = Counter()
     for g in G:
         srcall.update(g["src"])

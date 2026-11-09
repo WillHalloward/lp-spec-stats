@@ -81,6 +81,13 @@ than spot did (e.g. 80 of 84 vs 52 on L1+L2, 8 Nov). See
   `1289201` hits are soaks (one player), `1290338` hitting 3+ players inside
   0.6 s is an explosion. A shield strip is the Bulwark dropping within 0.4 s
   of a `SHIELD_CC` debuff on that instance; credited to the caster's class.
+- **Death globules soaked**: no globule id is logged and a dead player's
+  globules land among the wave's, so soaks are split by timing
+  (`analyze._death_soaks`). In a wave with death drops, a player's 2nd+ soak
+  after the first death drop is a death globule, in time order, up to the
+  number dropped. Outside a wave, a soak 1.9-15 s after a death is one
+  (`death_soaks_loose`). "Soaked", "Globules per wave" and "Waves with 2+"
+  count wave globules only.
 - **Eternal Venom sources**: each stack gain is matched to a hit from 0.35 s before to 0.15 s after it (under load the stack trails its hit)
   (`spells.EV_SOURCES`). A Stir the Depths wave mostly gives its stack with
   its debuff (`STIR_DEBUFF`) and no damage event, so that debuff counts as a

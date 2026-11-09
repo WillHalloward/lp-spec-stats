@@ -548,6 +548,15 @@ class Analysis:
                         "strips": strips,
                         "soaks": sum(per.values()),
                         "soakers": dict(per),
+                        # soaks that cover a dead player's globules: a 2nd+ soak
+                        # by one player after a death drop, in time order, up to
+                        # the number the deaths dropped. Who took which globule
+                        # isn't in the log (no id, and both kinds land in the
+                        # same area), so this is the fairest split it allows.
+                        "death_soaks": self._death_soaks(
+                            [e for e in soaks if w <= e["timestamp"] < end and self.is_player(e["targetID"])],
+                            from_deaths,
+                        ),
                         "booms": [round(self.rel(fid, b), 1) for b in wave_booms],
                         "boom_ts": wave_booms,
                         # who could have taken one: alive at the explosion and had
@@ -566,6 +575,38 @@ class Analysis:
                     }
                 )
         return rows
+
+    def _death_soaks(self, soaks: list[dict], death_drops: list[float]) -> dict[str, int]:
+        out = Counter()
+        if not death_drops:
+            return {}
+        first = min(death_drops)
+        seen = Counter()
+        left = len(death_drops)
+        for e in sorted(soaks, key=lambda e: e["timestamp"]):
+            n = self.name(e["targetID"])
+            seen[n] += 1
+            if left and seen[n] > 1 and e["timestamp"] >= first:
+                out[n] += 1
+                left -= 1
+        return dict(out)
+
+    @cached_property
+    def death_soaks_loose(self) -> Counter:
+        """Soaks outside every counted wave of globules a death dropped
+        (a death 1.9-15 s before the soak)."""
+        out = Counter()
+        for fid in self.ids:
+            cut = self.cut(fid)
+            wins = [(w["ts"], min(w["ts"] + WAVE_S * 1000, cut)) for w in self.waves if w["fight"] == fid]
+            deaths = [d["ts"] for d in self.deaths[fid]]
+            for e in self.taken[fid]:
+                t = e["timestamp"]
+                if (e["abilityGameID"] == S.GLOBULE_SOAK and self.is_player(e["targetID"]) and t < cut
+                        and not any(a <= t < b for a, b in wins)
+                        and any(1900 <= t - d <= 15000 for d in deaths)):
+                    out[self.name(e["targetID"])] += 1
+        return out
 
     @cached_property
     def loose_globules(self) -> dict:

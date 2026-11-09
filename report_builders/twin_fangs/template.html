@@ -235,9 +235,10 @@ td.cellwrap{white-space:normal;min-width:220px}
     <figcaption>Barbed Bulwarks stripped, by the class whose crowd control landed on the globule as the shield dropped. Hover for the spells.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-glob" aria-label="Globules and stacks by player">
-    <thead><tr><th colspan="6"></th><th colspan="7" style="text-align:center;border-bottom:1px solid var(--rule)">Eternal Venom stacks by source</th></tr>
-    <tr><th class="l">Player</th><th>Waves alive</th><th>Soaked</th><th>Waves with 2+</th><th>No soak, one exploded</th><th>Feasts soaked</th><th>soaks</th><th>exploded</th><th>Emergence</th><th>spit</th><th>waves / Vile Flood</th><th>landed on</th><th>other</th></tr></thead>
+    <thead><tr><th colspan="8"></th><th colspan="7" style="text-align:center;border-bottom:1px solid var(--rule)">Eternal Venom stacks by source</th></tr>
+    <tr><th class="l">Player</th><th>Waves alive</th><th>Soaked</th><th>Globules per wave</th><th>Waves with 2+</th><th>Death globules soaked</th><th>No soak, one exploded</th><th>Feasts soaked</th><th>soaks</th><th>exploded</th><th>Emergence</th><th>spit</th><th>waves / Vile Flood</th><th>landed on</th><th>other</th></tr></thead>
     <tbody></tbody></table></div>
+  <p class="key"><b>Soaked</b> is waves with at least one globule, not globules, so taking two in a wave doesn&rsquo;t raise it. <b>Globules per wave</b> is wave globules soaked divided by waves alive; 15 globules over about {{alive_med}} people is about {{per_wave_fair}} each. <b>Death globules soaked</b>: a dead player&rsquo;s globules are extra work, not a missed soak, so they are kept out of the other columns. The log doesn&rsquo;t say which globule a soak was. In a wave where someone died, a player&rsquo;s 2nd or later soak after the death drop counts as a death globule, up to the number dropped. Outside a wave, any soak 2&ndash;15 s after a death counts.</p>
 </section>
 
 <section>
@@ -542,7 +543,7 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
   document.querySelector('#t-glob tbody').innerHTML=D.globules.slice().sort((a,b)=>(a.soaked/a.waves)-(b.soaked/b.waves)).map(g=>{
     const f=D.feast[g.name]||{feasts:0,soaked:0},S=g.src;
     return `<tr><td class="l">${who(g.name)}</td><td>${g.waves}</td><td${g.soaked/g.waves<.5?' class="neg"':''}>${g.soaked} <span class="sm">${rate(g.soaked,g.waves)}</span></td>
-      <td>${g.doubles||'–'}</td><td${g.idle>=4?' class="neg"':''}>${g.idle?`${g.idle} of ${g.boom_waves}`:'–'}</td>
+      <td>${g.waves?(g.wave_soaks/g.waves).toFixed(2):'–'}</td><td>${g.doubles||'–'}</td><td>${g.death_soaks||'–'}</td><td${g.idle>=4?' class="neg"':''}>${g.idle?`${g.idle} of ${g.boom_waves}`:'–'}</td>
       <td${f.feasts&&f.soaked/f.feasts<.75?' class="neg"':''}>${f.soaked} / ${f.feasts}</td>
       <td>${S.soak||'–'}</td><td>${S.burst||'–'}</td><td>${S.emergence||'–'}</td><td>${S.spit||'–'}</td><td>${(S.wave||0)+(S.flood||0)||'–'}</td><td>${S.deluge||'–'}</td>${anyOther?`<td>${S.other||'–'}</td>`:''}</tr>`;}).join('');
   if(!anyOther){const t=document.getElementById('t-glob');t.querySelector('thead tr:last-child th:last-child').remove();t.querySelector('thead tr:first-child th:last-child').colSpan=6;}
