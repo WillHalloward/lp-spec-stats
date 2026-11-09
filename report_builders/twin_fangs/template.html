@@ -116,6 +116,7 @@ figure svg{min-width:640px}
 .grid td .sm{margin-left:1px}
 tbody tr:hover td:first-child{background:var(--surface-2)}
 #t-glob th,#t-deaths th,#t-plan th{white-space:normal;vertical-align:bottom}
+#t-glob td,#t-glob th{padding-left:6px;padding-right:6px}
 td.cellwrap{white-space:normal;min-width:220px}
 .pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11px;padding:0 6px;border:1px solid var(--rule);border-radius:9px;color:var(--ink-2)}
 .bar{display:inline-block;height:9px;background:var(--accent);vertical-align:-1px;margin-right:6px;border-radius:1px}
@@ -224,7 +225,7 @@ td.cellwrap{white-space:normal;min-width:220px}
   <p>{{boom_line}} {{shield_verdict}}{{shield_strips}} of the {{shield_total}} Barbed Bulwarks were stripped by crowd control, mostly by {{shield_top}}.{{shield_left_line}} {{booms_after_line}}</p>
   <p>Each globule is one stack for one player. With about {{alive_med}} alive and 15 globules a wave, about {{skip_n}} people go without one in every wave by design, so these lists only mean something when the same name keeps coming up. Tanks are left out. <b>Most important &mdash; alive and without a globule in a wave where one exploded:</b> {{soak_idle}}. <b>Soaked in under half the waves they were alive for:</b> {{soak_low}}. <b>Took two or more in one wave:</b> {{soak_over}}; usually someone covering a gap, at the cost of the extra stack.</p>
   <p><b>The count.</b> {{waves}} globule waves came before a wipe. Each dropped {{glob_n}} globules{{glob_extra}}.{{glob_loose}} That makes {{globules}} in all.</p>
-  <p><b>Where the stacks came from.</b> {{ev_total}} stacks before a wipe: {{ev_emergence_pct}}% from Venomous Emergence, which everyone takes, {{ev_soak_pct}}% from globule soaks, and {{ev_burst_pct}}% from globules exploding. {{ev_wave_pct}}% came from Stir the Depths waves and {{ev_spit_pct}}% from snake spit, and Vile Flood ({{ev_flood_pct}}%) and globules landing on someone as they dropped ({{ev_deluge_pct}}%) gave the rest.{{ev_other_line}} Most spit and Stir the Depths stacks, from not dodging during mechanics: {{ev_avoid_top}}.{{ev_flood_top}} {{venom_line}}</p></div>
+  <p><b>Where the stacks came from.</b> {{ev_total}} stacks before a wipe: {{ev_emergence_pct}}% from Venomous Emergence, which everyone takes, {{ev_soak_pct}}% from globule soaks, and {{ev_burst_pct}}% from globules exploding. {{ev_wave_pct}}% came from waves, {{ev_spit_pct}}% from snake spit on its target and {{ev_cleave_pct}}% from spit cleaving someone next to the target, and Vile Flood ({{ev_flood_pct}}%) and globules landing on someone as they dropped ({{ev_deluge_pct}}%) gave the rest.{{ev_other_line}} Most wave and spit-cleave stacks, from not dodging during mechanics: {{ev_avoid_top}}. (The spit&rsquo;s target can&rsquo;t dodge the beam, so their stacks are left out.){{ev_flood_top}} {{venom_line}}</p></div>
   <figure>
     <div class="legend"><span><i style="background:var(--cls-Hunter)"></i>soaked</span><span><i style="background:var(--rule)"></i>globules in the wave</span><span><i style="background:var(--ink-2);height:3px"></i>of them shielded</span><span><i style="background:var(--crit)"></i>exploded</span></div>
     <svg id="c-waves" viewBox="0 0 900 220" role="img" aria-label="Globules soaked per wave"></svg>
@@ -235,15 +236,15 @@ td.cellwrap{white-space:normal;min-width:220px}
     <figcaption>Barbed Bulwarks stripped, by the class whose crowd control landed on the globule as the shield dropped. Hover for the spells.</figcaption>
   </figure>
   <div class="tblwrap"><table id="t-glob" aria-label="Globules and stacks by player">
-    <thead><tr><th colspan="8"></th><th colspan="8" style="text-align:center;border-bottom:1px solid var(--rule)">Eternal Venom stacks by source</th></tr>
-    <tr><th class="l">Player</th><th>Waves alive</th><th>Waves soaked</th><th>Globules per wave</th><th>Waves with 2+</th><th>Death globules soaked</th><th>No soak, one exploded</th><th>Feasts soaked</th><th>soaks</th><th>exploded</th><th>Emergence</th><th>spit</th><th>Stir the Depths</th><th>Vile Flood</th><th>landed on</th><th>other</th></tr></thead>
+    <thead><tr><th colspan="8"></th><th colspan="9" style="text-align:center;border-bottom:1px solid var(--rule)">Eternal Venom stacks by source</th></tr>
+    <tr><th class="l">Player</th><th>Waves alive</th><th>Waves soaked</th><th>Globules per wave</th><th>Waves with 2+</th><th>Death globules soaked</th><th>No soak, one exploded</th><th>Feasts soaked</th><th>soaks</th><th>exploded</th><th>Emergence</th><th>spit target</th><th>spit cleave</th><th>waves</th><th>Vile Flood</th><th>landed on</th><th>other</th></tr></thead>
     <tbody></tbody></table></div>
   <p class="key"><b>Waves soaked</b> is waves with at least one globule, not globules, so taking two in a wave doesn&rsquo;t raise it. <b>Globules per wave</b> is wave globules soaked divided by waves alive; 15 globules over about {{alive_med}} people is about {{per_wave_fair}} each. <b>Death globules soaked</b>: a dead player&rsquo;s globules are extra work, not a missed soak, so they are kept out of the other columns. The log doesn&rsquo;t say which globule a soak was. In a wave where someone died, a player&rsquo;s 2nd or later soak after the death drop counts as a death globule, up to the number dropped. Outside a wave, any soak 2&ndash;15 s after a death counts.</p>
 </section>
 
 <section>
   <div class="head"><h2>The snakes</h2>
-  <p>{{emergences}} Venomous Emergences before a wipe. All three snakes died in {{snake_full}} of them, the last at a median of {{snake_kill_med}} seconds after they surfaced. They got off {{snake_spits}} Corrosive Spits, a median of {{snake_spits_med}} per Emergence. Every spit that lands is a stack, and spit was {{ev_spit_pct}}% of the night&rsquo;s stacks.</p>
+  <p>{{emergences}} Venomous Emergences before a wipe. All three snakes died in {{snake_full}} of them, the last at a median of {{snake_kill_med}} seconds after they surfaced. They got off {{snake_spits}} Corrosive Spits, a median of {{snake_spits_med}} per Emergence. Every spit that lands is a stack: {{ev_spit_pct}}% of the night&rsquo;s stacks were on the spit&rsquo;s target, and {{ev_cleave_pct}}% on players caught in the cleave.</p>
   <p>The table shows how much of each dps player&#39;s damage went into the snakes while any were alive. Most of it: {{snake_top}}. {{snake_low_line}} {{snake_focus_line}}</p></div>
   <div class="tblwrap"><table id="t-snakes" aria-label="Damage into the snakes">
     <thead><tr><th class="l">Player</th><th>Emergences</th><th>Hit a snake</th><th class="l">Share of damage into snakes</th><th>On the first to die</th><th>First hit (median)</th></tr></thead>
@@ -545,8 +546,8 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
     return `<tr><td class="l">${who(g.name)}</td><td>${g.waves}</td><td${g.soaked/g.waves<.5?' class="neg"':''}>${g.soaked} <span class="sm">${rate(g.soaked,g.waves)}</span></td>
       <td>${g.waves?(g.wave_soaks/g.waves).toFixed(2):'–'}</td><td>${g.doubles||'–'}</td><td>${g.death_soaks||'–'}</td><td${g.idle>=4?' class="neg"':''}>${g.idle?`${g.idle} of ${g.boom_waves}`:'–'}</td>
       <td${f.feasts&&f.soaked/f.feasts<.75?' class="neg"':''}>${f.soaked} / ${f.feasts}</td>
-      <td>${S.soak||'–'}</td><td>${S.burst||'–'}</td><td>${S.emergence||'–'}</td><td>${S.spit||'–'}</td><td>${S.wave||'–'}</td><td>${S.flood||'–'}</td><td>${S.deluge||'–'}</td>${anyOther?`<td>${S.other||'–'}</td>`:''}</tr>`;}).join('');
-  if(!anyOther){const t=document.getElementById('t-glob');t.querySelector('thead tr:last-child th:last-child').remove();t.querySelector('thead tr:first-child th:last-child').colSpan=7;}
+      <td>${S.soak||'–'}</td><td>${S.burst||'–'}</td><td>${S.emergence||'–'}</td><td>${S.spit||'–'}</td><td>${S.cleave||'–'}</td><td>${S.wave||'–'}</td><td>${S.flood||'–'}</td><td>${S.deluge||'–'}</td>${anyOther?`<td>${S.other||'–'}</td>`:''}</tr>`;}).join('');
+  if(!anyOther){const t=document.getElementById('t-glob');t.querySelector('thead tr:last-child th:last-child').remove();t.querySelector('thead tr:first-child th:last-child').colSpan=8;}
 })();
 
 /* ---------- 7. snakes ---------- */

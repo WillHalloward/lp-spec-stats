@@ -35,6 +35,7 @@ TAINTED_BLOOD = 1310102  # heal absorb on players standing in a blood fount
 STIR_DEBUFF = 1292807
 
 # stack sources, by the damage (or, for waves, the debuff) that lands with the stack
+SPIT_TARGET = 1293979  # Corrosive Spit debuff on the player the beam is locked onto
 EV_SOURCES = {
     GLOBULE_SOAK: "soak",
     GLOBULE_BURST: "burst",
@@ -49,8 +50,9 @@ EV_LABEL = {
     "soak": "globule soaked",
     "burst": "globule exploded",
     "emergence": "Venomous Emergence",
-    "spit": "Corrosive Spit",
-    "wave": "Stir the Depths wave",
+    "spit": "Corrosive Spit on its target",
+    "cleave": "Corrosive Spit cleave",
+    "wave": "wave",
     "flood": "Vile Flood",
     "deluge": "globule landed on them",
     "other": "other",

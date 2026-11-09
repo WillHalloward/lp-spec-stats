@@ -88,6 +88,10 @@ than spot did (e.g. 80 of 84 vs 52 on L1+L2, 8 Nov). See
   number dropped. Outside a wave, a soak 1.9-15 s after a death is one
   (`death_soaks_loose`). "Soaked", "Globules per wave" and "Waves with 2+"
   count wave globules only.
+- **Spit target vs cleave**: Corrosive Spit is a beam locked onto one player,
+  who carries the `SPIT_TARGET` debuff (1293979). A spit stack on that player
+  is "spit target" (not dodgeable); on anyone else it is "spit cleave".
+  The dodging list counts waves and cleave only.
 - **Eternal Venom sources**: each stack gain is matched to a hit from 0.35 s before to 0.15 s after it (under load the stack trails its hit)
   (`spells.EV_SOURCES`). A Stir the Depths wave mostly gives its stack with
   its debuff (`STIR_DEBUFF`) and no damage event, so that debuff counts as a

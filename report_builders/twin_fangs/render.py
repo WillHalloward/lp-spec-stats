@@ -743,12 +743,12 @@ def tokens(
         srcall.update(g["src"])
     stot = sum(srcall.values())
     t["ev_total"] = stot
-    for k in ("soak", "burst", "emergence", "spit", "wave", "flood", "deluge", "other"):
+    for k in ("soak", "burst", "emergence", "spit", "cleave", "wave", "flood", "deluge", "other"):
         t[f"ev_{k}"] = srcall.get(k, 0)
         t[f"ev_{k}_pct"] = pct(srcall.get(k, 0), stot)
 
     def dodge(g):
-        return g["src"].get("spit", 0) + g["src"].get("wave", 0)
+        return g["src"].get("cleave", 0) + g["src"].get("wave", 0)
 
     def flood(g):
         return g["src"].get("flood", 0)

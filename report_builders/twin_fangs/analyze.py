@@ -431,6 +431,18 @@ class Analysis:
             for e in self.debuffs[fid]:
                 if e["abilityGameID"] == S.STIR_DEBUFF and e["type"] == "applydebuff":
                     waves[(fid, e["targetID"])].append(e)
+        # Corrosive Spit is a beam locked onto one player, who carries the
+        # SPIT_TARGET debuff; a spit hit on anyone else is the cleave.
+        marked = defaultdict(list)
+        for fid in self.ids:
+            open_ = {}
+            for e in self.debuffs[fid]:
+                if e["abilityGameID"] != S.SPIT_TARGET:
+                    continue
+                if e["type"] == "applydebuff":
+                    open_[e["targetID"]] = e["timestamp"]
+                elif e["type"] == "removedebuff" and e["targetID"] in open_:
+                    marked[(fid, e["targetID"])].append((open_.pop(e["targetID"]), e["timestamp"]))
         for (fid, pid), series in self.stacks.items():
             prev = 0
             hits = self.taken_by_player[(fid, pid)] + waves[(fid, pid)]
@@ -445,6 +457,10 @@ class Analysis:
                         dtm = abs(lag)
                         if -150 <= lag <= 350 and e["abilityGameID"] in S.EV_SOURCES and (best is None or dtm < best):
                             best, src = dtm, S.EV_SOURCES[e["abilityGameID"]]
+                            if src == "spit" and not any(
+                                a - 100 <= e["timestamp"] <= b + 300 for a, b in marked[(fid, pid)]
+                            ):
+                                src = "cleave"
                     out.append({"fight": fid, "player": self.name(pid), "ts": ts, "n": v - prev, "src": src})
                 prev = v
         return out
