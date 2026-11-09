@@ -15,6 +15,7 @@ EMERGENCE = 1291404  # Vexhul; three Spawn of Vexhul
 COILING_ICHOR = 1290809
 STIR = 1290956  # Stir the Depths, the waves
 FEAST = 1290516  # Ravenous Feast, three smashes
+FEAST_HIT = 1290662  # a smash landing on a player; a smash with too few in it hits the whole raid
 SANGUINE_STORM = 1306872
 VILE_FLOOD = 1294293  # the Submerge beam
 

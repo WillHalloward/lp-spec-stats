@@ -39,6 +39,11 @@ than spot did (e.g. 80 of 84 vs 52 on L1+L2, 8 Nov). See
   battle rez brings them back (`dead_spans`).
 - **Stacks at death**: Eternal Venom is removed a few ms before the death event,
   so a death's stacks are the most in the 1.5 s before (`stacks_before`).
+- **Feast smashes**: counted by who the smash damage (`FEAST_HIT`) landed on;
+  the Feasted debuff misses soakers the smash killed. A smash hitting
+  `RAID_SMASH` (12) or more went out to the whole raid: too few were in it.
+- **Globule deaths**: a death to the soak spell (`GLOBULE_SOAK`) is its own
+  group, apart from an explosion; both spells are called Caustic Globule.
 - **Globules outside waves**: drops before the wipe that no counted wave holds
   (deaths away from a wave, waves cut short) are in `loose_globules` and in the
   night's totals.

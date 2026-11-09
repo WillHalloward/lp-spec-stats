@@ -27,8 +27,9 @@ CASCADE_N = 4  # deaths ...
 CASCADE_S = 8.0  # ... inside this many seconds start the wipe
 BURST_CLUSTER_MS = 600  # globule explosion hits closer than this are one explosion
 WAVE_S = 20.0  # a globule wave's window after Blood Torrent
-DEATH_DROP_MS = (1960, 2040)  # a dead player's globules land 2.00 s after the death, to the ms
-WAVE_MIN_S = 10.0  # a wave cut off sooner than this by the wipe is not counted
+DEATH_DROP_MS = (1850, 2100)  # a dead player's globules land about 2 s after the death (1.88-2.04 s seen)
+WAVE_MIN_S = 7.5  # a wave cut off sooner than this by the wipe is not counted (its drops end at ~7 s)
+RAID_SMASH = 12  # a Feast smash hitting this many players went out to the raid: too few were in it
 FEAST_S = 15.0  # Feast plus its founts
 ROUSE_S = 25.0  # a Rouse's window: every Broodling has surfaced and cast by then
 EMERGE_S = 25.0
@@ -39,7 +40,7 @@ DEATH_GROUP = {
     "Tainted Burst": "tainted",
     "Ravenous Feast": "feast",
     "Eternal Venom": "venom",
-    "Caustic Globule": "globule",
+    "Caustic Globule": "globule",  # the explosion; a soak death is told apart by spell id
     "Barbed Bulwark": "globule",
     "Stir the Depths": "waves",
     "Corrosive Spit": "snakes",
@@ -58,15 +59,16 @@ GROUP_LABEL = {
     "burst": "Visceral Burst (missed kick)",
     "tainted": "Tainted Burst (fount not healed)",
     "feast": "Ravenous Feast",
-    "venom": "Eternal Venom stacks",
-    "globule": "Caustic Globule",
+    "venom": "Eternal Venom ticks",
+    "globule": "Caustic Globule explosion",
+    "soak": "Caustic Globule soak",
     "waves": "Stir the Depths waves",
     "snakes": "snakes",
     "ichor": "Coiling Ichor",
     "stone": "Stone Breaker",
     "tank": "tank damage",
     "flood": "Vile Flood",
-    "attrition": "Toxic Fumes / attrition",
+    "attrition": "attrition from Toxic Fumes",
     "other": "other",
 }
 
@@ -279,20 +281,27 @@ class Analysis:
                 out[(fid, e.get("targetID"))].append(e)
         return out
 
+    @staticmethod
+    def _group_of(aid, name) -> str:
+        # both Caustic Globule spells share a name: the soak and the explosion
+        if aid == S.GLOBULE_SOAK:
+            return "soak"
+        return DEATH_GROUP.get(name, "other")
+
     def death_group(self, fid, pid, ts, killer) -> tuple[str, str | None]:
         name = self.ab.get(killer) if killer else None
         if name not in AMBIENT:
-            return DEATH_GROUP.get(name, "other"), name
+            return self._group_of(killer, name), name
         # the biggest non-ambient hit in the five seconds before
-        best, bname = 0, None
+        best, bname, bid = 0, None, None
         for e in self.taken_by_player[(fid, pid)]:
             if ts - 5000 <= e["timestamp"] <= ts:
                 n = self.ab.get(e["abilityGameID"])
                 amt = e.get("amount", 0) + e.get("absorbed", 0)
                 if n not in AMBIENT and n != "Eternal Venom" and n in DEATH_GROUP and amt > best:
-                    best, bname = amt, n
+                    best, bname, bid = amt, n, e["abilityGameID"]
         if bname:
-            return DEATH_GROUP[bname], f"{name or 'killing blow'} after {bname}"
+            return self._group_of(bid, bname), f"{name or 'killing blow'} after {bname}"
         return "attrition", name
 
     @cached_property
@@ -489,7 +498,7 @@ class Analysis:
                 dropped = [
                     e["timestamp"]
                     for e in self.enemy_casts[fid]
-                    if e["abilityGameID"] == S.GLOBULE_DROP and e["type"] == "cast" and w <= e["timestamp"] < w + 15000
+                    if e["abilityGameID"] == S.GLOBULE_DROP and e["type"] == "cast" and w <= e["timestamp"] < min(w + 15000, cut)
                 ]
                 died = [
                     (e["timestamp"], self.name(e["targetID"]))
@@ -588,7 +597,14 @@ class Analysis:
             )
             for b in self.explosions(fid):
                 if b < cut and outside(b, soak_win):
-                    out["booms"].append({"pull": self.pull_no[fid], "t": round(self.rel(fid, b), 1)})
+                    # a dead player's globules go off about 12 s after the death
+                    dead = [d for d in self.deaths[fid] if 8000 <= b - d["ts"] <= 16000]
+                    out["booms"].append({
+                        "pull": self.pull_no[fid],
+                        "t": round(self.rel(fid, b), 1),
+                        "from": dead[0]["player"] if dead else None,
+                        "killed": sum(1 for d in self.deaths[fid] if 0 <= d["ts"] - b <= 1500),
+                    })
         return out
 
     def booms_after_wipe(self) -> int:
@@ -619,32 +635,37 @@ class Analysis:
             def inside(win, pid, ts):
                 return any(a <= ts <= b + 50 for a, b in win.get(pid, []))
 
+            # a smash in the second after the wipe started is the one that started
+            # it, but only when the Feast is what started it
+            smash_cut = cut + (1000 if self.wipe_cause(fid) in ("feast", "tainted") else 0)
             for t in self.casts(fid, S.FEAST):
                 if t >= cut:
                     break
                 end = t + FEAST_S * 1000
-                fed = [
-                    e
-                    for e in deb
-                    if e["abilityGameID"] == S.FEASTED and e["type"] == "applydebuff" and t <= e["timestamp"] < end
-                ]
-                # the three smashes
+                # the three smashes, by who the smash damage landed on: the
+                # Feasted debuff misses soakers the smash killed
                 hits = []
-                # a smash a second into the wipe is the one that started it; later
-                # ones land on a raid that is already dying
-                for e in sorted((e for e in fed if e["timestamp"] <= cut + 1000), key=lambda e: e["timestamp"]):
-                    if hits and e["timestamp"] - hits[-1][0] < 1000:
-                        hits[-1][1].append(self.name(e["targetID"]))
+                landed = sorted(
+                    (e["timestamp"], self.name(e["targetID"]))
+                    for e in self.taken[fid]
+                    if e["abilityGameID"] == S.FEAST_HIT and t <= e["timestamp"] < min(end, smash_cut + 1)
+                    and self.is_player(e["targetID"])
+                )
+                for ts, who in landed:
+                    if hits and ts - hits[-1][0] < 1000:
+                        if who not in hits[-1][1]:
+                            hits[-1][1].append(who)
                     else:
-                        hits.append([e["timestamp"], [self.name(e["targetID"])]])
+                        hits.append([ts, [who]])
                 tburst = [
                     e["timestamp"]
                     for e in self.taken[fid]
                     if self.ab.get(e["abilityGameID"]) == "Tainted Burst" and t <= e["timestamp"] < end + 5000
+                    and e["timestamp"] <= cut
                 ]
                 into = Counter()
                 for h in heals.get(fid, []):
-                    if not (t <= h["timestamp"] < end + 5000) or not h.get("absorbed"):
+                    if not (t <= h["timestamp"] < min(end + 5000, cut)) or not h.get("absorbed"):
                         continue
                     if h["type"] != "heal":
                         continue
@@ -657,8 +678,9 @@ class Analysis:
                         "pull": self.pull_no[fid],
                         "t": round(self.rel(fid, t), 1),
                         "ts": t,
-                        "hits": [{"t": round(self.rel(fid, a), 1), "who": w} for a, w in hits],
-                        "soakers": sorted({n for _, w in hits for n in w}),
+                        "hits": [{"t": round(self.rel(fid, a), 1), "who": w, "raid": len(w) >= RAID_SMASH} for a, w in hits],
+                        # soaking means going into a smash that had enough people
+                        "soakers": sorted({n for _, w in hits if len(w) < RAID_SMASH for n in w}),
                         "cut": len(hits) < 3,
                         "burst": bool(tburst),
                         "burst_t": round(self.rel(fid, min(tburst)), 1) if tburst else None,
@@ -888,7 +910,7 @@ class Analysis:
                 }
             )
         return {"rows": [r for r in rows if r["role"] != "not in the plan" or r["helped"] or r["unplaced"]],
-                "note": plan.get("note", ""), "skipped": skipped}
+                "note": plan.get("note", ""), "skipped": skipped, "groups": plan["groups"]}
 
     @cached_property
     def rouses(self) -> list[dict]:
@@ -903,9 +925,9 @@ class Analysis:
                 end = r + ROUSE_S * 1000
                 # nothing after the wipe started counts: Broodlings that surface,
                 # Bursts that land and kicks that go out once the raid is dying
-                # (half a second of grace keeps the Burst whose hit is the wipe's
-                # first death: they land in the same millisecond)
-                lim = min(end, (self.wipe[fid] + 500) if self.wipe[fid] else end)
+                # (a Burst that starts a wipe is cast 0.2-2 s before its first death,
+                # so it is inside this)
+                lim = min(end, self.wipe[fid] or end)
                 first = {}
                 bursts = defaultdict(list)
                 for e in ec:
@@ -996,7 +1018,7 @@ class Analysis:
             spot_share = top_n / known if known else 0
             side_share = side.most_common(1)[0][1] / sum(side.values()) if side else 0
             med = statistics.median(ranks) if ranks else None
-            spread = (statistics.pstdev(ranks) if len(ranks) > 1 else 0) if ranks else None
+            spread = statistics.pstdev(ranks) if len(ranks) > 1 else None
             # the label: fixed spot first, then fixed side, then fixed order
             if len(ks) < 4:
                 label = "too few kicks"
@@ -1011,7 +1033,7 @@ class Analysis:
             elif med is not None and med >= 8:
                 label = "last in"
             elif spread is not None and spread >= 2.5:
-                label = "filler, anywhere"
+                label = "any order, any spot"
             else:
                 label = "mid-order, anywhere"
             out.append(

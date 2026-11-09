@@ -153,7 +153,7 @@ def main() -> None:
         args.report,
         # both nights on a boss share the index title, so the page's own title
         # carries the date to tell browser tabs and link previews apart
-        title=f"{row_title} ({date_long})",
+        title=f"{tok['boss']} {tok['difficulty']}: where the pulls broke ({args.team + ', ' if args.team else ''}{date_long})",
         description=row_summary,
         url=f"{SITE}/reports/{slug}",
     )
