@@ -293,7 +293,7 @@ td.cellwrap{white-space:normal;min-width:220px}
 
 <section>
   <div class="note">
-    <p><b>How this is read.</b> <b>A wipe</b> starts at the first death of the first run of 4 deaths within 8 seconds; the kill, if there is one, has none. A mechanic that opens after the wipe started is not counted, and inside one that was already running, nothing after the wipe start counts (Broodlings, Bursts, kicks, smashes, snake damage). A globule wave cut off by the wipe within 7.5 seconds (before its drops end) is not a wave; its globules are counted on their own. <b>What started a wipe</b> is the cause of its first death. <b>Alive</b>: a player is dead from their death until they next cast something, so a battle rez brings them back. <b>A Broodling&#39;s spot</b> is the nearest of the ten spots to where it first took damage, within seven yards. <b>A kick ready</b> means the kicker was alive and their interrupt&#39;s cooldown was up when the Burst completed; the night&#39;s most-used interrupt counts for each player. <b>A globule soak</b> is a Caustic Globule hit on one player. <b>An explosion</b> is the other Caustic Globule spell hitting three or more players within 0.6 seconds. <b>A stack&#39;s source</b> is the hit that landed within 0.15 seconds of the stack. <b>A shield strip</b> is a Barbed Bulwark dropping within 0.4 seconds of a stun, fear or incapacitate on that globule. <b>Healing into a fount</b> is healing absorbed on a player while they carry Tainted Blood, leaving out anyone also under Blood Torrent&#39;s absorb.</p>
+    <p><b>How this is read.</b> <b>A wipe</b> starts at the first death of the first run of 4 deaths within 8 seconds; the kill, if there is one, has none. A mechanic that opens after the wipe started is not counted, and inside one that was already running, nothing after the wipe start counts (Broodlings, Bursts, kicks, smashes, snake damage). A globule wave cut off by the wipe within 7.5 seconds (before its drops end) is not a wave; its globules are counted on their own. <b>What started a wipe</b> is the cause of its first death. <b>Alive</b>: a player is dead from their death until they next cast something, so a battle rez brings them back. <b>A Broodling&#39;s spot</b> is the nearest of the ten spots to where it first took damage, within seven yards. <b>A kick ready</b> means the kicker was alive and their interrupt&#39;s cooldown was up when the Burst completed; the night&#39;s most-used interrupt counts for each player. <b>A globule soak</b> is a Caustic Globule hit on one player. <b>An explosion</b> is the other Caustic Globule spell hitting three or more players within 0.6 seconds. <b>A stack&#39;s source</b> is the hit that landed from 0.35 seconds before the stack to 0.15 seconds after it. <b>A shield strip</b> is a Barbed Bulwark dropping within 0.4 seconds of a stun, fear or incapacitate on that globule. <b>Healing into a fount</b> is healing absorbed on a player while they carry Tainted Blood, leaving out anyone also under Blood Torrent&#39;s absorb.</p>
   </div>
 </section>
 
@@ -572,12 +572,14 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
 })();
 (function(){
   const rate=(a,b)=>b?Math.round(100*a/b)+'%':'–';
+  const anyOther=D.globules.some(g=>g.src.other);
   document.querySelector('#t-glob tbody').innerHTML=D.globules.slice().sort((a,b)=>(a.soaked/a.waves)-(b.soaked/b.waves)).map(g=>{
     const f=D.feast[g.name]||{feasts:0,soaked:0},S=g.src;
     return `<tr><td class="l">${who(g.name)}</td><td>${g.waves}</td><td${g.soaked/g.waves<.5?' class="neg"':''}>${g.soaked} <span class="sm">${rate(g.soaked,g.waves)}</span></td>
       <td>${g.doubles||'–'}</td><td${g.idle>=4?' class="neg"':''}>${g.idle?`${g.idle} of ${g.boom_waves}`:'–'}</td>
       <td${f.feasts&&f.soaked/f.feasts<.75?' class="neg"':''}>${f.soaked} / ${f.feasts}</td>
-      <td>${S.soak||'–'}</td><td>${S.burst||'–'}</td><td>${S.emergence||'–'}</td><td>${S.spit||'–'}</td><td>${(S.wave||0)+(S.flood||0)||'–'}</td><td>${S.deluge||'–'}</td><td>${S.other||'–'}</td></tr>`;}).join('');
+      <td>${S.soak||'–'}</td><td>${S.burst||'–'}</td><td>${S.emergence||'–'}</td><td>${S.spit||'–'}</td><td>${(S.wave||0)+(S.flood||0)||'–'}</td><td>${S.deluge||'–'}</td>${anyOther?`<td>${S.other||'–'}</td>`:''}</tr>`;}).join('');
+  if(!anyOther){const t=document.getElementById('t-glob');t.querySelector('thead tr:last-child th:last-child').remove();t.querySelector('thead tr:first-child th:last-child').colSpan=6;}
 })();
 
 /* ---------- 7. snakes ---------- */

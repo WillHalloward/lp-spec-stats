@@ -81,7 +81,7 @@ than spot did (e.g. 80 of 84 vs 52 on L1+L2, 8 Nov). See
   `1289201` hits are soaks (one player), `1290338` hitting 3+ players inside
   0.6 s is an explosion. A shield strip is the Bulwark dropping within 0.4 s
   of a `SHIELD_CC` debuff on that instance; credited to the caster's class.
-- **Eternal Venom sources**: each stack gain is matched to a hit within 0.15 s
+- **Eternal Venom sources**: each stack gain is matched to a hit from 0.35 s before to 0.15 s after it (under load the stack trails its hit)
   (`spells.EV_SOURCES`). A Stir the Depths wave mostly gives its stack with
   its debuff (`STIR_DEBUFF`) and no damage event, so that debuff counts as a
   hit too. 1289994 is the hit as a globule drops onto someone (anyone, not

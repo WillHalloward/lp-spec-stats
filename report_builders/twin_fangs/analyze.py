@@ -439,8 +439,11 @@ class Analysis:
                     src = "other"
                     best = None
                     for e in hits:
-                        dtm = abs(e["timestamp"] - ts)
-                        if dtm <= 150 and e["abilityGameID"] in S.EV_SOURCES and (best is None or dtm < best):
+                        # the stack can trail its hit by up to ~0.3 s when the
+                        # server is busy (a globule exploding on the whole raid)
+                        lag = ts - e["timestamp"]
+                        dtm = abs(lag)
+                        if -150 <= lag <= 350 and e["abilityGameID"] in S.EV_SOURCES and (best is None or dtm < best):
                             best, src = dtm, S.EV_SOURCES[e["abilityGameID"]]
                     out.append({"fight": fid, "player": self.name(pid), "ts": ts, "n": v - prev, "src": src})
                 prev = v
