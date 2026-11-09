@@ -245,9 +245,9 @@ td.cellwrap{white-space:normal;min-width:220px}
 <section>
   <div class="head"><h2>The snakes</h2>
   <p>{{emergences}} Venomous Emergences before a wipe. All three snakes died in {{snake_full}} of them, the last at a median of {{snake_kill_med}} seconds after they surfaced. They got off {{snake_spits}} Corrosive Spits, a median of {{snake_spits_med}} per Emergence. Every spit that lands is a stack: {{ev_spit_pct}}% of the night&rsquo;s stacks were on the spit&rsquo;s target, and {{ev_cleave_pct}}% on players caught in the cleave.</p>
-  <p>The table shows how much of each dps player&#39;s damage went into the snakes while any were alive. Most of it: {{snake_top}}. {{snake_low_line}} {{snake_focus_line}}</p></div>
+  <p>The table shows how much of each dps player&#39;s damage went into the snakes while any were alive. <b>DPS</b> is all their damage per second alive while snakes were up, on any target; <b>Snake DPS</b> is the part that hit snakes. Most of it: {{snake_top}}. {{snake_low_line}}</p></div>
   <div class="tblwrap"><table id="t-snakes" aria-label="Damage into the snakes">
-    <thead><tr><th class="l">Player</th><th>Emergences</th><th>Hit a snake</th><th class="l">Share of damage into snakes</th><th>On the first to die</th><th>First hit (median)</th></tr></thead>
+    <thead><tr><th class="l">Player</th><th>Emergences</th><th>Hit a snake</th><th class="l">Share of damage into snakes</th><th>DPS</th><th>Snake DPS</th><th>First hit (median)</th></tr></thead>
     <tbody></tbody></table></div>
 </section>
 
@@ -552,9 +552,10 @@ const SP=['L1','L2','L3','L4','L5','R5','R4','R3','R2','R1'];
 
 /* ---------- 7. snakes ---------- */
 (function(){
+  const kdps=x=>x?(x>=1e6?(x/1e6).toFixed(2)+'M':Math.round(x/1e3)+'k'):'–';
   document.querySelector('#t-snakes tbody').innerHTML=D.snakes.map(r=>
     `<tr><td class="l">${who(r.name)}</td><td>${r.emergences}</td><td>${r.hit}</td>
-     <td class="l"><span class="bar" style="width:${r.share*1.6}px"></span>${Math.round(r.share)}%</td><td>${Math.round(r.focus)}%</td><td>${r.react==null?'–':f1(r.react)+'s'}</td></tr>`).join('');
+     <td class="l"><span class="bar" style="width:${r.share*1.6}px"></span>${Math.round(r.share)}%</td><td>${kdps(r.dps)}</td><td>${kdps(r.snake_dps)}</td><td>${r.react==null?'–':f1(r.react)+'s'}</td></tr>`).join('');
 })();
 
 /* ---------- 9. deaths ---------- */

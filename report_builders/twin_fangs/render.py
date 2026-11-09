@@ -308,7 +308,7 @@ def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
     ]
 
     # ---- snakes ----
-    sn = defaultdict(lambda: {"n": 0, "snake": 0, "all": 0, "focus": 0, "first": [], "hit": 0})
+    sn = defaultdict(lambda: {"n": 0, "snake": 0, "all": 0, "focus": 0, "first": [], "hit": 0, "secs": 0.0})
     for s in a.snakes:
         for n, d in s["dmg"].items():
             if a.roles.get(n) != "dps":
@@ -318,6 +318,7 @@ def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
             x["snake"] += d["snake"]
             x["all"] += d["all"]
             x["focus"] += d["focus"]
+            x["secs"] += d["secs"]
             if d["first"] is not None:
                 x["first"].append(d["first"])
                 x["hit"] += 1
@@ -330,6 +331,9 @@ def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
                 "share": round(100 * x["snake"] / x["all"], 1) if x["all"] else 0,
                 "focus": round(100 * x["focus"] / x["snake"], 1) if x["snake"] else 0,
                 "react": round(med(x["first"]), 1) if x["first"] else None,
+                # damage per second alive while snakes were up
+                "dps": round(x["all"] / x["secs"]) if x["secs"] else 0,
+                "snake_dps": round(x["snake"] / x["secs"]) if x["secs"] else 0,
             }
             for n, x in sn.items()
         ),

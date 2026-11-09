@@ -1190,6 +1190,12 @@ class Analysis:
                             d["focus"] += amt
                         if d["first"] is None:
                             d["first"] = round((e["timestamp"] - t) / 1000, 1)
+                # seconds each damage dealer was alive in the window, for dps
+                for who, d in dmg.items():
+                    gone = sum(
+                        max(0, min(b, last) - max(a_, t)) for a_, b in self.dead_spans.get((fid, who), [])
+                    )
+                    d["secs"] = max(0, (last - t) - gone) / 1000
                 rows.append(
                     {
                         "fight": fid,
