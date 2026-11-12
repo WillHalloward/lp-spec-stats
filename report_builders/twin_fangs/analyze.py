@@ -27,6 +27,7 @@ CASCADE_N = 4  # deaths ...
 CASCADE_S = 8.0  # ... inside this many seconds start the wipe
 BURST_CLUSTER_MS = 600  # globule explosion hits closer than this are one explosion
 WAVE_S = 20.0  # a globule wave's window after Blood Torrent
+DOUBLE_SOAK_S = 3.0  # a second globule soaked this soon after a first is a double soak
 DEATH_DROP_MS = (1850, 2100)  # a dead player's globules land about 2 s after the death (1.88-2.04 s seen)
 WAVE_MIN_S = 7.5  # a wave cut off sooner than this by the wipe is not counted (its drops end at ~7 s)
 RAID_SMASH = 12  # a Feast smash hitting this many players went out to the raid: too few were in it
@@ -82,6 +83,10 @@ def _dist(a, b) -> float:
 # second (2, 4, 6) runs one of five. Letters are spots in order of first use.
 FIRST_SEQS = ("ABCDE",)
 SECOND_SEQS = ("ABCDE", "ABCDA", "ABCDB", "ABCAD", "ABCAB")
+
+
+def names_(xs) -> str:
+    return ", ".join(x for x in xs if x)
 
 
 def _letters(spots: list[str]) -> str:
@@ -608,6 +613,59 @@ class Analysis:
         return dict(out)
 
     @cached_property
+    def double_soaks(self) -> dict:
+        """Globules soaked within DOUBLE_SOAK_S of a first one by the same player.
+
+        A soak is a hit of GLOBULE_SOAK that did damage (an immunity soak logs
+        0 and costs nothing, so it neither starts nor makes a double). A death
+        is a double-soak death when it is a soak death (`death_group` "soak")
+        and the soak that killed had another damaging soak inside the window
+        before it. `when` says where the death sits: "pre" before the wipe,
+        "start" the wipe's first death, "wipe" inside it.
+        """
+        W = DOUBLE_SOAK_S * 1000
+        deaths, single = [], []
+        per = defaultdict(Counter)
+        for fid in self.ids:
+            wipe = self.wipe[fid]
+            dts = {}
+            for d in self.deaths[fid]:
+                dts.setdefault(d["player"], []).append(d)
+            soaks = defaultdict(list)
+            for e in self.taken[fid]:
+                if e["abilityGameID"] == S.GLOBULE_SOAK and self.is_player(e["targetID"]) and e.get("amount", 0) + e.get("absorbed", 0) > 0:
+                    soaks[self.name(e["targetID"])].append(e["timestamp"])
+            for n, ts in soaks.items():
+                ts.sort()
+                for i in range(1, len(ts)):
+                    if ts[i] - ts[i - 1] <= W and (wipe is None or ts[i] <= wipe):
+                        per[n]["doubles"] += 1
+            for n, L in dts.items():
+                for d in L:
+                    if d["group"] != "soak":
+                        continue
+                    mine = [t for t in soaks.get(n, []) if t <= d["ts"] + 50]
+                    if not mine:
+                        continue
+                    last = mine[-1]
+                    before = [t for t in mine[:-1] if last - t <= W]
+                    when = "pre" if wipe is None or d["ts"] < wipe else ("start" if d["ts"] == wipe else "wipe")
+                    row = {"pull": self.pull_no[fid], "t": d["t"], "player": n, "ev": d["ev"], "when": when,
+                           "soaks": len(before) + 1, "gap": round((last - before[-1]) / 1000, 2) if before else None}
+                    if before:
+                        deaths.append(row)
+                        per[n]["died_" + when] += 1
+                    else:
+                        single.append(row)
+        players = [
+            {"player": n, "cls": self.cls.get(n), "doubles": c["doubles"], "pre": c["died_pre"],
+             "start": c["died_start"], "wipe": c["died_wipe"]}
+            for n, c in per.items()
+        ]
+        players.sort(key=lambda r: (-(r["pre"] + r["start"] + r["wipe"]), -r["doubles"], r["player"]))
+        return {"deaths": deaths, "single": single, "players": players, "window": DOUBLE_SOAK_S}
+
+    @cached_property
     def death_soaks_loose(self) -> Counter:
         """Soaks outside every counted wave of globules a death dropped
         (a death 1.9-15 s before the soak)."""
@@ -885,16 +943,66 @@ class Analysis:
         cd = S.KICK_CD[self.kick_spell[who]] * 1000
         return not any(ts - cd < u <= ts for u in self.kick_uses.get((fid, who), []))
 
-    def kick_plan(self, plan: dict) -> dict:
-        """Every placed Broodling against the night's kick plan.
+    def _plan_walk(self, plan: dict) -> list[dict]:
+        """Every Broodling of the night against the plan: whose it was.
 
         In each pair of spots the first Broodling to surface is the early
         kicker's, the second the late kicker's, any more the backup's. A
         Broodling whose kicker is dead (or not in the pull) goes to the backup,
-        then to the first living centre backup. "?" Broodlings have no spot, so
-        they are left out and counted per kicker as `unplaced`.
+        then to the first living centre backup. `status` is "placed", "unplaced"
+        (no spot, so no pair) or "blind" (its pair is known, but an unplaced
+        Broodling on that side may have been the pair's first, so which kicker
+        it was is a guess).
         """
         pair_of = {sp: g for g in plan["groups"] for sp in g["spots"]}
+        out = []
+        for r in self.rouses:
+            fid = r["fight"]
+            t0 = self.F[fid]["startTime"] + r["t"] * 1000
+            seen = Counter()
+            blind = set()  # sides where an unplaced Broodling has surfaced
+            for b in sorted(r["adds"], key=lambda b: b["spawn_rank"]):
+                row = {"r": r, "b": b, "fid": fid, "t0": t0, "g": None, "role": None, "owner": None,
+                       "assigned": None, "fallback": False, "status": "placed"}
+                out.append(row)
+                if b["spot"] == "?":
+                    row["status"] = "unplaced"
+                    blind |= {b["side"]} if b["side"] else {"L", "R"}
+                    continue
+                g = pair_of.get(b["spot"])
+                if not g:
+                    row["status"] = "unplaced"
+                    continue
+                row["g"] = g
+                if any(sp[0] in blind for sp in g["spots"]):
+                    row["status"] = "blind"
+                    continue
+                key = tuple(g["spots"])
+                i = seen[key]
+                seen[key] += 1
+                role = ("early", "late")[i] if i < 2 else "backup"
+                spawn = t0 + b["spawn"] * 1000
+
+                def up(n):
+                    return bool(n) and n in self.present[fid] and self.alive(fid, n, spawn)
+
+                if g.get("flex"):
+                    # either of them, in whatever order they sort it out
+                    assigned = " + ".join(g["flex"])
+                    owner = assigned if any(up(m) for m in g["flex"]) else None
+                else:
+                    assigned = g.get(role)
+                    owner = assigned if up(assigned) else None
+                if not owner:
+                    owner = g.get("backup") if up(g.get("backup")) else next((c for c in g.get("centre") or [] if up(c)), None)
+                    row["fallback"] = True
+                row.update(role=role, owner=owner, assigned=assigned)
+        return out
+
+    def kick_plan(self, plan: dict) -> dict:
+        """Every placed Broodling against the night's kick plan (`_plan_walk`).
+        "?" Broodlings have no spot, so they are left out and counted per
+        kicker as `unplaced`."""
         roles: dict[str, str] = {}
         member: dict[str, str] = {}  # a flexible pair's kickers -> its shared row
         for g in plan["groups"]:
@@ -912,62 +1020,34 @@ class Analysis:
         helped = defaultdict(Counter)
         react = defaultdict(list)
         skipped = 0
-        for r in self.rouses:
-            fid = r["fight"]
-            t0 = self.F[fid]["startTime"] + r["t"] * 1000
-            seen = Counter()
-            blind = set()  # sides where an unplaced Broodling has surfaced
-            for b in sorted(r["adds"], key=lambda b: b["spawn_rank"]):
-                k = b["kicker"]
-                if b["spot"] == "?":
-                    if k:
-                        P[member.get(k, k)]["unplaced"] += 1
-                    blind |= {b["side"]} if b["side"] else {"L", "R"}
-                    continue
-                g = pair_of.get(b["spot"])
-                if not g:
-                    continue
-                if any(sp[0] in blind for sp in g["spots"]):
-                    # it may have been this pair's first, so who is early and who
-                    # late from here on is a guess; leave these out
-                    skipped += 1
-                    continue
-                key = tuple(g["spots"])
-                i = seen[key]
-                seen[key] += 1
-                role = ("early", "late")[i] if i < 2 else "backup"
-                spawn = t0 + b["spawn"] * 1000
-
-                def up(n):
-                    return bool(n) and n in self.present[fid] and self.alive(fid, n, spawn)
-
-                if g.get("flex"):
-                    # either of them, in whatever order they sort it out
-                    alive = any(up(m) for m in g["flex"])
-                    owner = " + ".join(g["flex"]) if alive else None
-                else:
-                    owner = g.get(role)
-                    alive = up(owner)
-                if not alive:
-                    owner = g.get("backup") if up(g.get("backup")) else next((c for c in g.get("centre") or [] if up(c)), None)
-                if not owner:
-                    continue
-                o = P[owner]
-                o["theirs"] += 1
-                if b["bursts"]:
-                    o["off"] += 1
-                if k == owner or member.get(k) == owner:
-                    o["kicked"] += 1
-                    react[owner].append(b["kick"] - b["spawn"])
-                elif k:
-                    o["taken"] += 1
-                    lost[owner][k] += 1
-                    helped[member.get(k, k)][owner] += 1
-                    P[member.get(k, k)]["helped"] += 1
-                    kt = t0 + b["kick"] * 1000
-                    mates = g["flex"] if g.get("flex") and owner == " + ".join(g["flex"]) else [owner]
-                    if any(m in self.kick_spell and self.alive(fid, m, kt) and self.kick_ready(fid, m, kt) for m in mates):
-                        o["taken_ready"] += 1
+        for w in self._plan_walk(plan):
+            b, fid, t0, g, owner = w["b"], w["fid"], w["t0"], w["g"], w["owner"]
+            k = b["kicker"]
+            if w["status"] == "unplaced":
+                if k and b["spot"] == "?":
+                    P[member.get(k, k)]["unplaced"] += 1
+                continue
+            if w["status"] == "blind":
+                skipped += 1
+                continue
+            if not owner:
+                continue
+            o = P[owner]
+            o["theirs"] += 1
+            if b["bursts"]:
+                o["off"] += 1
+            if k == owner or member.get(k) == owner:
+                o["kicked"] += 1
+                react[owner].append(b["kick"] - b["spawn"])
+            elif k:
+                o["taken"] += 1
+                lost[owner][k] += 1
+                helped[member.get(k, k)][owner] += 1
+                P[member.get(k, k)]["helped"] += 1
+                kt = t0 + b["kick"] * 1000
+                mates = g["flex"] if g.get("flex") and owner == " + ".join(g["flex"]) else [owner]
+                if any(m in self.kick_spell and self.alive(fid, m, kt) and self.kick_ready(fid, m, kt) for m in mates):
+                    o["taken_ready"] += 1
         rows = []
         for n in sorted(set(P) | set(roles), key=lambda n: (list(roles).index(n) if n in roles else 99, n)):
             c = P[n]
@@ -989,6 +1069,163 @@ class Analysis:
             )
         return {"rows": [r for r in rows if r["role"] != "not in the plan" or r["helped"] or r["unplaced"]],
                 "note": plan.get("note", ""), "skipped": skipped, "groups": plan["groups"]}
+
+    @cached_property
+    def kick_targets(self) -> dict[tuple[int, str], list[tuple[float, int | None, int]]]:
+        """(fight, kicker) -> [(ts, targetID, targetInstance)] for every interrupt
+        cast, so a kick spent elsewhere can be traced to what it went into."""
+        out = defaultdict(list)
+        for kind, name in (("casts", "Casts"), ("interrupts", "Interrupts")):
+            for e in self.ev(kind, name, hostility="Friendlies"):
+                if e.get("fight") not in self.F or e.get("abilityGameID") not in S.KICK_CD:
+                    continue
+                if kind == "casts" and e["type"] != "cast":
+                    continue
+                key = (e["fight"], self.name(self.owner(e["sourceID"])))
+                if kind == "interrupts" and any(abs(e["timestamp"] - t) <= 300 for t, _, _ in out[key]):
+                    continue
+                out[key].append((e["timestamp"], e.get("targetID"), e.get("targetInstance", 1)))
+        for v in out.values():
+            v.sort()
+        return out
+
+    def burst_causes(self, plan: dict) -> list[dict]:
+        """Why each Broodling that finished a Visceral Burst before the wipe
+        was not kicked, by the group the plan gave it to.
+
+        The person judged is the one the plan gave it to; a tank pair is
+        judged as one. In order:
+          dead      the assigned kicker was dead (or out) when it surfaced or
+                    by its Burst, and no backup covered it
+          late      they aimed a kick at it, from 0.5 s before the Burst on
+          double    their interrupt was on cooldown from a kick on a Broodling
+                    someone else kicked first (or within the same second)
+          other     ... from a kick on another group's Broodling
+          pairmate  ... from a kick on their pair-mate's Broodling
+          early     ... from a kick on this one before it was casting (no interrupt)
+          recast    ... from kicking this one; it cast again (the backup's then)
+          spent     ... from a kick on an earlier Broodling of their own (the backup's then)
+          boss      ... from a kick into a boss
+          snake     ... from a kick into a snake or other add
+          cd        ... on cooldown, target not in the log
+          none      alive, interrupt ready, no kick aimed
+          unplaced  no spot in the log, so no group (side only)
+        """
+        bid = next(a["id"] for a in self.actors.values() if a["name"] == S.BROODLING)
+        walk = self._plan_walk(plan)
+        group_of = {(w["fid"], w["b"]["inst"]): w["g"] for w in walk}
+        owner_of = {(w["fid"], w["b"]["inst"]): w for w in walk}
+        landed = {}  # (fight, inst) -> (ts, kicker) of the interrupt that stopped it
+        for w in walk:
+            b = w["b"]
+            if b["kicker"]:
+                landed[(w["fid"], b["inst"])] = (w["t0"] + b["kick"] * 1000, b["kicker"])
+
+        def label(g):
+            if g is None:
+                return None
+            if g.get("flex"):
+                return " + ".join(g["flex"])
+            return " / ".join(n for n in (g.get("early"), g.get("late"), g.get("backup")) if n)
+
+        def judge(fid, who, g, inst, bt):
+            """(cause, detail) for one responsible kicker."""
+            aims = [t for t, w_ in self.kick_aims.get((fid, bid, inst), []) if w_ == who]
+            # a kick from 1.5 s after the Burst on was sent once it was seen,
+            # not a near miss: judge what they were doing at the Burst instead
+            late = [t for t in aims if bt - 500 <= t <= bt + 1500]
+            if late:
+                return "late", f"{who} +{(late[0] - bt) / 1000:.2f}s"
+            spell = self.kick_spell.get(who)
+            if spell is None:
+                return "none", f"{who} (no interrupt used all night)"
+            if self.kick_ready(fid, who, bt):
+                return "none", f"{who} ready"
+            cd = S.KICK_CD[spell] * 1000
+            used = [x for x in self.kick_targets.get((fid, who), []) if bt - cd < x[0] <= bt]
+            if not used:
+                return "cd", f"{who} on cooldown"
+            ts, tid, tinst = used[-1]
+            ago = f"{(bt - ts) / 1000:.1f}s before"
+            if tid == bid and tinst == inst and (landed.get((fid, inst)) or (0, None))[1] != who:
+                return "early", f"{who} kicked it {ago}, before it was casting, so nothing was interrupted"
+            if tid == bid and tinst == inst:
+                return "recast", f"{who} kicked it {ago}; it cast again before the kick was back"
+            if tid == bid:
+                hit = landed.get((fid, tinst))
+                others = [t for t, w_ in self.kick_aims.get((fid, bid, tinst), []) if w_ != who]
+                if (hit and hit[1] != who and hit[0] <= ts + 1000) or (not hit and any(t <= ts + 1000 for t in others)):
+                    by = hit[1] if hit and hit[1] != who else "someone"
+                    return "double", f"{who} doubled {by}'s kick {ago}"
+                tg = group_of.get((fid, tinst))
+                if tg is not g:
+                    return "other", f"{who} kicked {label(tg) or 'an unplaced'}'s Broodling {ago}"
+                o = owner_of.get((fid, tinst)) or {}
+                ob = o.get("b") or {}
+                whose = o.get("owner") if o.get("status") == "placed" else None
+                tag = f"{ob.get('spot', '?')}, #{ob.get('spawn_rank', '?')} up"
+                if whose == who or (g.get("flex") and whose == " + ".join(g["flex"])) or whose is None:
+                    return "spent", f"{who} kicked their earlier one ({tag}) {ago}"
+                return "pairmate", f"{who} kicked {whose}'s Broodling ({tag}) {ago}"
+            tn = self.name(tid)
+            if tn in ("Vexhul", "Ithraz"):
+                return "boss", f"{who} kicked {tn} {ago}"
+            return "snake", f"{who} kicked {tn or 'another add'} {ago}"
+
+        order = ["late", "none", "early", "double", "other", "pairmate", "boss", "snake", "cd", "recast", "spent"]
+        rows = []
+        for w in walk:
+            b, fid, g = w["b"], w["fid"], w["g"]
+            if not b["bursts"]:
+                continue
+            bt = w["t0"] + b["burst_t"] * 1000
+            spawn = w["t0"] + b["spawn"] * 1000
+            row = {"pull": w["r"]["pull"], "rouse": w["r"]["n"], "spot": b["spot"], "side": b["side"],
+                   "spawn_rank": b["spawn_rank"], "t": round(w["r"]["t"] + b["burst_t"], 1),
+                   "ended": w["r"]["ended"], "group": label(g), "spots": "+".join(g["spots"]) if g else None,
+                   "role": w["role"], "assigned": w["assigned"], "owner": w["owner"], "guess": w["status"] == "blind"}
+            rows.append(row)
+            if w["status"] == "unplaced":
+                row.update(cause="unplaced", detail=f"side {b['side'] or '?'}", group=f"no spot ({b['side'] or '?'})")
+                continue
+
+            def up(n, ts):
+                return bool(n) and n in self.present[fid] and self.alive(fid, n, ts)
+
+            if w["status"] == "blind":
+                # early or late, whichever it was: judge both and keep the kinder reading
+                cands = [n for n in ((g.get("flex") or []) or [g.get("early"), g.get("late")]) if n]
+            elif g.get("flex") and w["owner"] == " + ".join(g["flex"]):
+                cands = list(g["flex"])
+            else:
+                cands = [w["owner"]] if w["owner"] else []
+            assigned = w["assigned"] or ""
+            if w["status"] == "placed" and (w["fallback"] or not any(up(c, bt) for c in cands)):
+                dead = [n for n in assigned.split(" + ") if n and not up(n, spawn)] or [n for n in cands if not up(n, bt)]
+                cover = w["owner"] if w["fallback"] and w["owner"] and up(w["owner"], bt) else None
+                det = f"{names_(dead) or assigned} dead"
+                if cover:
+                    c2, d2 = judge(fid, cover, g, b["inst"], bt)
+                    det += f"; backup {d2}"
+                elif w["fallback"]:
+                    det += "; no backup alive"
+                row.update(cause="dead", detail=det)
+                continue
+            alive = [c for c in cands if up(c, bt)]
+            if not alive:
+                row.update(cause="dead", detail=f"{names_(cands)} dead")
+                continue
+            res = [judge(fid, c, g, b["inst"], bt) for c in alive]
+            res.sort(key=lambda x: order.index(x[0]))
+            det = "; ".join(d for _, d in res)
+            if res[0][0] in ("recast", "spent"):
+                # their kick went where it should have: this one was the backup's
+                backs = [n for n in [g.get("backup"), *(g.get("centre") or [])] if n and n not in cands and up(n, bt)]
+                if backs:
+                    bres = sorted((judge(fid, n, g, b["inst"], bt) for n in backs[:2]), key=lambda x: order.index(x[0]))
+                    det += "; backup " + "; ".join(d for _, d in bres)
+            row.update(cause=res[0][0], detail=det)
+        return rows
 
     @cached_property
     def rouses(self) -> list[dict]:

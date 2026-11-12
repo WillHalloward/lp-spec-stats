@@ -1,0 +1,10 @@
+{
+  "note": "Piian's Mid-Pressure kick assignments, 12 Nov 2026. Each pair of spots: early takes the first Broodling to surface there, late the second, backup a third (a repeat) or one whose kicker is dead. The centre backups (Vokster left and front, Huibalast right and front) cover their side and the front when the backup can't. The tanks share the front pair and sort it out between them, so they are one row.",
+  "groups": [
+    {"spots": ["L1", "L2"], "early": "Piiaan", "late": "Niydra", "backup": "Шамшыммыч", "centre": ["Vokster"]},
+    {"spots": ["L3", "L4"], "early": "Mattiseppo", "late": "Aelyssar", "backup": "Taranus", "centre": ["Vokster"]},
+    {"spots": ["L5", "R5"], "flex": ["Laradendusk", "Vesemirr"], "centre": ["Vokster", "Huibalast"]},
+    {"spots": ["R4", "R3"], "early": "Alfi", "late": "Indris", "backup": "Blossy", "centre": ["Huibalast"]},
+    {"spots": ["R2", "R1"], "early": "Twilightnil", "late": "Atheniás", "backup": "Emberforge", "centre": ["Huibalast"]}
+  ]
+}

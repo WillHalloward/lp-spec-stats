@@ -17,6 +17,24 @@ from .analyze import CASCADE_N, CASCADE_S, GROUP_LABEL, Analysis
 
 TEMPLATE = Path(__file__).parent / "template.html"
 
+# why a Broodling went off (analyze.burst_causes), worst first, with a colour each
+CAUSE_ORDER = ["none", "late", "early", "pairmate", "other", "double", "boss", "snake", "cd", "spent", "recast", "dead", "unplaced"]
+CAUSE_LABEL = {
+    "none": ["No kick, kick was ready", "var(--crit)"],
+    "late": ["Kick just too late", "var(--s2)"],
+    "early": ["Kicked before it began casting", "var(--s4)"],
+    "pairmate": ["Kicked pair-mate's Broodling", "var(--s5)"],
+    "other": ["Kicked another group's Broodling", "var(--cls-DemonHunter)"],
+    "double": ["Double kick", "var(--cls-Warlock)"],
+    "boss": ["Kick went into the boss", "var(--s1)"],
+    "snake": ["Kick went into a snake", "var(--cls-Mage)"],
+    "cd": ["Kick on cooldown", "var(--inter)"],
+    "spent": ["Out of kicks, backup didn't cover", "var(--s3)"],
+    "recast": ["Kicked, it cast again, nobody kicked", "var(--cls-Monk)"],
+    "dead": ["Kicker dead", "var(--ink-2)"],
+    "unplaced": ["No spot in the log", "var(--rule)"],
+}
+
 GROUP_COLOR = {
     "burst": "var(--crit)",
     "tainted": "var(--s5)",
@@ -351,7 +369,10 @@ def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
         "cls_name": {c: CLASS_NAME.get(c, c) for c in CLASSES},
         "deaths": death_rows,
         "kicks": {"patterns": patterns, "missed": missed, "grid": grid, "seqs": seqs, "seq_unread": seq_unread, "seq_cut": seq_cut,
-                  "plan": a.kick_plan(plan) if plan else None},
+                  "plan": a.kick_plan(plan) if plan else None,
+                  "causes": a.burst_causes(plan) if plan else None,
+                  "cause_label": CAUSE_LABEL, "cause_order": CAUSE_ORDER},
+        "dsoak": a.double_soaks,
         "spots": S.SPOTS,
         "waves": wave_rows,
         "globules": glob_rows,
@@ -363,7 +384,7 @@ def payloads(a: Analysis, plan: dict | None = None) -> tuple[dict, dict]:
         "snakes": snake_rows,
         "snake_waves": snake_waves,
     }
-    return payload, {"a": a, "pulls": pulls, "patterns": patterns, "missed": missed, "glob": glob_rows,
+    return payload, {"a": a, "causes": payload["kicks"]["causes"], "dsoak": payload["dsoak"], "pulls": pulls, "patterns": patterns, "missed": missed, "glob": glob_rows,
                      "waves": waves, "feasts": feasts, "fp": fp, "healed": healed, "snakes": snake_rows,
                      "deaths": death_rows, "shields_cls": shields_cls}
 
@@ -844,9 +865,62 @@ def tokens(
         if sk else ""
     )
     t["plan_hidden"] = "" if payload["kicks"]["plan"] else " hidden"
+    t["causes_hidden"] = "" if payload["kicks"]["causes"] else " hidden"
+    t["cause_line"] = cause_line(payload["kicks"]["causes"])
+    t["dsoak_line"] = dsoak_line(payload["dsoak"])
+    t["dsoak_window"] = f"{payload['dsoak']['window']:g}"
     t["after_sub_card"] = after_submerge(pulls)
     t["lead"] = lead_points(a, pulls, raw, t, ended, prev, prev_date)
     return t
+
+
+def cause_line(rows: list[dict] | None) -> str:
+    """One paragraph on why the Broodlings that went off weren't kicked."""
+    if not rows:
+        return "No Broodling got a Visceral Burst off before a wipe."
+    c = Counter(r["cause"] for r in rows)
+    g = Counter(r["group"] for r in rows)
+    wiped = [r for r in rows if r["ended"]]
+    out = (
+        f"{plural(len(rows), 'Broodling')} finished a Visceral Burst before a wipe"
+        + (f", and the Rouse {'they were' if len(wiped) > 1 else 'it was'} in started the wipe for {len(wiped)} of them" if wiped else "")
+        + ". By cause: "
+        + names(f"{CAUSE_LABEL[k][0].lower()} ({n})" for k, n in sorted(c.items(), key=lambda kv: (-kv[1], CAUSE_ORDER.index(kv[0]))))
+        + ". By group: "
+        + names(f"{k} ({n})" for k, n in g.most_common())
+        + ". "
+    )
+    if c.get("early"):
+        out += (
+            "&ldquo;Kicked before it began casting&rdquo; means the interrupt landed a fraction of a second before the "
+            "Broodling started its cast, so there was nothing to interrupt and the kick went on cooldown. "
+        )
+    if c.get("spent"):
+        out += (
+            "&ldquo;Out of kicks&rdquo; is a third or fourth Broodling on a pair whose kickers had already, correctly, used "
+            "their interrupts on that pair&rsquo;s earlier ones: that one was the backup&rsquo;s, and the row says what the backups were doing. "
+        )
+    return out
+
+
+def dsoak_line(d: dict) -> str:
+    """One paragraph on deaths to soaking a second globule too soon."""
+    dd = d["deaths"]
+    if not dd:
+        return f"Nobody died to a second globule within {d['window']:g} seconds of a first."
+    pre = [r for r in dd if r["when"] in ("pre", "start")]
+    single_pre = [r for r in d["single"] if r["when"] in ("pre", "start")]
+    started = [r for r in dd if r["when"] == "start"]
+    top = [p for p in d["players"] if p["pre"] + p["start"] + p["wipe"]][:4]
+    out = (
+        f"One globule soak takes most of a health bar, so a second one inside {d['window']:g} seconds, before the healers have "
+        f"caught up, kills. {plural(len(dd), 'player')} died that way, {len(pre)} of them before a wipe or as its first death"
+        + (f" ({plural(len(started), 'wipe')} started with one)" if started else "")
+        + f". That is {len(pre)} of the {len(pre) + len(single_pre)} soak deaths before a wipe; the other {len(single_pre)} died to a single globule. "
+        + f"The median gap between the two soaks was {statistics.median(r['gap'] for r in dd):.1f} seconds. "
+        + "Most: " + names(f"{p['player']} ({p['pre'] + p['start'] + p['wipe']})" for p in top) + "."
+    )
+    return out
 
 
 def plan_line(plan: dict | None) -> str:
@@ -1042,7 +1116,24 @@ def lead_points(a, pulls, raw, t, ended, prev, prev_date) -> str:
                 f" In the second Rouse at a boss position, {len(late45)} of {len(second)} were the 4th or 5th Broodling on a side, "
                 "the ones that can land on a used spot: a job to call for the backups."
             )
+        C = raw.get("causes")
+        if C:
+            cc = Counter(r["cause"] for r in C)
+            k, c = sorted(cc.items(), key=lambda kv: (-kv[1], CAUSE_ORDER.index(kv[0])))[0]
+            line += f" Commonest reason: {CAUSE_LABEL[k][0].lower()} ({c} of {len(C)})."
+            if cc.get("early"):
+                line += f" {plural(cc['early'], 'kick')} landed just before the Broodling began casting and interrupted nothing."
         out.append(line)
+    # double soaks
+    DS = raw.get("dsoak") or {}
+    dpre = [r for r in DS.get("deaths", []) if r["when"] in ("pre", "start")]
+    spre = [r for r in DS.get("single", []) if r["when"] in ("pre", "start")]
+    if len(dpre) >= 3:
+        st = sum(1 for r in dpre if r["when"] == "start")
+        out.append(
+            f"<b>Double soaks.</b> {len(dpre)} of the {len(dpre) + len(spre)} globule-soak deaths before a wipe were a second globule "
+            f"within {DS['window']:g} seconds of a first" + (f"; {plural(st, 'wipe')} started with one" if st else "") + "."
+        )
     # 8. wave-2 explosions
     bw = Counter(w["wave"] for w in W for _ in w["booms"])
     tb = sum(bw.values())

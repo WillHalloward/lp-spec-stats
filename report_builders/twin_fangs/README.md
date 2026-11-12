@@ -27,6 +27,15 @@ front) takes `flex: [names]` instead and is one shared row. Spawn order is how t
 than spot did (e.g. 80 of 84 vs 52 on L1+L2, 8 Nov). See
 `plans/piian-2026-11-08.json`. Without the flag the block is hidden.
 
+The plan also drives "Why they went off, by group" (`analyze.burst_causes`):
+each Broodling that finished a Burst, on its plan group, with why the kicker it
+belonged to didn't stop it: dead, kick just too late (aimed -0.5..+1.5 s
+around the Burst), kicked before it began casting (the interrupt landed on it
+before its begincast, so it hit nothing), or, with the kick on cooldown at the
+Burst, where that kick went: pair-mate's Broodling, another group's, a double
+kick, the boss, a snake. "Out of kicks" (the kick went on an earlier Broodling
+of their own) passes it to the backup and the row says what the backups did.
+
 ## Reading the log
 
 - **Wipe start and cause**: the wipe starts at the first death of the first run
@@ -102,6 +111,10 @@ than spot did (e.g. 80 of 84 vs 52 on L1+L2, 8 Nov). See
 - **Snakes**: each dps's damage into Spawn of Vexhul while any were alive,
   over their total in that window; "on the first to die" is the share of their
   snake damage that went into the first one killed (about 33% means an even cleave).
+- **Double soaks**: a damaging `GLOBULE_SOAK` hit within `DOUBLE_SOAK_S` (3 s)
+  of that player's previous damaging one (immunity soaks log 0 and are
+  skipped). A soak death with one of those before the killing soak is a
+  double-soak death (`analyze.double_soaks`).
 - **Side sequences**: second Rouse in a place (2, 4, 6), one side at a time,
   its five spots lettered by first use (ABCDA = the 5th came back to the 1st's
   spot). A "?" Broodling's side comes from the alternation; a side with one is
