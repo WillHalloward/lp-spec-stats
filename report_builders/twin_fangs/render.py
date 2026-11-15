@@ -406,6 +406,9 @@ def tokens(
     kills = [p for p in pulls if p.get("kill")]
     wipes = [p for p in pulls if not p.get("kill")]
     t["wipes_n"] = len(wipes)
+    # a night that ends in the kill is about the kill, not only the wipes
+    t["killed"] = bool(kills)
+    t["headline"] = "and the night it died." if kills else "and where they broke."
     best = min(wipes or pulls, key=lambda p: p["pct"])
     t["best_pull"] = best["pull"]
     t["best_pct"] = fmt(best["pct"], 1)

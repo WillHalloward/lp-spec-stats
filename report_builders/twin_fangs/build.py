@@ -140,7 +140,8 @@ def main() -> None:
     # the page and the index row say the same thing, so a link preview and the
     # reports list cannot drift apart
     team_bit = f" — {args.team}" if args.team else ""
-    row_title = args.title or f"{tok['boss']} {tok['difficulty']}{team_bit} — where the pulls broke"
+    angle = "the night it died" if tok["killed"] else "where the pulls broke"
+    row_title = args.title or f"{tok['boss']} {tok['difficulty']}{team_bit} — {angle}"
     row_summary = args.summary or (
         (f"{args.team}, " if args.team else "")
         + f"{tok['pulls']} {tok['difficulty']} pulls on {tok['boss']}: "
@@ -153,7 +154,7 @@ def main() -> None:
         args.report,
         # both nights on a boss share the index title, so the page's own title
         # carries the date to tell browser tabs and link previews apart
-        title=f"{tok['boss']} {tok['difficulty']}: where the pulls broke ({args.team + ', ' if args.team else ''}{date_long})",
+        title=f"{tok['boss']} {tok['difficulty']}: {angle} ({args.team + ', ' if args.team else ''}{date_long})",
         description=row_summary,
         url=f"{SITE}/reports/{slug}",
     )
