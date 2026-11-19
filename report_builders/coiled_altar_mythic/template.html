@@ -1,0 +1,262 @@
+<title>Coiled Altar Mythic Ledger</title>
+__SHARED_CSS__
+.hm td{padding:3px 2px;text-align:center;font-size:10.5px;min-width:26px}
+.hm th{padding:6px 2px;text-align:center;font-size:10.5px}
+.hm td:first-child,.hm th:first-child{text-align:left;padding-left:10px;min-width:120px}
+.hm td.tot{font-weight:600;padding-left:8px}
+.phase-h{font-family:"Barlow Condensed",sans-serif;font-size:36px;font-weight:700;letter-spacing:.02em;
+  border-bottom:3px solid var(--accent);padding-bottom:6px;margin-top:10px}
+.tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:0 5px;border-radius:2px;border:1px solid var(--rule)}
+.tag.bad{border-color:var(--crit);color:var(--crit)}
+.tag.ok{border-color:var(--s3);color:var(--s3)}
+</style>
+<div class="wrap">
+<header>
+  <div class="lab">Warcraft Logs {{report}} &middot; {{difficulty}}</div>
+  <h1>{{boss}}, {{pulls}} pulls,<br>{{headline}}</h1>
+  <div class="rule"></div>
+  <p>Spinning axes, the orb runners, the Guillotine soaks, the frontals, the shield burn and the Soulcoiler, pull by pull, with stage one and stage two kept apart. {{night_title}}, {{date_long}}.</p>
+  <div class="meta">
+    <span>{{zone}} &middot; {{difficulty}}</span><span>{{raiders}} raiders</span>
+    <span>best: pull {{best_pull}}, into {{best_phase}}, {{best_pct}}%</span><span>{{boss_minutes}} minutes on the boss</span>
+    <span><a href="https://www.warcraftlogs.com/reports/{{report}}">open the log</a></span>
+  </div>
+</header>
+
+<div class="tiles">
+  <div class="tile"><span class="lab">Best pull</span><span class="n">#{{best_pull}}<small> {{best_pct}}%</small></span><span class="muted">reached {{best_phase}}</span></div>
+  <div class="tile"><span class="lab">Pulls that reached stage two</span><span class="n">{{reached_p2}}<small> / {{counted}}</small></span><span class="muted">{{resets}} quick resets left out</span></div>
+  <div class="tile"><span class="lab">Purple orb explosions</span><span class="n">{{explosions}}<small> in {{explosion_pulls}} pulls</small></span><span class="muted">{{explosions_touched}} touched, {{explosions_left}} left at a Deluge, before the wipe</span></div>
+  <div class="tile"><span class="lab">Shields broken</span><span class="n">{{veils_broken}}<small> / {{veils}}</small></span><span class="muted">median {{veil_median}}s to break</span></div>
+  <div class="tile"><span class="lab">Axe ticks per minute alive</span><span class="n">{{ax1_per_min}}<small> P1</small></span><span class="muted">{{ax2_per_min}} in P2</span></div>
+</div>
+
+<section>
+  <div class="head"><h2>The pulls</h2>
+  <p>Each bar is one pull, coloured by stage. The black tick is where the wipe started (see How this is read at the bottom), with the ability that killed that first player. Pulls marked &times; were reset inside the first half-minute; each carries Malacrass&rsquo;s Unworthy, a big hit at about ten seconds on some of the raid (what triggers it is not known yet). They are left out of every number below.</p></div>
+  <figure><div class="legend" id="lg-pulls"></div><svg id="c-pulls"></svg></figure>
+</section>
+
+<h2 class="phase-h">Stage one &middot; Zul&rsquo;jan</h2>
+
+<section>
+  <div class="head"><h2>Spinning axes, stage one</h2>
+  <p><b>A tick</b> is one Axegrinder hit; standing in an axe ticks every quarter-second, so <b>an axe eaten</b> is a run of ticks with no gap longer than {{bout_gap}}s. Only ticks on a living player before the wipe count, and everything is per <b>minute alive</b>, so a pull where people died early is not flattered. {{ax1_ticks}} ticks, {{ax1_bouts}} axes, {{ax1_per_min}} ticks per minute alive.</p>
+  <p>Axes pile up through the stage, so the later seconds are worth more ticks. <b>vs night</b> divides what a player or pull took by what the night&rsquo;s average would give for the same seconds of the stage ({{bucket_s}}-second slices): 1.0 is the night average, 2.0 is twice it. Against that, the raid took {{ax1_first}}&times; the night average in the first half of the night and {{ax1_second}}&times; in the second. Both tanks sit at the top: they stand where Zul&rsquo;jan is, and the table does not know whether the axes route through there, so read their rows against each other rather than against the raid.</p></div>
+  <figure><div class="legend"><span><i style="background:var(--s2)"></i>ticks per minute alive</span><span><i style="background:var(--ink);height:3px"></i>night average for the same seconds</span></div><svg id="c-ax-P1"></svg><figcaption>Pulls left to right; reset pulls, and pulls with under {{ax_min_alive}} raid-minutes alive in the stage, are left out.</figcaption></figure>
+  <div class="tblwrap"><table id="t-ax-P1"><thead><tr><th class="l">Player</th><th>Ticks</th><th>Axes eaten</th><th>Min alive</th><th>Ticks / min</th><th>Axes / min</th><th>vs night</th><th>First half</th><th>Second half</th><th>Damage</th></tr></thead><tbody></tbody></table></div>
+  <details class="lgwrap" open><summary>Ticks per pull, per player</summary><div class="tblwrap"><table class="hm" id="h-ax-P1"></table></div></details>
+</section>
+
+<section>
+  <div class="head"><h2>Orb runners</h2>
+  <p><b>A carry</b> is one pick-up: Volatile Venom for a green orb, Mutagenic Venom for a purple Virulent Mutation. Counted up to the wipe. {{green}} green and {{purple}} purple carries over the night.</p></div>
+  <div class="tblwrap"><table id="t-orbs"><thead><tr><th class="l">Player</th><th>Green</th><th>Purple</th><th>Total</th><th class="l">Pulls carried in</th></tr></thead><tbody></tbody></table></div>
+  <details class="lgwrap"><summary>Carries per pull, per player (green / purple)</summary><div class="tblwrap"><table class="hm" id="h-orbs"></table></div></details>
+  <h3>The explosions</h3>
+  <p>A purple touching another orb puts 20 Venom Rupture stacks on everyone at once. Frontals add stacks on their cast and the push adds them as stage two starts, so a jump of {{explosion_stacks}} or more, or a gain at any other moment, is an explosion. On a raid with no stacks the log records the explosion without a count ({{explosions_small}} of them), so those show as &ldquo;–&rdquo;; <b>killed</b> is the Venom Rupture deaths in the next two and a half seconds. One within {{deluge_grace}}s of a Toxic Deluge cast, with nobody carrying, is a Mutation <b>left on the ground</b>; the rest were <b>touched</b>. <b>Holding a purple</b> lists anyone carrying one, or who put one down, in the {{hold_s}} seconds before. That is who was near the purple, not proof of who touched it: the log does not carry positions here.</p>
+  <div class="tblwrap"><table id="t-ex"><thead><tr><th class="l">Pull</th><th>Time</th><th class="l">How</th><th>Stacks</th><th>Killed</th><th class="l">Holding a purple</th><th class="l"></th></tr></thead><tbody></tbody></table></div>
+  <h3>Orbs per frontal</h3>
+  <p>Each Sever detonates the orbs in it and puts one Venom Rupture stack per orb on the raid, so the stacks are the orb count. Columns are the Severs in order; a column of seven or more at the end (145&ndash;162s) is the push into stage two, where every orb left goes off at once. Explosions are not in this grid.</p>
+  <div class="tblwrap"><table class="hm" id="h-sever"></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Guillotine soaks</h2>
+  <p>One player is marked, and the axe lands on them five seconds later; everyone it hits shares it. If too few are under it, it becomes Execution on the whole raid (a miss). Two per stage one, at 48s and 133s; Grim Guillotine in stage three. {{g_windows}} soaks before a wipe, {{g_misses}} missed; the median soak had {{g_median_soak}} players and none with {{g_min_soak}} or more failed. Of the {{g_misses_all}} misses over the night, those after the wipe had started are a raid that had already fallen apart, not a cause.</p></div>
+  <div class="tblwrap"><table id="t-g"><thead><tr><th class="l">Pull</th><th class="l">Soak</th><th>Time</th><th>Soakers</th><th>Alive</th><th class="l">Marked</th><th class="l">Result</th><th class="l">Team absent</th><th class="l">Died to it</th></tr></thead><tbody></tbody></table></div>
+  <div id="plan-box">
+  <h3>Against the soak teams</h3>
+  <p>Team 1 takes the first Guillotine of stage one, team 2 the second; the tanks join when they are free and are never counted as missing, and the marked player soaks whoever they are. <b>Absent</b> is a team member alive when the axe landed who was not under it; <b>dead</b> had already died; <b>off-team</b> is a soak by someone on neither the team nor a tank. Soaks after the wipe started are left out. {{plan_absent}} absences over {{plan_windows}} soaks.</p>
+  <div class="tblwrap"><table id="t-plan"><thead><tr><th class="l">Player</th><th>Team</th><th>Soaked</th><th>Absent</th><th class="l">Absent on pulls</th><th>Dead before</th><th>Off-team soaks</th></tr></thead><tbody></tbody></table></div>
+  </div>
+  <h3>Who soaked</h3>
+  <div class="tblwrap"><table id="t-gp"><thead><tr><th class="l">Player</th><th>1st</th><th>2nd</th><th>Grim</th><th>Total</th><th>Died soaking</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Frontal deaths, stage one</h2>
+  <p>Deaths whose killing blow was Sever (Blighted Sever in stage three), before the wipe. {{f_deaths}} over the night across all stages, {{f_tank}} of them tanks; {{f_vuln}} of the tank deaths came with the previous frontal&rsquo;s vulnerability still on them. <b>Caught</b> counts a non-tank hit by a frontal at all.</p></div>
+  <div class="tblwrap"><table id="t-f-P1"><thead><tr><th class="l">Pull</th><th>Time</th><th class="l">Player</th><th class="l">Frontal</th><th class="l"></th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<h2 class="phase-h">Stage two &middot; Hex Lord Malacrass</h2>
+
+<section>
+  <div class="head"><h2>Spinning axes, stage two</h2>
+  <p>Same rules as stage one, and a player being walked by Dreadmarch is not in control, so their ticks are dropped. Axes left from stage one keep spinning into the first forty-odd seconds; after that they are rare. {{ax2_ticks}} ticks, {{ax2_bouts}} axes, {{ax2_per_min}} per minute alive; {{ax2_first}}&times; the night average in the first half of the night, {{ax2_second}}&times; in the second.</p></div>
+  <figure><div class="legend"><span><i style="background:var(--s2)"></i>ticks per minute alive</span><span><i style="background:var(--ink);height:3px"></i>night average for the same seconds</span></div><svg id="c-ax-P2"></svg></figure>
+  <div class="tblwrap"><table id="t-ax-P2"><thead><tr><th class="l">Player</th><th>Ticks</th><th>Axes eaten</th><th>Min alive</th><th>Ticks / min</th><th>Axes / min</th><th>vs night</th><th>First half</th><th>Second half</th><th>Damage</th></tr></thead><tbody></tbody></table></div>
+  <details class="lgwrap" open><summary>Ticks per pull, per player</summary><div class="tblwrap"><table class="hm" id="h-ax-P2"></table></div></details>
+</section>
+
+<section>
+  <div class="head"><h2>The shield burn</h2>
+  <p>Malacrass puts up Veil of Twilight, a {{veil_shield}} absorb, and channels Eternal Nightfall. Break the absorb and the channel stops; if not, the cast finishes about seventeen seconds in and kills most of the raid. {{veils_broken}} of {{veils}} broken (fastest {{veil_fastest}}s, slowest {{veil_slowest}}s); the closest miss was {{veil_closest}}. Shields that went up after the wipe had started are left out. <b>Into the shield</b> is every hit on Malacrass while it was up, absorbed or not; pets bill to their owner.</p></div>
+  <div class="tblwrap"><table id="t-veil"><thead><tr><th class="l">Pull</th><th>Shield</th><th>Stage</th><th>Up at</th><th>Seconds</th><th class="l">Result</th><th>Of the shield</th><th>Alive</th><th>Deaths</th><th class="l">Most into it</th></tr></thead><tbody></tbody></table></div>
+  <h3>Into the shield, per player</h3>
+  <div class="tblwrap"><table id="t-veilp"><thead><tr><th class="l">Player</th><th>Total</th><th>Shields</th><th>Per shield</th><th class="l">Share</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>The Soulcoiler</h2>
+  <p>Each Spiritcackle calls one Spiteful Soulcoiler behind a two-stack Spirit Shield (99% less damage taken) that only overlapping Gloombombs strip. {{adds_killed}} of {{adds}} adds before a wipe died, median {{add_ttk}}s from the call. <b>Shield</b> is how long its Spirit Shield held, <b>after strip</b> is how long it lived once the shield was gone.</p></div>
+  <div class="tblwrap"><table id="t-adds"><thead><tr><th class="l">Pull</th><th>Add</th><th>Called</th><th>Shield</th><th>After strip</th><th>Dead at</th><th class="l">Most into it</th></tr></thead><tbody></tbody></table></div>
+  <h3>Damage into the Soulcoiler, per player</h3>
+  <div class="tblwrap"><table id="t-addp"><thead><tr><th class="l">Player</th><th>Total</th><th>While shielded</th><th>After strip</th><th>Adds</th><th class="l">Share</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Frontal deaths, stage two</h2>
+  <p>Deaths to Soul Sever, before the wipe.</p></div>
+  <div class="tblwrap"><table id="t-f-P2"><thead><tr><th class="l">Pull</th><th>Time</th><th class="l">Player</th><th class="l">Frontal</th><th class="l"></th></tr></thead><tbody></tbody></table></div>
+  <h3>Non-tanks caught by a frontal, all stages</h3>
+  <div class="tblwrap"><table id="t-caught"><thead><tr><th class="l">Player</th><th>Sever</th><th>Soul Sever</th><th>Blighted Sever</th><th>Total</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="note">
+    <p><b>How this is read.</b> <b>A wipe</b> starts at the first death of the first run of {{cascade_n}} deaths inside {{cascade_s}} seconds that the raid never recovers from (no {{recover_s}}-second stretch without a death before the pull ends); nothing after it counts unless a table says so. <b>Alive</b>: a player is dead from their death until they next cast something, so a battle rez brings them back. <b>Reset pulls</b> ({{resets}}) carry Malacrass&rsquo;s Unworthy and end inside {{reset_s}} seconds; they are left out. Stage three was reached once, so its Grim Guillotine, Blighted Sever and shield sit in the tables above with their stage marked rather than in a section of their own.</p>
+  </div>
+</section>
+
+<footer>Built from the Warcraft Logs v2 API &middot; report {{report}} &middot; {{pulls}} pulls, {{outcome}}.</footer>
+</div>
+<div class="tip" id="tip"></div>
+<script id="data" type="application/json">__PAYLOAD__</script>
+<script>
+(function(){
+const D=JSON.parse(document.getElementById('data').textContent);
+const NS='http://www.w3.org/2000/svg';
+function mk(p,t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;}
+function txt(p,x,y,s,o={}){const e=mk(p,'text',Object.assign({x,y,fill:o.fill||'var(--muted)','font-size':o.size||11,
+  'font-family':'IBM Plex Mono, monospace','text-anchor':o.anchor||'middle'},o.attr||{}));e.textContent=s;return e;}
+const tip=document.getElementById('tip');
+function hook(el,html){
+  el.addEventListener('mousemove',ev=>{tip.innerHTML=html;tip.style.opacity=1;
+    const w=tip.offsetWidth;let x=ev.clientX+14;if(x+w>innerWidth-8)x=ev.clientX-w-14;
+    const hh=tip.offsetHeight;let y=ev.clientY+14;if(y+hh>innerHeight-8)y=Math.max(8,ev.clientY-hh-14);
+    tip.style.left=x+'px';tip.style.top=y+'px';});
+  el.addEventListener('mouseleave',()=>tip.style.opacity=0);
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PL=Object.fromEntries(D.players.map(p=>[p.name,p]));
+const ccol=n=>D.cls_color[(PL[n]||{}).cls]||'var(--muted)';
+const role=n=>{const r=(PL[n]||{}).role;return r?`<span class="role">${r==='Healer'?'HEAL':r.toUpperCase()}</span>`:'';};
+const who=n=>`${role(n)}<span style="color:${ccol(n)}">${esc(n)}</span>`;
+const nm=n=>`<span class="nm" style="color:${ccol(n)}">${esc(n)}</span>`;
+const f1=x=>x==null?'–':(+x).toFixed(1);
+const f2=x=>x==null?'–':(+x).toFixed(2);
+const M=x=>x==null?'–':x>=1e6?(x/1e6).toFixed(1)+'M':x>=1e3?Math.round(x/1e3)+'k':Math.round(x);
+const body=(id,h,empty,cols)=>{document.querySelector(`#${id} tbody`).innerHTML=h||`<tr><td class="l muted" colspan="${cols}">${empty}</td></tr>`;};
+const PH={P1:'var(--s1)',P2:'var(--s4)',INT:'var(--s5)',P3:'var(--crit)'};
+const PHN={P1:'Stage one',P2:'Stage two',INT:'Intermission',P3:'Stage three'};
+const idxCls=v=>v==null?'':v>=1.5?' class="neg"':v<=.67?' class="pos"':'';
+const pulls=D.pulls.filter(p=>!p.reset).map(p=>p.pull);
+
+/* ---------- the pulls ---------- */
+(function(){
+  const s=document.getElementById('c-pulls'),W=900,L=40,R=130,rh=14,T=4;
+  const mx=Math.max(...D.pulls.map(p=>p.dur));const X=v=>L+(W-L-R)*v/mx;
+  D.pulls.forEach((p,j)=>{const y=T+j*rh;txt(s,L-8,y+10,p.pull,{anchor:'end',size:9.5,fill:p.reset?'var(--inter)':'var(--ink-2)'});
+    Object.entries(p.phases).forEach(([k,[a,b]])=>{const r=mk(s,'rect',{x:X(a),y:y+2,width:Math.max(1,X(b)-X(a)),height:rh-4,fill:PH[k]||'var(--muted)',opacity:p.reset?.3:.85});
+      hook(r,`<b>Pull ${p.pull}</b>${p.reset?' (reset)':''}<br>${PHN[k]}: ${f1(a)}s – ${f1(b)}s<br>ended ${p.pct}%`+(p.wipe!=null?`<br>wipe started ${f1(p.wipe)}s by ${esc(p.wipe_by||'a fall')}`:''));});
+    if(p.wipe!=null){mk(s,'line',{x1:X(p.wipe),x2:X(p.wipe),y1:y,y2:y+rh,stroke:'var(--ink)','stroke-width':2});
+      txt(s,X(p.dur)+6,y+10,`${p.reset?'× ':''}${p.wipe_by||'fall'}`,{anchor:'start',size:9});}
+    else txt(s,X(p.dur)+6,y+10,p.reset?'× reset':'',{anchor:'start',size:9});
+  });
+  for(let t=0;t<=mx;t+=60){mk(s,'line',{x1:X(t),x2:X(t),y1:T,y2:T+D.pulls.length*rh,stroke:'var(--grid)'});txt(s,X(t),T+D.pulls.length*rh+12,`${t/60}m`,{size:9.5});}
+  s.setAttribute('viewBox',`0 0 ${W} ${T+D.pulls.length*rh+18}`);
+  document.getElementById('lg-pulls').innerHTML=Object.entries(PHN).map(([k,l])=>`<span><i style="background:${PH[k]}"></i>${l}</span>`).join('')+`<span><i style="background:var(--ink);width:3px"></i>wipe start</span>`;
+})();
+
+/* ---------- axes ---------- */
+function heat(id,rows,cols,cell,total){
+  const t=document.getElementById(id);
+  t.innerHTML=`<thead><tr><th>Player</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>Total</th></tr></thead><tbody>`+
+    rows.map(r=>`<tr><td>${who(r.name)}</td>${cols.map(c=>cell(r,c)).join('')}<td class="tot">${total(r)}</td></tr>`).join('')+'</tbody>';
+}
+['P1','P2'].forEach(ph=>{
+  const A=Object.assign({},D.axes[ph],{pulls:D.axes[ph].pulls.filter(p=>p.alive_min>=D.ax_min_alive)});
+  const s=document.getElementById('c-ax-'+ph),W=900,L=34,R=8,T=10,H=200,B=26,N=A.pulls.length,cw=(W-L-R)/Math.max(1,N);
+  const mx=Math.max(1,...A.pulls.map(p=>Math.max(p.per_min,p.index?p.per_min/p.index:0)))*1.08;
+  const Y=v=>T+(H-T-B)*(1-v/mx);
+  for(let v=0;v<=mx;v+=mx>20?5:2){mk(s,'line',{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:'var(--grid)'});txt(s,L-6,Y(v)+4,v,{anchor:'end'});}
+  A.pulls.forEach((p,i)=>{const x=L+cw*i;
+    const r=mk(s,'rect',{x:x+cw*.15,y:Y(p.per_min),width:cw*.7,height:Y(0)-Y(p.per_min),fill:'var(--s2)'});
+    const exp=p.index?p.per_min/p.index:null;
+    if(exp!=null)mk(s,'line',{x1:x+cw*.05,x2:x+cw*.95,y1:Y(exp),y2:Y(exp),stroke:'var(--ink)','stroke-width':2.5});
+    hook(r,`<b>Pull ${p.pull}</b><br>${p.ticks} ticks, ${p.bouts} axes in ${f1(p.alive_min)} minutes alive<br>${f2(p.per_min)} ticks / min (night average for these seconds ${f2(exp)})<br>vs night ${f2(p.index)} · ${M(p.dmg)} damage`);
+    txt(s,x+cw/2,H-B+14,p.pull,{size:9.5});});
+  s.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  body('t-ax-'+ph,A.players.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${r.ticks}</td><td>${r.bouts}</td><td>${f1(r.alive_min)}</td><td>${f2(r.per_min)}</td><td>${f2(r.bouts_per_min)}</td>
+    <td${idxCls(r.index)}>${f2(r.index)}</td><td${idxCls(r.first_half)}>${f2(r.first_half)}</td><td${idxCls(r.second_half)}>${f2(r.second_half)}</td><td>${M(r.dmg)}</td></tr>`).join(''),'No axes.',10);
+  const cols=A.pulls.map(p=>p.pull);
+  heat('h-ax-'+ph,A.players,cols,(r,c)=>{const v=r.by_pull[c];if(!v)return '<td class="muted">·</td>';
+    const [t,b,al,ex]=v;const k=ex?t/ex:0;const a=Math.min(.85,k/3);
+    return `<td title="${t} ticks, ${b} axes, ${al}s alive, night average ${f1(ex)}" style="background:color-mix(in srgb,var(--crit) ${Math.round(a*100)}%,transparent)">${t||''}</td>`;},r=>r.ticks);
+});
+
+/* ---------- orbs ---------- */
+(function(){
+  const O=D.orbs;
+  body('t-orbs',O.carriers.map(r=>{const ps=Object.keys(r.by_pull).length;
+    return `<tr><td class="l">${who(r.name)}</td><td>${r.green}</td><td>${r.purple}</td><td>${r.green+r.purple}</td><td class="l">${ps} of ${pulls.length}</td></tr>`;}).join(''),'No carries.',5);
+  const cols=[...new Set(O.carriers.flatMap(r=>Object.keys(r.by_pull).map(Number)))].sort((a,b)=>a-b);
+  heat('h-orbs',O.carriers,cols,(r,c)=>{const v=r.by_pull[c];if(!v)return '<td class="muted">·</td>';
+    return `<td><span style="color:var(--s3)">${v[0]||''}</span>${v[0]&&v[1]?'/':''}<span style="color:var(--cls-DemonHunter);font-weight:600">${v[1]||''}</span></td>`;},r=>r.green+r.purple);
+  body('t-ex',O.explosions.map(e=>`<tr><td class="l">${e.pull}</td><td>${f1(e.t)}s${e.phase!=='P1'?' <span class="tag">'+e.phase+'</span>':''}</td>
+    <td class="l">${e.how==='left'?'<span class="tag bad">left at a Deluge</span>':'<span class="tag bad">touched</span>'}${e.with_frontal?' <span class="muted">in a frontal</span>':''}</td><td>${e.stacks==null?'–':'+'+e.stacks}</td><td>${e.killed||'–'}</td>
+    <td class="l names">${e.holders.map(nm).join(' ')||'<span class="muted">nobody</span>'}</td><td class="l muted">${e.before_wipe?'':'after the wipe started'}</td></tr>`).join(''),'No explosions.',7);
+  // severs: per pull, in order
+  const by={};O.severs.filter(s=>s.phase==='P1').forEach(s=>(by[s.pull]=by[s.pull]||[]).push(s));
+  const n=Math.max(...Object.values(by).map(v=>v.length));
+  const t=document.getElementById('h-sever');
+  t.innerHTML=`<thead><tr><th>Pull</th>${Array.from({length:n},(_,i)=>`<th>${i+1}</th>`).join('')}</tr></thead><tbody>`+
+    Object.entries(by).map(([p,L])=>`<tr><td>${p}</td>${Array.from({length:n},(_,i)=>{const s=L[i];if(!s)return '<td class="muted">·</td>';
+      const a=Math.min(.8,s.stacks/12);return `<td title="${s.t}s: ${s.stacks} orbs" style="background:color-mix(in srgb,var(--s4) ${Math.round(a*100)}%,transparent)">${s.stacks}</td>`;}).join('')}</tr>`).join('')+'</tbody>';
+})();
+
+/* ---------- guillotine ---------- */
+(function(){
+  const G=D.guillotine;
+  body('t-g',G.windows.map(w=>{const res=w.missed?`<span class="tag bad">missed &rarr; ${w.kind==='Guillotine'?'Execution':'Grim Execution'} on ${w.exec_hits}</span>`:'<span class="tag ok">soaked</span>';
+    return `<tr${w.after_wipe?' class="muted"':''}><td class="l">${w.pull}</td><td class="l">${w.kind==='Guillotine'?'':'Grim '}${w.n}</td><td>${f1(w.t)}s</td><td${!w.missed&&w.soakers.length<6?' class="neg"':''}>${w.soakers.length}</td><td>${w.alive}</td>
+      <td class="l">${who(w.target)}</td><td class="l">${res}${w.after_wipe?' <span class="muted">after the wipe started</span>':''}</td>
+      <td class="l names">${w.absent==null?'<span class="muted">–</span>':(w.absent.map(nm).join(' ')||'<span class="pos">none</span>')+(w.extra&&w.extra.length?' <span class="muted">off-team: '+w.extra.map(esc).join(', ')+'</span>':'')}</td>
+      <td class="l names">${w.missed?`${w.deaths.length} to the Execution`:(w.deaths.map(nm).join(' ')||'–')}</td></tr>`;}).join(''),'No Guillotines.',9);
+  if(G.plan){body('t-plan',G.plan.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${r.team||'<span class="muted">none</span>'}</td><td>${r.soaked||'–'}</td>
+      <td${r.absent?' class="neg"':''}>${r.absent||'–'}</td><td class="l names">${r.absent_at.join(', ')||'–'}</td><td>${r.dead||'–'}</td><td>${r.extra||'–'}</td></tr>`).join(''),'–',7);}
+  else document.getElementById('plan-box').hidden=true;
+  const died={};G.deaths.filter(d=>d.soaked).forEach(d=>died[d.player]=(died[d.player]||0)+1);
+  body('t-gp',G.players.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${r['Guillotine 1']||'–'}</td><td>${r['Guillotine 2']||'–'}</td><td>${(r['Grim Guillotine 1']||0)+(r['Grim Guillotine 2']||0)+(r['Grim Guillotine 3']||0)||'–'}</td><td>${r.total}</td><td${died[r.name]?' class="neg"':''}>${died[r.name]||'–'}</td></tr>`).join(''),'Nobody soaked.',6);
+})();
+
+/* ---------- frontals ---------- */
+(function(){
+  const F=D.frontals;
+  const row=x=>`<tr><td class="l">${x.pull}</td><td>${f1(x.t)}s${x.phase==='P3'?' <span class="tag">P3</span>':''}</td><td class="l">${who(x.player)}</td><td class="l">${x.kind}</td>
+    <td class="l">${x.wipe_start?'<span class="tag bad">started the wipe</span> ':''}${x.tank&&x.had_vuln?'<span class="muted">still had the last frontal&rsquo;s vulnerability</span>':''}</td></tr>`;
+  body('t-f-P1',F.deaths.filter(x=>x.before_wipe&&(x.phase==='P1'||x.phase==='P3')).map(row).join(''),'No frontal deaths before a wipe.',5);
+  body('t-f-P2',F.deaths.filter(x=>x.before_wipe&&x.phase==='P2').map(row).join(''),'No frontal deaths before a wipe.',5);
+  body('t-caught',F.caught.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${r['Sever']||'–'}</td><td>${r['Soul Sever']||'–'}</td><td>${r['Blighted Sever']||'–'}</td><td>${r.total}</td></tr>`).join(''),'Nobody caught.',5);
+})();
+
+/* ---------- veil ---------- */
+(function(){
+  const V=D.veil;const full=Math.max(...V.windows.filter(w=>w.broken).map(w=>w.absorbed),1);
+  body('t-veil',V.windows.map(w=>{const res=w.broken?'<span class="tag ok">broken</span>':w.resolved?'<span class="tag bad">Nightfall went off</span>':'<span class="muted">pull ended</span>';
+    return `<tr${w.after_wipe?' class="muted"':''}><td class="l">${w.pull}</td><td>${w.n}</td><td>${w.phase}</td><td>${f1(w.t)}s</td><td>${f1(w.secs)}</td><td class="l">${res}${w.after_wipe?' <span class="muted">after the wipe started</span>':''}</td>
+      <td>${Math.round(100*w.absorbed/full)}%</td><td>${w.alive}</td><td${w.deaths?' class="neg"':''}>${w.deaths||'–'}</td><td class="l names">${w.top.map(([n,v])=>`${nm(n)} ${M(v)}`).join(' ')}</td></tr>`;}).join(''),'No shields.',10);
+  body('t-veilp',V.players.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${M(r.damage)}</td><td>${r.windows}</td><td>${M(r.per_window)}</td><td class="l"><span class="bar" style="width:${r.share*4}px"></span>${f1(r.share)}%</td></tr>`).join(''),'–',5);
+})();
+
+/* ---------- adds ---------- */
+(function(){
+  const A=D.adds;
+  body('t-adds',A.adds.map(a=>`<tr${a.after_wipe?' class="muted"':''}><td class="l">${a.pull}</td><td>${a.n}${a.phase!=='P2'?' <span class="tag">'+a.phase+'</span>':''}</td><td>${f1(a.t)}s</td><td>${a.shield_secs==null?'<span class="neg">held</span>':f1(a.shield_secs)+'s'}</td>
+    <td>${a.after_strip==null?'–':f1(a.after_strip)+'s'}</td><td>${a.killed?f1(a.t+a.ttk)+'s':'<span class="neg">not killed</span>'}</td><td class="l names">${a.top.map(([n,v])=>`${nm(n)} ${M(v)}`).join(' ')}${a.after_wipe?' <span class="muted">after the wipe started</span>':''}</td></tr>`).join(''),'No adds.',7);
+  body('t-addp',A.players.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${M(r.damage)}</td><td>${M(r.pre)}</td><td>${M(r.post)}</td><td>${r.adds}</td><td class="l"><span class="bar" style="width:${r.share*4}px"></span>${f1(r.share)}%</td></tr>`).join(''),'–',6);
+})();
+})();
+</script>
