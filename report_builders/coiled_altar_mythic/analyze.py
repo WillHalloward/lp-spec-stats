@@ -141,6 +141,44 @@ class Analysis(_Base):
             out[fid] = [self.name(i) for i in x.get("friendlyPlayers") or [] if self.is_player(i)]
         return out
 
+    @cached_property
+    def pull_roles(self) -> dict[int, dict[str, tuple[str, str]]]:
+        """Fight id -> name -> (role, spec) for that pull alone.
+
+        A player can swap spec mid-night (a balance druid going resto), so the
+        night's single roster role is wrong for some of their pulls. Warcraft
+        Logs' playerDetails per fight carries the spec each pull was played in.
+        """
+        q = """query($c:String!,$f:[Int]!){reportData{report(code:$c){playerDetails(fightIDs:$f)}}}"""
+        out = {}
+        for fid in self.F:
+            pd = self.f.cached(
+                f"player_details-{fid}",
+                lambda fid=fid: self.f._q(q, {"c": self.code, "f": [fid]})["reportData"]["report"]["playerDetails"],
+            )
+            while isinstance(pd, dict) and not any(k in pd for k in ("tanks", "healers", "dps")) and len(pd) == 1:
+                pd = next(iter(pd.values()))
+            m = {}
+            for group, role in (("tanks", "Tank"), ("healers", "Healer"), ("dps", "DPS")):
+                for p in (pd or {}).get(group) or []:
+                    specs = p.get("specs") or []
+                    spec = specs[0].get("spec", "") if specs and isinstance(specs[0], dict) else (specs[0] if specs else "")
+                    m[p.get("name", "")] = (role, spec)
+            out[fid] = m
+        return out
+
+    def role_in(self, fid, name) -> str:
+        return (self.pull_roles.get(fid, {}).get(name) or (self.role(name), ""))[0]
+
+    def swaps(self) -> dict[str, list[list]]:
+        """name -> [[first pull, role, spec], ...] for anyone whose spec changed."""
+        seq: dict[str, list] = defaultdict(list)
+        for fid in sorted(self.F, key=lambda k: self.num[k]):
+            for n, (role, spec) in self.pull_roles[fid].items():
+                if not seq[n] or seq[n][-1][2] != spec:
+                    seq[n].append([self.num[fid], role, spec])
+        return {n: v for n, v in seq.items() if len(v) > 1}
+
     def role(self, name) -> str:
         return (self.roster().get(name) or {}).get("role", "")
 
@@ -702,6 +740,9 @@ class Analysis(_Base):
                 if after_wipe:
                     continue
                 for n, v in into.items():
+                    # a healer's stray damage is not a share of the burn
+                    if self.role_in(fid, n) == "Healer":
+                        continue
                     per_player[n] += v
                     appear[n] += 1
                     by_pull[n][f"{self.num[fid]}.{k + 1}"] = round(v)
@@ -760,7 +801,7 @@ class Analysis(_Base):
                 dmg_post: Counter = Counter()
                 for e in hits:
                     who = self.name(self.owner_of(e.get("sourceID")))
-                    if who not in self.roster():
+                    if who not in self.roster() or self.role_in(fid, who) == "Healer":
                         continue
                     (dmg_pre if down is None or e["timestamp"] < down else dmg_post)[who] += _amount(e)
                 cut = self.wipe[fid]
@@ -789,6 +830,7 @@ class Analysis(_Base):
 
     def build(self) -> dict:
         return {
+            "swaps": self.swaps(),
             "pulls": self.pulls(),
             "axes": self.axes(),
             "orbs": self.orbs(),

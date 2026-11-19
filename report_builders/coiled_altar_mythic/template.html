@@ -95,6 +95,7 @@ __SHARED_CSS__
   <p>Malacrass puts up Veil of Twilight, a {{veil_shield}} absorb, and channels Eternal Nightfall. Break the absorb and the channel stops; if not, the cast finishes about seventeen seconds in and kills most of the raid. {{veils_broken}} of {{veils}} broken (fastest {{veil_fastest}}s, slowest {{veil_slowest}}s); the closest miss was {{veil_closest}}. Shields that went up after the wipe had started are left out. <b>Into the shield</b> is every hit on Malacrass while it was up, absorbed or not; pets bill to their owner.</p></div>
   <div class="tblwrap"><table id="t-veil"><thead><tr><th class="l">Pull</th><th>Shield</th><th>Stage</th><th>Up at</th><th>Seconds</th><th class="l">Result</th><th>Of the shield</th><th>Alive</th><th>Deaths</th><th class="l">Most into it</th></tr></thead><tbody></tbody></table></div>
   <h3>Into the shield, per player</h3>
+  <p>Only pulls a player spent in a damage or tank spec count here; a healer&rsquo;s stray damage is not a share of the burn. The spec is read per pull, so anyone who swapped mid-night counts only for their damage pulls, and the swap is noted by their name.</p>
   <div class="tblwrap"><table id="t-veilp"><thead><tr><th class="l">Player</th><th>Total</th><th>Shields</th><th>Per shield</th><th class="l">Share</th></tr></thead><tbody></tbody></table></div>
 </section>
 
@@ -103,6 +104,7 @@ __SHARED_CSS__
   <p>Each Spiritcackle calls one Spiteful Soulcoiler behind a two-stack Spirit Shield (99% less damage taken) that only overlapping Gloombombs strip. {{adds_killed}} of {{adds}} adds before a wipe died, median {{add_ttk}}s from the call. <b>Shield</b> is how long its Spirit Shield held, <b>after strip</b> is how long it lived once the shield was gone.</p></div>
   <div class="tblwrap"><table id="t-adds"><thead><tr><th class="l">Pull</th><th>Add</th><th>Called</th><th>Shield</th><th>After strip</th><th>Dead at</th><th class="l">Most into it</th></tr></thead><tbody></tbody></table></div>
   <h3>Damage into the Soulcoiler, per player</h3>
+  <p>As with the shield, only pulls played in a damage or tank spec count.</p>
   <div class="tblwrap"><table id="t-addp"><thead><tr><th class="l">Player</th><th>Total</th><th>While shielded</th><th>After strip</th><th>Adds</th><th class="l">Share</th></tr></thead><tbody></tbody></table></div>
 </section>
 
@@ -145,6 +147,10 @@ const ccol=n=>D.cls_color[(PL[n]||{}).cls]||'var(--muted)';
 const role=n=>{const r=(PL[n]||{}).role;return r?`<span class="role">${r==='Healer'?'HEAL':r.toUpperCase()}</span>`:'';};
 const who=n=>`${role(n)}<span style="color:${ccol(n)}">${esc(n)}</span>`;
 const nm=n=>`<span class="nm" style="color:${ccol(n)}">${esc(n)}</span>`;
+const SPEC=s=>String(s||'').replace(/([a-z])([A-Z])/g,'$1 $2');
+// "Resto from pull 24" for anyone who changed spec during the night
+const swap=n=>{const L=(D.swaps||{})[n];if(!L)return '';
+  return ' <span class="muted sm">'+L.map((x,i)=>i?`${SPEC(x[2])} from pull ${x[0]}`:`${SPEC(x[2])}`).join(', ')+'</span>';};
 const f1=x=>x==null?'–':(+x).toFixed(1);
 const f2=x=>x==null?'–':(+x).toFixed(2);
 const M=x=>x==null?'–':x>=1e6?(x/1e6).toFixed(1)+'M':x>=1e3?Math.round(x/1e3)+'k':Math.round(x);
@@ -248,7 +254,7 @@ function heat(id,rows,cols,cell,total){
   body('t-veil',V.windows.map(w=>{const res=w.broken?'<span class="tag ok">broken</span>':w.resolved?'<span class="tag bad">Nightfall went off</span>':'<span class="muted">pull ended</span>';
     return `<tr${w.after_wipe?' class="muted"':''}><td class="l">${w.pull}</td><td>${w.n}</td><td>${w.phase}</td><td>${f1(w.t)}s</td><td>${f1(w.secs)}</td><td class="l">${res}${w.after_wipe?' <span class="muted">after the wipe started</span>':''}</td>
       <td>${Math.round(100*w.absorbed/full)}%</td><td>${w.alive}</td><td${w.deaths?' class="neg"':''}>${w.deaths||'–'}</td><td class="l names">${w.top.map(([n,v])=>`${nm(n)} ${M(v)}`).join(' ')}</td></tr>`;}).join(''),'No shields.',10);
-  body('t-veilp',V.players.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${M(r.damage)}</td><td>${r.windows}</td><td>${M(r.per_window)}</td><td class="l"><span class="bar" style="width:${r.share*4}px"></span>${f1(r.share)}%</td></tr>`).join(''),'–',5);
+  body('t-veilp',V.players.map(r=>`<tr><td class="l">${who(r.name)}${swap(r.name)}</td><td>${M(r.damage)}</td><td>${r.windows}</td><td>${M(r.per_window)}</td><td class="l"><span class="bar" style="width:${r.share*4}px"></span>${f1(r.share)}%</td></tr>`).join(''),'–',5);
 })();
 
 /* ---------- adds ---------- */
@@ -256,7 +262,7 @@ function heat(id,rows,cols,cell,total){
   const A=D.adds;
   body('t-adds',A.adds.map(a=>`<tr${a.after_wipe?' class="muted"':''}><td class="l">${a.pull}</td><td>${a.n}${a.phase!=='P2'?' <span class="tag">'+a.phase+'</span>':''}</td><td>${f1(a.t)}s</td><td>${a.shield_secs==null?'<span class="neg">held</span>':f1(a.shield_secs)+'s'}</td>
     <td>${a.after_strip==null?'–':f1(a.after_strip)+'s'}</td><td>${a.killed?f1(a.t+a.ttk)+'s':'<span class="neg">not killed</span>'}</td><td class="l names">${a.top.map(([n,v])=>`${nm(n)} ${M(v)}`).join(' ')}${a.after_wipe?' <span class="muted">after the wipe started</span>':''}</td></tr>`).join(''),'No adds.',7);
-  body('t-addp',A.players.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${M(r.damage)}</td><td>${M(r.pre)}</td><td>${M(r.post)}</td><td>${r.adds}</td><td class="l"><span class="bar" style="width:${r.share*4}px"></span>${f1(r.share)}%</td></tr>`).join(''),'–',6);
+  body('t-addp',A.players.map(r=>`<tr><td class="l">${who(r.name)}${swap(r.name)}</td><td>${M(r.damage)}</td><td>${M(r.pre)}</td><td>${M(r.post)}</td><td>${r.adds}</td><td class="l"><span class="bar" style="width:${r.share*4}px"></span>${f1(r.share)}%</td></tr>`).join(''),'–',6);
 })();
 })();
 </script>
