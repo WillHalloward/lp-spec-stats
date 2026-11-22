@@ -41,6 +41,9 @@ EXPLOSION_HOLD_MS = 3000
 
 # --- frontals ---------------------------------------------------------------
 FRONTALS = ("Sever", "Soul Sever", "Blighted Sever")
+# Soul Sever leaves a DoT under the same name that ticks every 2s for ~48s,
+# and WCL does not flag those ticks as `tick`. They are not frontal hits.
+FRONTAL_DOTS = {1312630}
 # Rupture stacks from a frontal land this soon after its cast.
 FRONTAL_GRACE_MS = 1500
 

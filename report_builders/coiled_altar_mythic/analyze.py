@@ -674,6 +674,8 @@ class Analysis(_Base):
                 for e in self.stream("taken", fid):
                     if e.get("type") != "damage" or e.get("abilityGameID") not in ids or e.get("tick"):
                         continue
+                    if e.get("abilityGameID") in S.FRONTAL_DOTS:
+                        continue
                     if not self.is_player(e.get("targetID")) or e["timestamp"] > cut:
                         continue
                     n = self.name(e["targetID"])
