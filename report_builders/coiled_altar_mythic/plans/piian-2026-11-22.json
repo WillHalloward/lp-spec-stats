@@ -1,0 +1,31 @@
+{
+  "_note": "Guillotine soak teams for Piian's Mid-Pressure, 22 Nov. Same as 19 Nov with Wuschle in for Morphinetime (team 1) and Taranus in for Evonux (team 2), placed by which Guillotine they took in the log. Team 1 takes the first Guillotine of stage one (48s), team 2 the second (133s). Tanks take one when free and are never counted as missing.",
+  "guillotine": {
+    "1": [
+      "Aelyssar",
+      "Niydra",
+      "Piiaan",
+      "Sylphiee",
+      "Twilightnil",
+      "Vokster",
+      "Шамшыммыч",
+      "Wuschle",
+      "Mattiseppo"
+    ],
+    "2": [
+      "Atheniás",
+      "Huibalast",
+      "Indris",
+      "Valanarr",
+      "Alfi",
+      "Taranus",
+      "Iylenvur",
+      "Preng",
+      "Aeonara"
+    ]
+  },
+  "flex": [
+    "Laradendusk",
+    "Vesemirr"
+  ]
+}
