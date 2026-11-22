@@ -18,7 +18,7 @@ Soulcoiler, Soul Sever deaths). Stage three appears inside those tables with its
 stage marked until a night gets there more than once.
 
 Pass `--soak-plan plans/<file>.json` to check each stage-one Guillotine against
-the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one;
+the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the stage-three Grim Guillotines alternate 1, 2, 1;
 `flex` players, the tanks, are never counted missing). See
 `plans/piian-2026-11-19.json`.
 

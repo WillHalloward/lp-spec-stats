@@ -589,7 +589,11 @@ class Analysis(_Base):
                     after_wipe = self.wipe[fid] is not None and t0 > self.wipe[fid]
                     # against the soak teams, when the night had them: the
                     # marked player soaks whoever they are, tanks are extras
-                    team = (self.plan or {}).get("guillotine", {}).get(str(i + 1)) if kind == "Guillotine" else None
+                    # Grim Guillotines use the same two teams, alternating:
+                    # 1, 2, then 1 again (its debuff is gone by the third)
+                    team = (self.plan or {}).get("guillotine", {}).get(
+                        str(i + 1) if kind == "Guillotine" else ("1" if i % 2 == 0 else "2")
+                    )
                     flex = set((self.plan or {}).get("flex", []))
                     target = self.name(m["targetID"])
                     absent = dead_before = extra = locked = None
@@ -612,7 +616,9 @@ class Analysis(_Base):
                                     P["locked"] += 1
                                 else:
                                     P["absent"] += 1
-                                    P["absent_at"].append(f"{self.num[fid]}")
+                                    P["absent_at"].append(
+                                        f"{self.num[fid]}" + (" (Grim)" if kind != "Guillotine" else "")
+                                    )
                             for n in extra:
                                 plan_rows[n]["extra"] += 1
                     windows.append(
