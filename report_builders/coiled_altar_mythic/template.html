@@ -67,8 +67,8 @@ __SHARED_CSS__
   <div class="tblwrap"><table id="t-g"><thead><tr><th class="l">Pull</th><th class="l">Soak</th><th>Time</th><th>Soakers</th><th>Alive</th><th class="l">Marked</th><th class="l">Result</th><th class="l">Team absent</th><th class="l">Died to it</th></tr></thead><tbody></tbody></table></div>
   <div id="plan-box">
   <h3>Against the soak teams</h3>
-  <p>Team 1 takes the first Guillotine of stage one, team 2 the second; the tanks join when they are free and are never counted as missing, and the marked player soaks whoever they are. <b>Absent</b> is a team member alive when the axe landed who was not under it; <b>dead</b> had already died; <b>off-team</b> is a soak by someone on neither the team nor a tank. Soaks after the wipe started are left out. {{plan_absent}} absences over {{plan_windows}} soaks.</p>
-  <div class="tblwrap"><table id="t-plan"><thead><tr><th class="l">Player</th><th>Team</th><th>Soaked</th><th>Absent</th><th class="l">Absent on pulls</th><th>Dead before</th><th>Off-team soaks</th></tr></thead><tbody></tbody></table></div>
+  <p>Team 1 takes the first Guillotine of stage one, team 2 the second; the tanks join when they are free and are never counted as missing, and the marked player soaks whoever they are. <b>Absent</b> is a team member alive when the axe landed who was not under it; <b>dead</b> had already died; <b>had the debuff</b> is a team member still carrying the 100-second Guillotine debuff from soaking the earlier axe (marked for it, or joined it), so they could not soak this one and are not counted absent; <b>off-team</b> is a soak by someone on neither the team nor a tank. Soaks after the wipe started are left out. {{plan_absent}} absences over {{plan_windows}} soaks.</p>
+  <div class="tblwrap"><table id="t-plan"><thead><tr><th class="l">Player</th><th>Team</th><th>Soaked</th><th>Absent</th><th class="l">Absent on pulls</th><th>Dead before</th><th>Had the debuff</th><th>Off-team soaks</th></tr></thead><tbody></tbody></table></div>
   </div>
   <h3>Who soaked</h3>
   <div class="tblwrap"><table id="t-gp"><thead><tr><th class="l">Player</th><th>1st</th><th>2nd</th><th>Grim</th><th>Total</th><th>Died soaking</th></tr></thead><tbody></tbody></table></div>
@@ -229,10 +229,10 @@ function heat(id,rows,cols,cell,total){
   body('t-g',G.windows.map(w=>{const res=w.missed?`<span class="tag bad">missed &rarr; ${w.kind==='Guillotine'?'Execution':'Grim Execution'} on ${w.exec_hits}</span>`:'<span class="tag ok">soaked</span>';
     return `<tr${w.after_wipe?' class="muted"':''}><td class="l">${w.pull}</td><td class="l">${w.kind==='Guillotine'?'':'Grim '}${w.n}</td><td>${f1(w.t)}s</td><td${!w.missed&&w.soakers.length<6?' class="neg"':''}>${w.soakers.length}</td><td>${w.alive}</td>
       <td class="l">${who(w.target)}</td><td class="l">${res}${w.after_wipe?' <span class="muted">after the wipe started</span>':''}</td>
-      <td class="l names">${w.absent==null?'<span class="muted">–</span>':(w.absent.map(nm).join(' ')||'<span class="pos">none</span>')+(w.extra&&w.extra.length?' <span class="muted">off-team: '+w.extra.map(esc).join(', ')+'</span>':'')}</td>
+      <td class="l names">${w.absent==null?'<span class="muted">–</span>':(w.absent.map(nm).join(' ')||'<span class="pos">none</span>')+(w.locked&&w.locked.length?' <span class="muted">had the debuff: '+w.locked.map(esc).join(', ')+'</span>':'')+(w.extra&&w.extra.length?' <span class="muted">off-team: '+w.extra.map(esc).join(', ')+'</span>':'')}</td>
       <td class="l names">${w.missed?`${w.deaths.length} to the Execution`:(w.deaths.map(nm).join(' ')||'–')}</td></tr>`;}).join(''),'No Guillotines.',9);
   if(G.plan){body('t-plan',G.plan.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${r.team||'<span class="muted">none</span>'}</td><td>${r.soaked||'–'}</td>
-      <td${r.absent?' class="neg"':''}>${r.absent||'–'}</td><td class="l names">${r.absent_at.join(', ')||'–'}</td><td>${r.dead||'–'}</td><td>${r.extra||'–'}</td></tr>`).join(''),'–',7);}
+      <td${r.absent?' class="neg"':''}>${r.absent||'–'}</td><td class="l names">${r.absent_at.join(', ')||'–'}</td><td>${r.dead||'–'}</td><td>${r.locked||'–'}</td><td>${r.extra||'–'}</td></tr>`).join(''),'–',8);}
   else document.getElementById('plan-box').hidden=true;
   const died={};G.deaths.filter(d=>d.soaked).forEach(d=>died[d.player]=(died[d.player]||0)+1);
   body('t-gp',G.players.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${r['Guillotine 1']||'–'}</td><td>${r['Guillotine 2']||'–'}</td><td>${(r['Grim Guillotine 1']||0)+(r['Grim Guillotine 2']||0)+(r['Grim Guillotine 3']||0)||'–'}</td><td>${r.total}</td><td${died[r.name]?' class="neg"':''}>${died[r.name]||'–'}</td></tr>`).join(''),'Nobody soaked.',6);

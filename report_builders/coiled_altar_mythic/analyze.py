@@ -528,8 +528,27 @@ class Analysis(_Base):
 
     plan: dict | None = None
 
+    def _guillotine_debuffed(self, fid: int, ts: int) -> set[str]:
+        """Players carrying a Guillotine debuff (100s, from soaking an earlier
+        axe) at ts. They cannot soak again, so the 133s axe can't ask it of
+        whoever was under the 48s one: the marked player or a team-2 extra."""
+        ids = self.ids_named("Guillotine") | self.ids_named("Grim Guillotine")
+        on: dict[int, bool] = {}
+        for e in sorted(self.stream("debuffs", fid), key=lambda e: e["timestamp"]):
+            if e["timestamp"] >= ts - 200:
+                break
+            if e.get("abilityGameID") not in ids:
+                continue
+            if e["type"] in ("applydebuff", "refreshdebuff"):
+                on[e.get("targetID")] = True
+            elif e["type"] == "removedebuff":
+                on[e.get("targetID")] = False
+        return {self.name(k) for k, v in on.items() if v}
+
     def guillotine(self) -> dict:
-        plan_rows: dict[str, dict] = defaultdict(lambda: {"soaked": 0, "absent": 0, "dead": 0, "extra": 0, "absent_at": []})
+        plan_rows: dict[str, dict] = defaultdict(
+            lambda: {"soaked": 0, "absent": 0, "dead": 0, "locked": 0, "extra": 0, "absent_at": []}
+        )
         windows = []
         per_player: dict[str, Counter] = defaultdict(Counter)
         deaths = []
@@ -573,9 +592,11 @@ class Analysis(_Base):
                     team = (self.plan or {}).get("guillotine", {}).get(str(i + 1)) if kind == "Guillotine" else None
                     flex = set((self.plan or {}).get("flex", []))
                     target = self.name(m["targetID"])
-                    absent = dead_before = extra = None
+                    absent = dead_before = extra = locked = None
                     if team is not None:
-                        absent = [n for n in team if n in alive and n not in soak]
+                        debuffed = self._guillotine_debuffed(fid, t0)
+                        locked = [n for n in team if n in alive and n not in soak and n in debuffed]
+                        absent = [n for n in team if n in alive and n not in soak and n not in debuffed]
                         dead_before = [n for n in team if n in self.players[fid] and n not in alive]
                         extra = [n for n in soak if n not in team and n not in flex and n != target]
                         if not after_wipe:
@@ -587,6 +608,8 @@ class Analysis(_Base):
                                     P["dead"] += 1
                                 elif n in soak:
                                     P["soaked"] += 1
+                                elif n in locked:
+                                    P["locked"] += 1
                                 else:
                                     P["absent"] += 1
                                     P["absent_at"].append(f"{self.num[fid]}")
@@ -607,6 +630,7 @@ class Analysis(_Base):
                             "after_wipe": after_wipe,
                             "absent": absent,
                             "dead_before": dead_before,
+                            "locked": locked,
                             "extra": extra,
                         }
                     )

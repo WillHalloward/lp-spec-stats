@@ -40,7 +40,9 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one;
   The holders list is proximity in time, not proof of contact.
 - **Guillotine**: one per window. The marking cast is the one with a player
   target; soakers are everyone hit within 0.6s of the landing. Execution in the
-  same instant means a miss.
+  same instant means a miss. Every soaker gets a 100s `Guillotine` debuff and
+  the axes are 85s apart, so a team member still carrying it (marked for, or
+  joined, the earlier axe) is "had the debuff", not absent.
 - **Veil**: broken = removed with no Eternal Nightfall `cast`; resolved = the
   cast fired (about 17s after the Veil). Shields that go up after the wipe are
   shown but not credited to players.
