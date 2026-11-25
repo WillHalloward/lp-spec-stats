@@ -55,6 +55,7 @@ EXECUTIONS = {"Guillotine": "Execution", "Grim Guillotine": "Grim Execution"}
 VEIL = "Veil of Twilight"
 NIGHTFALL = "Eternal Nightfall"
 USURPER = "Hex Lord Malacrass"
+SERPENT = "Zul'jan"
 SPIRITCACKLE = "Spiritcackle"
 SOULCOILER = "Spiteful Soulcoiler"
 SPIRIT_SHIELD = "Spirit Shield"
@@ -76,3 +77,14 @@ CASCADE_S = 8.0
 # pull ends. Pull 9 lost four to the first Guillotine at 48s and played on to
 # 133s; without this it was cut at 48s.
 RECOVER_S = 20.0
+
+# --- the intermission -------------------------------------------------------
+# Zul'jan comes back on 1 HP and regenerates 2% a second. Each Fragment of
+# Malacrass is body-blocked (SPIRIT ERASURE on every living player) or reaches
+# him (RECLAIM: 10% of his health, plus a heal on Malacrass, one heal on each).
+REGEN = "Ghastly Regeneration"
+RECLAIM = "Reclaim Essence"
+INT_AURA = "Spirit Erasure"
+# A volley counts as fragments only when it lands on this many players at once.
+GHOST_BLAST_MIN_TARGETS = 8
+from report_builders.coiled_altar.spells import LUST  # noqa: E402,F401

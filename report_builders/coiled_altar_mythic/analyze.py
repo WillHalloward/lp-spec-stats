@@ -860,6 +860,205 @@ class Analysis(_Base):
         rows = self._rank(tot, lambda n, a: {"pre": round(pre[n]), "post": round(post[n]), "adds": appear[n]})
         return {"adds": adds, "players": rows}
 
+    # ---- the intermission ------------------------------------------------
+
+    def intermission(self) -> dict:
+        """Stage two into stage three: Zul'jan rises and the fragments walk.
+
+        Zul'jan comes back on 1 HP and Ghastly Regeneration heals him 2% a
+        second; the raid's damage is what holds him down. Every Fragment of
+        Malacrass is either body-blocked (a Spirit Erasure hit on each living
+        player) or reaches him (Reclaim Essence: 10% on Zul'jan and a smaller
+        heal on Malacrass, logged as one heal on each). Whatever he has when
+        the intermission ends is what stage three starts with.
+        """
+        reclaim_ids = self.ids_named(S.RECLAIM)
+        regen_ids = self.ids_named(S.REGEN)
+        erasure_ids = self.ids_named(S.INT_AURA)
+        lust_ids = self.ids_of(*S.LUST)
+        rows = []
+        dmg: Counter = Counter()
+        secs: Counter = Counter()
+        appear: Counter = Counter()
+        stacks_max: dict[str, int] = defaultdict(int)
+        erasure_dmg: Counter = Counter()
+        int_deaths: Counter = Counter()
+        by_pull: dict[str, dict] = defaultdict(dict)
+        for fid in self.counted():
+            b = self.phase_bounds(fid)
+            if "INT" not in b:
+                continue
+            s, e = b["INT"]
+            wipe = self.wipe[fid]
+            # a wipe that starts inside the intermission takes it with it: the
+            # fragments walk in unopposed and the regen runs unchecked
+            after_wipe = wipe is not None and wipe <= e
+            done = self.stream("done", fid)
+
+            # Zul'jan's health through the window, from the hit points on
+            # damage events (resourceActor 2 = the target's). One point per
+            # half-second; the regen tick lands on the handover itself, so the
+            # stage-three start is read a second after it.
+            trace: dict[int, float] = {}
+            max_hp = 0
+            for ev in done:
+                t = ev["timestamp"]
+                if not (s <= t <= e + 1500) or self.name(ev.get("targetID")) != S.SERPENT:
+                    continue
+                if ev.get("resourceActor") != 2 or not ev.get("maxHitPoints"):
+                    continue
+                max_hp = ev["maxHitPoints"]
+                trace[int((t - s) // 500)] = round(100 * ev["hitPoints"] / ev["maxHitPoints"], 1)
+            m_max = next((ev["maxHitPoints"] for ev in done if self.name(ev.get("targetID")) == S.USURPER
+                          and ev.get("resourceActor") == 2 and ev.get("maxHitPoints") and ev["timestamp"] >= s), 0)
+            z_end = self.boss_health_at(fid, S.SERPENT, e + 1500)
+            m_end = self.boss_health_at(fid, S.USURPER, e + 1500)
+
+            heals = self.stream("enemy_heals", fid)
+            regen = sum(
+                ev.get("amount") or 0
+                for ev in heals
+                if ev.get("abilityGameID") in regen_ids and self.name(ev.get("targetID")) == S.SERPENT
+                and s <= ev["timestamp"] <= e + 500
+            )
+            # Reclaims keep landing after the handover if fragments are still
+            # walking, so the window runs to the end of the pull.
+            reclaims = []
+            for ev in heals:
+                if ev.get("abilityGameID") not in reclaim_ids or ev.get("type") != "heal":
+                    continue
+                if self.name(ev.get("targetID")) != S.SERPENT or ev["timestamp"] < s:
+                    continue
+                t = ev["timestamp"]
+                malac = next(
+                    (x.get("amount") or 0 for x in heals if x.get("abilityGameID") in reclaim_ids
+                     and x["timestamp"] == t and self.name(x.get("targetID")) == S.USURPER),
+                    0,
+                )
+                reclaims.append(
+                    {
+                        "t": round((t - s) / 1000, 1),
+                        "healed": ev.get("amount") or 0,
+                        "pct": round(100 * (ev.get("amount") or 0) / max_hp, 1) if max_hp else None,
+                        "malacrass": malac,
+                        "malacrass_pct": round(100 * malac / m_max, 1) if m_max else None,
+                        "in_int": t <= e,
+                        "after_wipe": wipe is not None and t > wipe,
+                    }
+                )
+
+            # Body-blocked fragments: a Spirit Erasure hit on everyone alive.
+            # Two can land in the same instant (forty hits on twenty players),
+            # so count hits against the living rather than volleys.
+            hits = [ev for ev in self.stream("taken", fid)
+                    if ev.get("abilityGameID") in erasure_ids and ev.get("type") == "damage"
+                    and s - 1000 <= ev["timestamp"] <= e + 1000 and self.is_player(ev.get("targetID"))]
+            vol: dict[int, Counter] = defaultdict(Counter)
+            for ev in hits:
+                vol[int(ev["timestamp"] // 100)][ev["targetID"]] += 1
+            blocks = []
+            for k in sorted(vol):
+                c = vol[k]
+                if len(c) < S.GHOST_BLAST_MIN_TARGETS:
+                    continue
+                n = round(sum(c.values()) / len(c))
+                t = k * 100
+                blocks.extend([round((t - s) / 1000, 1)] * n)
+
+            deb = [ev for ev in self.stream("debuffs", fid) if ev.get("abilityGameID") in erasure_ids
+                   and s - 1000 <= ev["timestamp"] <= e + 1000]
+            pull_max = 0
+            for ev in deb:
+                st = ev.get("stack") or 1
+                pull_max = max(pull_max, st)
+                if not after_wipe and (wipe is None or ev["timestamp"] <= wipe):
+                    n = self.name(ev.get("targetID"))
+                    stacks_max[n] = max(stacks_max[n], st)
+
+            into: Counter = Counter()
+            for ev in done:
+                if ev.get("type") != "damage" or not (s <= ev["timestamp"] <= e):
+                    continue
+                if self.name(ev.get("targetID")) != S.SERPENT:
+                    continue
+                into[self.name(self.owner_of(ev.get("sourceID")))] += _amount(ev)
+            raid_dmg = sum(v for n, v in into.items() if n in self.roster())
+
+            lust = None
+            for ev in self.stream("player_casts", fid):
+                if ev.get("type") == "cast" and ev.get("abilityGameID") in lust_ids:
+                    off = round((ev["timestamp"] - s) / 1000, 1)
+                    if lust is None or abs(off) < abs(lust):
+                        lust = off
+
+            died = [d for d in self.deaths[fid] if s <= d["ts"] <= e]
+            int_secs = (e - s) / 1000
+            if not after_wipe:
+                for ev in hits:
+                    if wipe is None or ev["timestamp"] <= wipe:
+                        erasure_dmg[self.name(ev["targetID"])] += _amount(ev)
+                for d in died:
+                    if wipe is None or d["ts"] <= wipe:
+                        int_deaths[d["player"]] += 1
+                for n, v in into.items():
+                    if n not in self.roster() or self.role_in(fid, n) == "Healer":
+                        continue
+                    dmg[n] += v
+                    secs[n] += self.alive_ms(fid, n, s, e) / 1000
+                    appear[n] += 1
+                    by_pull[n][str(self.num[fid])] = round(v)
+
+            missed = [r for r in reclaims if not r["after_wipe"]]
+            rows.append(
+                {
+                    "pull": self.num[fid],
+                    "start": round(self.rel(fid, s), 1),
+                    "secs": round(int_secs, 1),
+                    "alive": sum(1 for n in self.players[fid] if self.alive(fid, n, s)),
+                    "after_wipe": after_wipe,
+                    "wipe": round((wipe - s) / 1000, 1) if wipe is not None else None,
+                    "z_end": round(z_end, 1) if z_end is not None else None,
+                    "m_end": round(m_end, 1) if m_end is not None else None,
+                    "max_hp": max_hp,
+                    "trace": [[k / 2, v] for k, v in sorted(trace.items())],
+                    "regen": round(regen),
+                    "regen_pct": round(100 * regen / max_hp, 1) if max_hp else None,
+                    "damage": round(raid_dmg),
+                    "damage_pct": round(100 * raid_dmg / max_hp, 1) if max_hp else None,
+                    "dps": round(raid_dmg / int_secs) if int_secs else 0,
+                    "blocked": len(blocks),
+                    "blocks": blocks,
+                    "reclaims": reclaims,
+                    "missed": len(missed),
+                    "missed_pct": round(sum(r["pct"] or 0 for r in missed), 1),
+                    "erasure_max": pull_max,
+                    "lust": lust,
+                    "deaths": [[round((d["ts"] - s) / 1000, 1), d["player"], d["ability"]] for d in died],
+                    "top": [[n, round(v)] for n, v in into.most_common(3) if n in self.roster()],
+                }
+            )
+        names = set(dmg) | set(stacks_max) | set(int_deaths)
+        players = []
+        grand = sum(dmg.values()) or 1
+        for n in names:
+            if n not in self.roster():
+                continue
+            players.append(
+                {
+                    "name": n,
+                    "damage": round(dmg[n]),
+                    "share": round(100 * dmg[n] / grand, 1),
+                    "dps": round(dmg[n] / secs[n]) if secs[n] else None,
+                    "ints": appear[n],
+                    "stacks": stacks_max.get(n, 0),
+                    "erasure": round(erasure_dmg[n]),
+                    "deaths": int_deaths[n],
+                    "by_pull": by_pull[n],
+                }
+            )
+        players.sort(key=lambda r: -r["damage"])
+        return {"rows": rows, "players": players}
+
     def build(self) -> dict:
         return {
             "swaps": self.swaps(),
@@ -870,4 +1069,5 @@ class Analysis(_Base):
             "frontals": self.frontals(),
             "veil": self.veil(),
             "adds": self.adds(),
+            "intermission": self.intermission(),
         }

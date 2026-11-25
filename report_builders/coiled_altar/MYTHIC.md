@@ -131,8 +131,13 @@ Night totals: 18 pulls ended in P1, 16 in P2, 1 reached INT and P3.
   Erasure** on the raid, which on Mythic also adds a stacking 20% vulnerability
   for 2s [guide]. 25% fewer fragments on Mythic since 15 Sep. A fragment that reaches Zul'jan heals him (**Reclaim
   Essence**): 10% on Mythic per Method, 3% on Heroic. [log: Spirit Erasure
-  reached **12 stacks** on pull 35, where Method says ≤4 is always safe. No Reclaim
-  Essence heal found in `enemy_heals`, so it still needs finding]
+  reached **12 stacks** on pull 35, where Method says ≤4 is always safe.
+  25 Nov log `g1bHWKZqRJVGPyfv`: **Reclaim Essence does log in `enemy_heals`**
+  (the 19 Nov log just had none). One fragment = one heal on Zul'jan of exactly
+  **10%** (115.4M of 1,154M) plus one on Malacrass (37.6M, ~12%). Ghastly
+  Regeneration is a flat 2%/s (23.08M) for ~35 ticks = 70%. Regen + reclaims −
+  raid damage closes to Zul'jan's P3 health within 0.6%. ~24 fragments per
+  intermission (Spirit Erasure hits ÷ living players + reclaims)]
 
 ### Stage Three — Coiled Union
 
@@ -277,8 +282,7 @@ The order follows where pulls die (P1 first). "Signal" is what the log carries.
 
 ### Intermission / P3 (one pull so far — list, don't headline)
 21. ✅ **Spirit Erasure max stacks per player** (≤4 is the plan; 12 seen).
-22. ❓ **Fragments that reached Zul'jan.** Find where Reclaim Essence logs on
-    Mythic.
+22. ✅ **Fragments that reached Zul'jan.** Reclaim Essence in `enemy_heals` (built: intermission section).
 23. ⚠️ **Zul'jan HP at the end of INT** (from the heroic builder's
     `serpent_hp_end`).
 24. ✅ **Grim Guillotine soakers** / Grim Execution.

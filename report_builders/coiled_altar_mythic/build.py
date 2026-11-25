@@ -56,7 +56,8 @@ def main() -> None:
         (f"{args.team}, " if args.team else "")
         + f"{tok['pulls']} {tok['difficulty']} pulls on {tok['boss']}: spinning axes eaten per player and "
         "across the night, stage one and two apart, who ran the green and purple orbs and every purple "
-        "explosion, the Guillotine soaks and misses, frontal deaths, the shield burn and the Soulcoiler."
+        "explosion, the Guillotine soaks and misses, frontal deaths, the shield burn, the Soulcoiler, "
+        "and the intermission: Zul'jan's health into stage three and the fragments blocked and missed."
     )
     doc = standalone(
         page, args.report,

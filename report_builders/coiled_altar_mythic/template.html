@@ -15,7 +15,7 @@ __SHARED_CSS__
   <div class="lab">Warcraft Logs {{report}} &middot; {{difficulty}}</div>
   <h1>{{boss}}, {{pulls}} pulls,<br>{{headline}}</h1>
   <div class="rule"></div>
-  <p>Spinning axes, the orb runners, the Guillotine soaks, the frontals, the shield burn and the Soulcoiler, pull by pull, with stage one and stage two kept apart. {{night_title}}, {{date_long}}.</p>
+  <p>Spinning axes, the orb runners, the Guillotine soaks, the frontals, the shield burn, the Soulcoiler and the intermission into stage three, pull by pull, with stage one and stage two kept apart. {{night_title}}, {{date_long}}.</p>
   <div class="meta">
     <span>{{zone}} &middot; {{difficulty}}</span><span>{{raiders}} raiders</span>
     <span>best: pull {{best_pull}}, into {{best_phase}}, {{best_pct}}%</span><span>{{boss_minutes}} minutes on the boss</span>
@@ -28,6 +28,7 @@ __SHARED_CSS__
   <div class="tile"><span class="lab">Pulls that reached stage two</span><span class="n">{{reached_p2}}<small> / {{counted}}</small></span><span class="muted">{{resets}} quick resets left out</span></div>
   <div class="tile"><span class="lab">Purple orb explosions</span><span class="n">{{explosions}}<small> in {{explosion_pulls}} pulls</small></span><span class="muted">{{explosions_touched}} touched, {{explosions_left}} left at a Deluge, before the wipe</span></div>
   <div class="tile"><span class="lab">Shields broken</span><span class="n">{{veils_broken}}<small> / {{veils}}</small></span><span class="muted">median {{veil_median}}s to break</span></div>
+  <div class="tile"><span class="lab">Fragments missed in the intermission</span><span class="n">{{int_missed}}<small> / {{int_fragments}}</small></span><span class="muted">over {{int_clean}} intermissions; each healed Zul&rsquo;jan 10%</span></div>
   <div class="tile"><span class="lab">Axe ticks per minute alive</span><span class="n">{{ax1_per_min}}<small> P1</small></span><span class="muted">{{ax2_per_min}} in P2</span></div>
 </div>
 
@@ -116,9 +117,28 @@ __SHARED_CSS__
   <div class="tblwrap"><table id="t-caught"><thead><tr><th class="l">Player</th><th>Sever</th><th>Soul Sever</th><th>Blighted Sever</th><th>Total</th></tr></thead><tbody></tbody></table></div>
 </section>
 
+<div id="int-box">
+<h2 class="phase-h">Intermission &middot; The Claimed Vessel</h2>
+
+<section>
+  <div class="head"><h2>Zul&rsquo;jan comes back</h2>
+  <p>When stage two ends, Zul&rsquo;jan is raised on 1 HP and Malacrass hides behind Deathguard. Ghastly Regeneration heals Zul&rsquo;jan 2% of his health a second, {{int_regen_pct}}% over the {{int_secs}}-second intermission, and the raid&rsquo;s damage is all that holds him down. Whatever he has when it ends is what he starts stage three with. {{int_pulls}} pulls got here; {{int_clean}} were played out, and Zul&rsquo;jan went into stage three on {{int_z_best}}&ndash;{{int_z_worst}}%.</p>
+  <p>All through the intermission <b>Fragments of Malacrass</b> walk at Zul&rsquo;jan. <b>Blocked</b>: body-block one and it is gone, at the cost of a Spirit Erasure hit on every living player (and a stack of the debuff). <b>Missed</b>: one that reaches him casts Reclaim Essence, which heals Zul&rsquo;jan 10% of his health and Malacrass {{int_m_pct}}% of his. About {{int_fragments_each}} fragments came per intermission; {{int_missed}} got through over the night. At the raid&rsquo;s median {{int_dps}} damage per second into Zul&rsquo;jan, <b>one missed fragment undoes {{int_missed_secs}} seconds of the whole raid&rsquo;s damage</b>. Spirit Erasure comes from Malacrass and hits everyone the same, so the log can&rsquo;t say who blocked a fragment or whose lane one came through.</p></div>
+  <figure><div class="legend" id="lg-int"></div><svg id="c-int"></svg><figcaption>Zul&rsquo;jan&rsquo;s health through each intermission, from the hit points on the raid&rsquo;s hits. A red dot is a fragment that reached him (+10%) before a wipe; grey ticks along the bottom are fragments blocked. Pulls whose wipe had started by the end of the intermission are dashed.</figcaption></figure>
+  <div class="tblwrap"><table id="t-int"><thead><tr><th class="l">Pull</th><th>Started</th><th>Alive</th><th>Lust</th><th>Raid damage</th><th>Regen</th><th>Blocked</th><th>Missed</th><th>Max Erasure</th><th>Deaths</th><th>Zul&rsquo;jan into P3</th><th>Malacrass into P3</th><th class="l">Most into Zul&rsquo;jan</th></tr></thead><tbody></tbody></table></div>
+  <p class="muted sm"><b>Raid damage</b> and <b>Regen</b> are shares of Zul&rsquo;jan&rsquo;s health. Regen plus missed fragments minus raid damage comes to his health at the handover, to within about half a percent. <b>Lust</b> is seconds from the start of the intermission; Zul&rsquo;jan sits on 1 HP for the first four or so.</p>
+  <h3>The fragments that got through</h3>
+  <div class="tblwrap"><table id="t-reclaim"><thead><tr><th class="l">Pull</th><th>Into the intermission</th><th>Zul&rsquo;jan healed</th><th>Malacrass healed</th><th class="l"></th></tr></thead><tbody></tbody></table></div>
+  <h3>Damage into Zul&rsquo;jan in the intermission, per player</h3>
+  <p>Only intermissions played out before a wipe, and only pulls in a damage or tank spec; pets bill to their owner. <b>DPS</b> is per second alive in the intermission. <b>Max Erasure</b> is the highest Spirit Erasure stack the player carried; the stacks fall off a few seconds after each blocked fragment, so a high stack means fragments were blocked close together.</p>
+  <div class="tblwrap"><table id="t-intp"><thead><tr><th class="l">Player</th><th>Total</th><th>DPS</th><th>Intermissions</th><th class="l">Share</th><th>Max Erasure</th><th>Erasure taken</th><th>Died in it</th></tr></thead><tbody></tbody></table></div>
+  <details class="lgwrap"><summary>Damage into Zul&rsquo;jan per intermission, per player</summary><div class="tblwrap"><table class="hm" id="h-intp"></table></div></details>
+</section>
+</div>
+
 <section>
   <div class="note">
-    <p><b>How this is read.</b> <b>A wipe</b> starts at the first death of the first run of {{cascade_n}} deaths inside {{cascade_s}} seconds that the raid never recovers from (no {{recover_s}}-second stretch without a death before the pull ends); nothing after it counts unless a table says so. <b>Alive</b>: a player is dead from their death until they next cast something, so a battle rez brings them back. <b>Reset pulls</b> ({{resets}}) carry Malacrass&rsquo;s Unworthy and end inside {{reset_s}} seconds; they are left out. Stage three was reached once, so its Grim Guillotine, Blighted Sever and shield sit in the tables above with their stage marked rather than in a section of their own.</p>
+    <p><b>How this is read.</b> <b>A wipe</b> starts at the first death of the first run of {{cascade_n}} deaths inside {{cascade_s}} seconds that the raid never recovers from (no {{recover_s}}-second stretch without a death before the pull ends); nothing after it counts unless a table says so. <b>Alive</b>: a player is dead from their death until they next cast something, so a battle rez brings them back. <b>Reset pulls</b> ({{resets}}) carry Malacrass&rsquo;s Unworthy and end inside {{reset_s}} seconds; they are left out. Stage three ({{reached_p3}} pulls) has no section of its own yet: its Grim Guillotines, Blighted Severs and shields sit in the tables above with their stage marked.</p>
   </div>
 </section>
 
@@ -263,6 +283,42 @@ function heat(id,rows,cols,cell,total){
   body('t-adds',A.adds.map(a=>`<tr${a.after_wipe?' class="muted"':''}><td class="l">${a.pull}</td><td>${a.n}${a.phase!=='P2'?' <span class="tag">'+a.phase+'</span>':''}</td><td>${f1(a.t)}s</td><td>${a.shield_secs==null?'<span class="neg">held</span>':f1(a.shield_secs)+'s'}</td>
     <td>${a.after_strip==null?'–':f1(a.after_strip)+'s'}</td><td>${a.killed?f1(a.t+a.ttk)+'s':'<span class="neg">not killed</span>'}</td><td class="l names">${a.top.map(([n,v])=>`${nm(n)} ${M(v)}`).join(' ')}${a.after_wipe?' <span class="muted">after the wipe started</span>':''}</td></tr>`).join(''),'No adds.',7);
   body('t-addp',A.players.map(r=>`<tr><td class="l">${who(r.name)}${swap(r.name)}</td><td>${M(r.damage)}</td><td>${M(r.pre)}</td><td>${M(r.post)}</td><td>${r.adds}</td><td class="l"><span class="bar" style="width:${r.share*4}px"></span>${f1(r.share)}%</td></tr>`).join(''),'–',6);
+})();
+/* ---------- intermission ---------- */
+(function(){
+  const I=D.intermission;if(!I.rows.length){document.getElementById('int-box').hidden=true;return;}
+  const s=document.getElementById('c-int'),W=900,L=40,R=60,T=10,H=280,B=40;
+  const mx=Math.max(40,...I.rows.map(r=>r.secs));const X=v=>L+(W-L-R)*v/mx;const Y=v=>T+(H-T-B)*(1-v/100);
+  const COL=['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--s5)','var(--cls-Druid)','var(--cls-Mage)','var(--cls-Paladin)'];
+  for(let v=0;v<=100;v+=20){mk(s,'line',{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:'var(--grid)'});txt(s,L-6,Y(v)+4,v+'%',{anchor:'end'});}
+  for(let t=0;t<=mx;t+=5)txt(s,X(t),H-B+14,t+'s',{size:9.5});
+  I.rows.forEach((r,i)=>{const c=COL[i%COL.length];const pts=r.trace.filter(p=>p[0]<=r.secs+1);
+    if(!pts.length)return;
+    const path=mk(s,'polyline',{points:pts.map(p=>`${X(p[0])},${Y(p[1])}`).join(' '),fill:'none',stroke:c,'stroke-width':r.after_wipe?1.5:2.5,'stroke-dasharray':r.after_wipe?'4 3':'',opacity:r.after_wipe?.6:1});
+    const last=pts[pts.length-1];txt(s,X(last[0])+6,Y(last[1])+4,'#'+r.pull,{anchor:'start',fill:c,size:10.5});
+    hook(path,`<b>Pull ${r.pull}</b>${r.after_wipe?' (wipe had started)':''}<br>into stage three on ${f1(r.z_end)}%<br>raid damage ${f1(r.damage_pct)}% · regen ${f1(r.regen_pct)}%<br>${r.blocked} blocked, ${r.missed} missed`);
+    r.reclaims.filter(x=>x.in_int&&!x.after_wipe).forEach(x=>{const y=pts.reduce((a,p)=>p[0]<=x.t+.5?p:a,pts[0]);
+      const d=mk(s,'circle',{cx:X(x.t),cy:Y(y[1]),r:5,fill:'var(--crit)',stroke:'var(--bg)','stroke-width':1.5});
+      hook(d,`<b>Pull ${r.pull}</b>: fragment reached Zul&rsquo;jan ${f1(x.t)}s in<br>healed him ${f1(x.pct)}%${x.after_wipe?' (after the wipe started)':''}`);});
+    r.blocks.forEach(t=>mk(s,'line',{x1:X(t),x2:X(t),y1:H-B+20+i*3,y2:H-B+22+i*3,stroke:c,'stroke-width':1.5}));
+  });
+  s.setAttribute('viewBox',`0 0 ${W} ${H+I.rows.length*3}`);
+  document.getElementById('lg-int').innerHTML=I.rows.map((r,i)=>`<span><i style="background:${COL[i%COL.length]}"></i>pull ${r.pull}</span>`).join('')+'<span><i style="background:var(--crit);border-radius:50%"></i>fragment reached him</span>';
+  body('t-int',I.rows.map(r=>`<tr${r.after_wipe?' class="muted"':''}><td class="l">${r.pull}</td><td>${f1(r.start)}s</td><td>${r.alive}</td><td>${r.lust==null?'–':(r.lust>=0?'+':'')+f1(r.lust)+'s'}</td>
+    <td>${f1(r.damage_pct)}%</td><td>${f1(r.regen_pct)}%</td><td>${r.blocked}</td><td${r.missed?' class="neg"':''}>${r.missed?r.missed+' (+'+f1(r.missed_pct)+'%)':'–'}</td>
+    <td>${r.erasure_max}</td><td${r.deaths.length&&!r.after_wipe?' class="neg"':''}>${r.deaths.length||'–'}</td><td><b>${f1(r.z_end)}%</b></td><td>${f1(r.m_end)}%</td>
+    <td class="l names">${r.after_wipe?`<span class="muted">wipe started ${f1(r.wipe)}s in</span>`:r.top.map(([n,v])=>`${nm(n)} ${M(v)}`).join(' ')}</td></tr>`).join(''),'–',13);
+  const rc=I.rows.flatMap(r=>r.reclaims.map(x=>Object.assign({pull:r.pull},x)));
+  const late={};rc.filter(x=>x.after_wipe).forEach(x=>late[x.pull]=(late[x.pull]||0)+1);
+  body('t-reclaim',rc.filter(x=>!x.after_wipe).map(x=>`<tr${x.after_wipe?' class="muted"':''}><td class="l">${x.pull}</td><td>${f1(x.t)}s</td><td>${x.healed?'+'+f1(x.pct)+'%':'<span class="muted">already full</span>'}</td><td>${x.malacrass?'+'+f1(x.malacrass_pct)+'%':'–'}</td>
+    <td class="l muted">${!x.in_int?'after the intermission ended':''}</td></tr>`).join('')+Object.entries(late).map(([p,n])=>`<tr class="muted"><td class="l">${p}</td><td colspan="4" class="l">${n} more after the wipe had started, walking in on a dead raid</td></tr>`).join(''),'No fragment reached Zul&rsquo;jan before a wipe.',5);
+  body('t-intp',I.players.map(r=>`<tr><td class="l">${who(r.name)}${swap(r.name)}</td><td>${M(r.damage)}</td><td>${M(r.dps)}</td><td>${r.ints||'–'}</td><td class="l"><span class="bar" style="width:${r.share*4}px"></span>${f1(r.share)}%</td>
+    <td>${r.stacks||'–'}</td><td>${M(r.erasure)}</td><td${r.deaths?' class="neg"':''}>${r.deaths||'–'}</td></tr>`).join(''),'–',8);
+  const cols=I.rows.filter(r=>!r.after_wipe).map(r=>String(r.pull));
+  const hp=I.players.filter(r=>r.damage>0);
+  const top={};cols.forEach(c=>top[c]=Math.max(1,...hp.map(r=>r.by_pull[c]||0)));
+  heat('h-intp',hp,cols,(r,c)=>{const v=r.by_pull[c];if(!v)return '<td class="muted">·</td>';
+    return `<td style="background:color-mix(in srgb,var(--s3) ${Math.round(70*v/top[c])}%,transparent)">${M(v)}</td>`;},r=>M(r.damage));
 })();
 })();
 </script>

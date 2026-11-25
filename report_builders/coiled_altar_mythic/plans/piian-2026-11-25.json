@@ -1,0 +1,31 @@
+{
+  "_note": "Guillotine soak teams for Piian's Mid-Pressure, 25 Nov. Same as 22 Nov with Backtospawn, Emberforge and Morphinetime in for Niydra, Twilightnil and Vokster on team 1, placed by which Guillotine they took in the log (all three only ever took the first). Team 1 takes the first Guillotine of stage one (48s), team 2 the second (133s). Tanks take one when free and are never counted as missing.",
+  "guillotine": {
+    "1": [
+      "Aelyssar",
+      "Piiaan",
+      "Sylphiee",
+      "Шамшыммыч",
+      "Wuschle",
+      "Mattiseppo",
+      "Backtospawn",
+      "Emberforge",
+      "Morphinetime"
+    ],
+    "2": [
+      "Atheniás",
+      "Huibalast",
+      "Indris",
+      "Valanarr",
+      "Alfi",
+      "Taranus",
+      "Iylenvur",
+      "Preng",
+      "Aeonara"
+    ]
+  },
+  "flex": [
+    "Laradendusk",
+    "Vesemirr"
+  ]
+}

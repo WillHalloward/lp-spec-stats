@@ -71,6 +71,31 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
     t1a, t1b = trend(ax1["pulls"])
     t2a, t2b = trend(ax2["pulls"])
     shield = max((w["absorbed"] for w in veil_broken), default=0)
+
+    # the intermission; every token has a value even on a night that never got there
+    ir = d["intermission"]["rows"]
+    ic = [r for r in ir if not r["after_wipe"]]
+    med = lambda L: sorted(L)[len(L) // 2] if L else None
+    i_missed = sum(r["missed"] for r in ic)
+    i_frag = sum(r["missed"] + r["blocked"] for r in ic)
+    i_dps = med([r["dps"] for r in ic])
+    z_max = med([r["max_hp"] for r in ic])
+    m_pct = med([x["malacrass_pct"] for r in ir for x in r["reclaims"] if x["malacrass_pct"]])
+    z_ends = sorted(r["z_end"] for r in ic if r["z_end"] is not None)
+    i_tok = {
+        "int_pulls": len(ir),
+        "int_clean": len(ic),
+        "int_missed": i_missed,
+        "int_fragments": i_frag,
+        "int_fragments_each": med([r["missed"] + r["blocked"] for r in ic]) or "–",
+        "int_secs": f"{med([r['secs'] for r in ir]):.0f}" if ir else "–",
+        "int_regen_pct": f"{med([r['regen_pct'] for r in ic]):.0f}" if ic else "–",
+        "int_z_best": f"{z_ends[0]:.0f}" if z_ends else "–",
+        "int_z_worst": f"{z_ends[-1]:.0f}" if z_ends else "–",
+        "int_dps": f"{i_dps / 1e6:.1f}M" if i_dps else "–",
+        "int_missed_secs": f"{0.10 * z_max / i_dps:.0f}" if i_dps and z_max else "–",
+        "int_m_pct": f"{m_pct:g}" if m_pct else "–",
+    }
     closest = max((w for w in veil_res), key=lambda w: w["absorbed"], default=None)
 
     return {
@@ -150,6 +175,7 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
         "adds": len(adds),
         "adds_killed": len(killed),
         "add_ttk": f"{sorted(x['ttk'] for x in killed)[len(killed) // 2]:.0f}" if killed else "–",
+        **i_tok,
     }
 
 

@@ -14,7 +14,8 @@ Fangs template at render time. Research and the nerf timeline are in
 
 Sections: the pulls, then stage one (axes, orb runners and explosions, orbs per
 Sever, Guillotine soaks, Sever deaths) and stage two (axes, the Veil burn, the
-Soulcoiler, Soul Sever deaths). Stage three appears inside those tables with its
+Soulcoiler, Soul Sever deaths), then the intermission (Zul'jan's health through it,
+fragments blocked and missed, damage into Zul'jan per player). Stage three appears inside those tables with its
 stage marked until a night gets there more than once.
 
 Pass `--soak-plan plans/<file>.json` to check each stage-one Guillotine against
@@ -46,5 +47,10 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
 - **Veil**: broken = removed with no Eternal Nightfall `cast`; resolved = the
   cast fired (about 17s after the Veil). Shields that go up after the wipe are
   shown but not credited to players.
+- **Intermission**: missed fragment = a `Reclaim Essence` heal on Zul'jan (10%;
+  a twin heal lands on Malacrass, not counted twice). Blocked = Spirit Erasure
+  hits ÷ players hit, per 100ms bucket of ≥8 players (two can land at once). An
+  intermission with the wipe starting inside it is marked and left out of totals.
+  Zul'jan's P3 start is read 1.5s after the handover (the last regen tick lands on it).
 - **Soulcoiler**: keyed by Spiritcackle cast (instance ids recycle). Killed when
   a hit reads `hitPoints == 0` with `resourceActor == 2`.
