@@ -130,7 +130,7 @@ __SHARED_CSS__
   <h3>The fragments that got through</h3>
   <div class="tblwrap"><table id="t-reclaim"><thead><tr><th class="l">Pull</th><th>Into the intermission</th><th>Zul&rsquo;jan healed</th><th>Malacrass healed</th><th class="l"></th></tr></thead><tbody></tbody></table></div>
   <h3>Damage into Zul&rsquo;jan in the intermission, per player</h3>
-  <p>Only intermissions played out before a wipe, and only pulls in a damage or tank spec; pets bill to their owner. <b>DPS</b> is per second alive in the intermission. Pick a pull to see that intermission alone; its <b>share</b> is of that pull&rsquo;s raid damage into Zul&rsquo;jan.</p>
+  <p>Only intermissions played out before a wipe, and only pulls in a damage or tank spec; pets bill to their owner. <b>DPS</b> is per second alive in the intermission. Pick a pull to see that intermission alone; its <b>share</b> is of that pull&rsquo;s raid damage into Zul&rsquo;jan. <b>Best theoretical</b> puts every player&rsquo;s best intermission into one: {{int_best_dmg}}, {{int_best_pct}}% of Zul&rsquo;jan&rsquo;s health, against {{int_real_pct}}% on the best real one (pull {{int_real_pull}}). With no fragment missed he would go into stage three on {{int_best_z}}% instead of {{int_real_z}}%.</p>
   <div class="chips" id="intp-pick"></div>
   <div class="tblwrap"><table id="t-intp"><thead></thead><tbody></tbody></table></div>
   <details class="lgwrap"><summary>Damage into Zul&rsquo;jan per intermission, per player</summary><div class="tblwrap"><table class="hm" id="h-intp"></table></div></details>
@@ -309,6 +309,9 @@ function heat(id,rows,cols,cell,total){
     <td>${f1(r.damage_pct)}%</td><td>${f1(r.regen_pct)}%</td><td>${r.blocked}</td><td${r.missed?' class="neg"':''}>${r.missed?r.missed+' (+'+f1(r.missed_pct)+'%)':'–'}</td>
     <td>${r.erasure_max}</td><td${r.deaths.length&&!r.after_wipe?' class="neg"':''}>${r.deaths.length||'–'}</td><td><b>${f1(r.z_end)}%</b></td><td>${f1(r.m_end)}%</td>
     <td class="l names">${r.after_wipe?`<span class="muted">wipe started ${f1(r.wipe)}s in</span>`:r.top.map(([n,v])=>`${nm(n)} ${M(v)}`).join(' ')}</td></tr>`).join(''),'–',13);
+  if(I.best){const B=I.best;document.querySelector('#t-int tbody').insertAdjacentHTML('beforeend',
+    `<tr style="border-top:2px solid var(--accent)"><td class="l"><b>Best theoretical</b></td><td>–</td><td>–</td><td>–</td><td><b>${f1(B.damage_pct)}%</b></td><td>${f1(B.regen_pct)}%</td><td>–</td><td>0</td><td>–</td><td>–</td><td><b>${f1(B.z_end)}%</b></td><td>–</td>
+     <td class="l muted">each player&rsquo;s best intermission, together</td></tr>`);}
   const rc=I.rows.flatMap(r=>r.reclaims.map(x=>Object.assign({pull:r.pull},x)));
   const late={};rc.filter(x=>x.after_wipe).forEach(x=>late[x.pull]=(late[x.pull]||0)+1);
   body('t-reclaim',rc.filter(x=>!x.after_wipe).map(x=>`<tr${x.after_wipe?' class="muted"':''}><td class="l">${x.pull}</td><td>${f1(x.t)}s</td><td>${x.healed?'+'+f1(x.pct)+'%':'<span class="muted">already full</span>'}</td><td>${x.malacrass?'+'+f1(x.malacrass_pct)+'%':'–'}</td>
@@ -324,6 +327,11 @@ function heat(id,rows,cols,cell,total){
       body('t-intp',I.players.map(r=>`<tr><td class="l">${who(r.name)}${swap(r.name)}</td><td>${M(r.damage)}</td><td>${M(r.dps)}</td><td>${r.ints||'–'}</td>${share(r.share)}
         <td>${M(r.erasure)}</td><td${r.deaths?' class="neg"':''}>${r.deaths||'–'}</td></tr>`).join(''),'–',7);
       return;}
+    if(sel==='best'){const B=I.best;
+      document.querySelector('#t-intp thead').innerHTML='<tr><th class="l">Player</th><th>Best damage</th><th>DPS</th><th>From pull</th><th class="l">Share</th><th></th><th></th></tr>';
+      body('t-intp',B.players.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${M(r.damage)}</td><td>${M(r.dps)}</td><td>${r.pull}</td>${share(r.share)}<td></td><td></td></tr>`).join('')+
+        `<tr class="tot"><td class="l"><b>Together</b></td><td><b>${M(B.damage)}</b></td><td></td><td></td><td class="l"><b>${f1(B.damage_pct)}%</b> of Zul&rsquo;jan</td><td colspan="2" class="l">into stage three on <b>${f1(B.z_end)}%</b> with no fragment missed</td></tr>`,'–',7);
+      return;}
     const rows=I.players.map(r=>Object.assign({name:r.name},r.pulls[sel]||null)).filter(r=>r.alive!=null);
     const tot=rows.reduce((a,r)=>a+(r.damage||0),0)||1;
     rows.sort((a,b)=>(b.damage||0)-(a.damage||0)||a.name.localeCompare(b.name));
@@ -331,7 +339,7 @@ function heat(id,rows,cols,cell,total){
       ${r.damage==null?'<td class="l muted">–</td>':share(100*r.damage/tot)}<td>${M(r.erasure)}</td><td${r.died?' class="neg"':''}>${r.died?'died':'–'}</td></tr>`).join(''),'Nobody in this pull.',7);
   }
   const pick=document.getElementById('intp-pick');
-  pick.innerHTML=['all',...ipulls].map(p=>`<button data-p="${p}"${p==='all'?' class="on"':''}>${p==='all'?'All pulls':'Pull '+p}</button>`).join('');
+  pick.innerHTML=['all',...ipulls,...(I.best?['best']:[])].map(p=>`<button data-p="${p}"${p==='all'?' class="on"':''}>${p==='all'?'All pulls':p==='best'?'Best theoretical':'Pull '+p}</button>`).join('');
   pick.addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b)return;
     pick.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));intp(b.dataset.p);});
   intp('all');

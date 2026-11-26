@@ -1076,7 +1076,37 @@ class Analysis(_Base):
                 }
             )
         players.sort(key=lambda r: -r["damage"])
-        return {"rows": rows, "players": players}
+
+        # Best theoretical: every damage dealer's best intermission stacked into
+        # one, with no fragment getting through. Regen is a fixed 2% a second,
+        # so Zul'jan would go into stage three on regen minus that damage.
+        clean = [r for r in rows if not r["after_wipe"]]
+        best = None
+        if clean:
+            picks = []
+            for p in players:
+                c = [(v["damage"], k, v["dps"]) for k, v in p["pulls"].items() if v.get("damage")]
+                if c:
+                    dmg_, pull, dps = max(c)
+                    picks.append({"name": p["name"], "pull": int(pull), "damage": dmg_, "dps": dps})
+            picks.sort(key=lambda x: -x["damage"])
+            total = sum(x["damage"] for x in picks)
+            hp = statistics.median(r["max_hp"] for r in clean)
+            regen = statistics.median(r["regen_pct"] for r in clean)
+            for x in picks:
+                x["share"] = round(100 * x["damage"] / total, 1) if total else 0
+            top = max(clean, key=lambda r: r["damage"])
+            best = {
+                "players": picks,
+                "damage": total,
+                "damage_pct": round(100 * total / hp, 1),
+                "regen_pct": regen,
+                "z_end": round(max(0.0, regen - 100 * total / hp), 1),
+                "best_real_pull": top["pull"],
+                "best_real_damage_pct": top["damage_pct"],
+                "best_real_z_end": top["z_end"],
+            }
+        return {"rows": rows, "players": players, "best": best}
 
     def build(self) -> dict:
         return {

@@ -96,6 +96,17 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
         "int_missed_secs": f"{0.10 * z_max / i_dps:.0f}" if i_dps and z_max else "–",
         "int_m_pct": f"{m_pct:g}" if m_pct else "–",
     }
+    B = d["intermission"].get("best")
+    i_tok.update(
+        {
+            "int_best_dmg": f"{B['damage'] / 1e6:.0f}M" if B else "–",
+            "int_best_pct": f"{B['damage_pct']:.1f}" if B else "–",
+            "int_best_z": f"{B['z_end']:.1f}" if B else "–",
+            "int_real_pct": f"{B['best_real_damage_pct']:.1f}" if B else "–",
+            "int_real_pull": B["best_real_pull"] if B else "–",
+            "int_real_z": f"{B['best_real_z_end']:.1f}" if B and B["best_real_z_end"] is not None else "–",
+        }
+    )
     closest = max((w for w in veil_res), key=lambda w: w["absorbed"], default=None)
 
     return {
