@@ -1,0 +1,31 @@
+{
+  "_note": "Guillotine soak teams for Piian's Mid-Pressure, 26 Nov. Niydra, Twilightnil and Vokster back on team 1 for Backtospawn, Emberforge and Wuschle; Alfi moves to team 1 and Mattiseppo to team 2, placed by which Guillotine they took in the log (Alfi 24 of 25 on the first, Mattiseppo 18 of 19 on the second). Team 1 takes the first Guillotine of stage one (48s), team 2 the second (133s). Tanks take one when free and are never counted as missing.",
+  "guillotine": {
+    "1": [
+      "Aelyssar",
+      "Alfi",
+      "Morphinetime",
+      "Niydra",
+      "Piiaan",
+      "Sylphiee",
+      "Twilightnil",
+      "Vokster",
+      "Шамшыммыч"
+    ],
+    "2": [
+      "Aeonara",
+      "Atheniás",
+      "Huibalast",
+      "Indris",
+      "Iylenvur",
+      "Mattiseppo",
+      "Preng",
+      "Taranus",
+      "Valanarr"
+    ]
+  },
+  "flex": [
+    "Laradendusk",
+    "Vesemirr"
+  ]
+}
