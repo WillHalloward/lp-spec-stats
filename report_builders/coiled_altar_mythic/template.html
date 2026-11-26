@@ -130,8 +130,9 @@ __SHARED_CSS__
   <h3>The fragments that got through</h3>
   <div class="tblwrap"><table id="t-reclaim"><thead><tr><th class="l">Pull</th><th>Into the intermission</th><th>Zul&rsquo;jan healed</th><th>Malacrass healed</th><th class="l"></th></tr></thead><tbody></tbody></table></div>
   <h3>Damage into Zul&rsquo;jan in the intermission, per player</h3>
-  <p>Only intermissions played out before a wipe, and only pulls in a damage or tank spec; pets bill to their owner. <b>DPS</b> is per second alive in the intermission. <b>Max Erasure</b> is the highest Spirit Erasure stack the player carried; the stacks fall off a few seconds after each blocked fragment, so a high stack means fragments were blocked close together.</p>
-  <div class="tblwrap"><table id="t-intp"><thead><tr><th class="l">Player</th><th>Total</th><th>DPS</th><th>Intermissions</th><th class="l">Share</th><th>Max Erasure</th><th>Erasure taken</th><th>Died in it</th></tr></thead><tbody></tbody></table></div>
+  <p>Only intermissions played out before a wipe, and only pulls in a damage or tank spec; pets bill to their owner. <b>DPS</b> is per second alive in the intermission. Pick a pull to see that intermission alone; its <b>share</b> is of that pull&rsquo;s raid damage into Zul&rsquo;jan.</p>
+  <div class="chips" id="intp-pick"></div>
+  <div class="tblwrap"><table id="t-intp"><thead></thead><tbody></tbody></table></div>
   <details class="lgwrap"><summary>Damage into Zul&rsquo;jan per intermission, per player</summary><div class="tblwrap"><table class="hm" id="h-intp"></table></div></details>
 </section>
 </div>
@@ -312,8 +313,28 @@ function heat(id,rows,cols,cell,total){
   const late={};rc.filter(x=>x.after_wipe).forEach(x=>late[x.pull]=(late[x.pull]||0)+1);
   body('t-reclaim',rc.filter(x=>!x.after_wipe).map(x=>`<tr${x.after_wipe?' class="muted"':''}><td class="l">${x.pull}</td><td>${f1(x.t)}s</td><td>${x.healed?'+'+f1(x.pct)+'%':'<span class="muted">already full</span>'}</td><td>${x.malacrass?'+'+f1(x.malacrass_pct)+'%':'–'}</td>
     <td class="l muted">${!x.in_int?'after the intermission ended':''}</td></tr>`).join('')+Object.entries(late).map(([p,n])=>`<tr class="muted"><td class="l">${p}</td><td colspan="4" class="l">${n} more after the wipe had started, walking in on a dead raid</td></tr>`).join(''),'No fragment reached Zul&rsquo;jan before a wipe.',5);
-  body('t-intp',I.players.map(r=>`<tr><td class="l">${who(r.name)}${swap(r.name)}</td><td>${M(r.damage)}</td><td>${M(r.dps)}</td><td>${r.ints||'–'}</td><td class="l"><span class="bar" style="width:${r.share*4}px"></span>${f1(r.share)}%</td>
-    <td>${r.stacks||'–'}</td><td>${M(r.erasure)}</td><td${r.deaths?' class="neg"':''}>${r.deaths||'–'}</td></tr>`).join(''),'–',8);
+  const ipulls=I.rows.filter(r=>!r.after_wipe).map(r=>String(r.pull));
+  function intp(sel){
+    const head=sel==='all'
+      ?['Total','DPS','Intermissions','Share','Erasure taken','Died in it']
+      :['Damage','DPS','Alive','Share','Erasure taken','Died in it'];
+    document.querySelector('#t-intp thead').innerHTML='<tr><th class="l">Player</th>'+head.map(h=>`<th${h==='Share'?' class="l"':''}>${h}</th>`).join('')+'</tr>';
+    const share=v=>`<td class="l"><span class="bar" style="width:${v*4}px"></span>${f1(v)}%</td>`;
+    if(sel==='all'){
+      body('t-intp',I.players.map(r=>`<tr><td class="l">${who(r.name)}${swap(r.name)}</td><td>${M(r.damage)}</td><td>${M(r.dps)}</td><td>${r.ints||'–'}</td>${share(r.share)}
+        <td>${M(r.erasure)}</td><td${r.deaths?' class="neg"':''}>${r.deaths||'–'}</td></tr>`).join(''),'–',7);
+      return;}
+    const rows=I.players.map(r=>Object.assign({name:r.name},r.pulls[sel]||null)).filter(r=>r.alive!=null);
+    const tot=rows.reduce((a,r)=>a+(r.damage||0),0)||1;
+    rows.sort((a,b)=>(b.damage||0)-(a.damage||0)||a.name.localeCompare(b.name));
+    body('t-intp',rows.map(r=>`<tr><td class="l">${who(r.name)}</td><td>${r.damage==null?'<span class="muted">healing</span>':M(r.damage)}</td><td>${M(r.dps)}</td><td>${f1(r.alive)}s</td>
+      ${r.damage==null?'<td class="l muted">–</td>':share(100*r.damage/tot)}<td>${M(r.erasure)}</td><td${r.died?' class="neg"':''}>${r.died?'died':'–'}</td></tr>`).join(''),'Nobody in this pull.',7);
+  }
+  const pick=document.getElementById('intp-pick');
+  pick.innerHTML=['all',...ipulls].map(p=>`<button data-p="${p}"${p==='all'?' class="on"':''}>${p==='all'?'All pulls':'Pull '+p}</button>`).join('');
+  pick.addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b)return;
+    pick.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));intp(b.dataset.p);});
+  intp('all');
   const cols=I.rows.filter(r=>!r.after_wipe).map(r=>String(r.pull));
   const hp=I.players.filter(r=>r.damage>0);
   const top={};cols.forEach(c=>top[c]=Math.max(1,...hp.map(r=>r.by_pull[c]||0)));

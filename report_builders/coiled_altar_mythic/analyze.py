@@ -883,6 +883,8 @@ class Analysis(_Base):
         stacks_max: dict[str, int] = defaultdict(int)
         erasure_dmg: Counter = Counter()
         int_deaths: Counter = Counter()
+        # name -> pull -> {damage, dps, stacks, erasure, died}, for the per-pull view
+        per_pull: dict[str, dict] = defaultdict(dict)
         by_pull: dict[str, dict] = defaultdict(dict)
         for fid in self.counted():
             b = self.phase_bounds(fid)
@@ -968,12 +970,14 @@ class Analysis(_Base):
             deb = [ev for ev in self.stream("debuffs", fid) if ev.get("abilityGameID") in erasure_ids
                    and s - 1000 <= ev["timestamp"] <= e + 1000]
             pull_max = 0
+            p_stacks: Counter = Counter()
             for ev in deb:
                 st = ev.get("stack") or 1
                 pull_max = max(pull_max, st)
                 if not after_wipe and (wipe is None or ev["timestamp"] <= wipe):
                     n = self.name(ev.get("targetID"))
                     stacks_max[n] = max(stacks_max[n], st)
+                    p_stacks[n] = max(p_stacks[n], st)
 
             into: Counter = Counter()
             for ev in done:
@@ -994,19 +998,33 @@ class Analysis(_Base):
             died = [d for d in self.deaths[fid] if s <= d["ts"] <= e]
             int_secs = (e - s) / 1000
             if not after_wipe:
+                p_erasure: Counter = Counter()
+                p_died: Counter = Counter()
                 for ev in hits:
                     if wipe is None or ev["timestamp"] <= wipe:
-                        erasure_dmg[self.name(ev["targetID"])] += _amount(ev)
+                        p_erasure[self.name(ev["targetID"])] += _amount(ev)
                 for d in died:
                     if wipe is None or d["ts"] <= wipe:
-                        int_deaths[d["player"]] += 1
-                for n, v in into.items():
-                    if n not in self.roster() or self.role_in(fid, n) == "Healer":
-                        continue
-                    dmg[n] += v
-                    secs[n] += self.alive_ms(fid, n, s, e) / 1000
-                    appear[n] += 1
-                    by_pull[n][str(self.num[fid])] = round(v)
+                        p_died[d["player"]] += 1
+                erasure_dmg.update(p_erasure)
+                int_deaths.update(p_died)
+                for n in self.players[fid]:
+                    dealer = self.role_in(fid, n) != "Healer"
+                    v = into.get(n, 0) if dealer else 0
+                    alive_s = self.alive_ms(fid, n, s, e) / 1000
+                    if dealer and v:
+                        dmg[n] += v
+                        secs[n] += alive_s
+                        appear[n] += 1
+                        by_pull[n][str(self.num[fid])] = round(v)
+                    per_pull[n][str(self.num[fid])] = {
+                        "damage": round(v) if dealer else None,
+                        "dps": round(v / alive_s) if dealer and alive_s else None,
+                        "alive": round(alive_s, 1),
+                        "stacks": p_stacks.get(n, 0),
+                        "erasure": round(p_erasure.get(n, 0)),
+                        "died": p_died.get(n, 0),
+                    }
 
             missed = [r for r in reclaims if not r["after_wipe"]]
             rows.append(
@@ -1037,7 +1055,7 @@ class Analysis(_Base):
                     "top": [[n, round(v)] for n, v in into.most_common(3) if n in self.roster()],
                 }
             )
-        names = set(dmg) | set(stacks_max) | set(int_deaths)
+        names = set(dmg) | set(stacks_max) | set(int_deaths) | set(per_pull)
         players = []
         grand = sum(dmg.values()) or 1
         for n in names:
@@ -1054,6 +1072,7 @@ class Analysis(_Base):
                     "erasure": round(erasure_dmg[n]),
                     "deaths": int_deaths[n],
                     "by_pull": by_pull[n],
+                    "pulls": per_pull[n],
                 }
             )
         players.sort(key=lambda r: -r["damage"])
