@@ -1,0 +1,10 @@
+{
+  "_note": "Mythic Coiled Altar nights compared on the progress page, oldest first. plan is a file under ../coiled_altar_mythic/plans/ (Guillotine soak teams), or null.",
+  "team": "Piian's Mid-Pressure",
+  "nights": [
+    {"code": "3aw7TmPX2t6Zfr4g", "date": "2026-11-19", "plan": "piian-2026-11-19.json"},
+    {"code": "aGAv7c8CfZY9LphP", "date": "2026-11-22", "plan": "piian-2026-11-22.json"},
+    {"code": "g1bHWKZqRJVGPyfv", "date": "2026-11-25", "plan": "piian-2026-11-25.json"},
+    {"code": "dYabKR146k8JMmwj", "date": "2026-11-26", "plan": "piian-2026-11-26.json"}
+  ]
+}

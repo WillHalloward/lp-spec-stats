@@ -1152,8 +1152,9 @@ class Analysis(_Base):
         """One cause per wipe, and every death before it by mechanic.
 
         The cause is what kills the opening of the wipe (its first
-        `WIPE_OPEN_MS`). A purple explosion or a missed Guillotine right at the
-        wipe's start names it outright when it does the killing; a shield not
+        `WIPE_OPEN_MS`). A purple explosion or a missed Guillotine from just
+        before the wipe's start to the end of that opening names it outright
+        when it does the killing; a shield not
         broken shows as Eternal Nightfall deaths. A wipe that opens with
         unexplained falls is the raid jumping to reset, and what had already
         gone wrong is listed beside it.
@@ -1181,7 +1182,7 @@ class Analysis(_Base):
             wt = self.rel(fid, w)
             opening = [d for d in deaths if w <= d["ts"] <= w + S.WIPE_OPEN_MS]
             groups = Counter(d["group"] for d in opening)
-            near = lambda t: -S.WIPE_LEAD_MS / 1000 <= t - wt <= S.WIPE_LAG_MS / 1000
+            near = lambda t: -S.WIPE_LEAD_MS / 1000 <= t - wt <= S.WIPE_OPEN_MS / 1000
             boom = [e for e in ex if e["pull"] == self.num[fid] and near(e["t"])]
             miss = [g for g in gw if g["pull"] == self.num[fid] and g["missed"] and near(g["t"])]
             cands = []
@@ -1194,7 +1195,10 @@ class Analysis(_Base):
                               f"{len(miss[0]['soakers'])} under it"))
             if groups.get("Shield not broken", 0) >= 3:
                 cands.append(("Shield not broken", "Shield not broken", "Eternal Nightfall finished"))
-            cands = [c for c in cands if groups.get(c[1], 0)]
+            # it has to be what did most of the killing, not one more death
+            # in a raid that had already jumped
+            most = max(groups.values(), default=0)
+            cands = [c for c in cands if groups.get(c[1], 0) and groups[c[1]] >= most]
             if cands:
                 cause, _, detail = max(cands, key=lambda c: groups[c[1]])
             elif opening and groups.get(S.FALL_OTHER, 0) >= S.RESET_FALL_SHARE * len(opening):
@@ -1211,6 +1215,8 @@ class Analysis(_Base):
                 # a plain fall loses a tie to anything that explains a death
                 top = max(groups, key=lambda g: (groups[g], g != S.FALL_OTHER)) if groups else "unknown"
                 cause, detail = top, ", ".join(f"{n}× {g}" for g, n in groups.most_common(3))
+                if top == "Guillotine":
+                    cause = "Guillotine soakers died"
             rows.append(
                 {
                     "pull": self.num[fid],

@@ -1,0 +1,213 @@
+<title>Coiled Altar Mythic Progress</title>
+__SHARED_CSS__
+.hm td{padding:4px 6px;text-align:center;font-size:11px;min-width:54px;font-variant-numeric:tabular-nums}
+.hm th{padding:6px 6px;text-align:center;font-size:11px}
+.hm td:first-child,.hm th:first-child{text-align:left;padding-left:10px;min-width:150px}
+.cmp td{font-variant-numeric:tabular-nums}
+.cmp td.l{white-space:normal;min-width:220px}
+.cmp tr.grp td{background:var(--surface-2);font-family:"Barlow Condensed",sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--ink-2)}
+.d{font-size:10px;margin-left:4px}
+.tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:0 5px;border-radius:2px;border:1px solid var(--rule)}
+</style>
+<div class="wrap">
+<header>
+  <div class="lab">{{nights}} nights &middot; {{difficulty}}</div>
+  <h1>{{boss}} {{difficulty}},<br>night against night</h1>
+  <div class="rule"></div>
+  <p>{{team}}&rsquo;s {{difficulty}} prog on {{boss}}, {{first_label}} to {{last_label}}: how far the pulls got, what ended them, and each mechanic&rsquo;s numbers side by side. Everything comes from the same analysis as each night&rsquo;s own page, so the two always agree; follow a date to that night.</p>
+  <div class="meta">
+    <span>{{zone}} &middot; {{difficulty}}</span><span>{{pulls}} pulls</span><span>{{hours}} hours on the boss</span>
+  </div>
+</header>
+
+<div class="tiles">
+  <div class="tile"><span class="lab">Best pull, latest night</span><span class="n">{{last_best_pct}}%<small> {{last_best_phase}}</small></span><span class="muted">{{first_label}}: {{first_best_pct}}% in {{first_best_phase}}</span></div>
+  <div class="tile"><span class="lab">Pulls into stage three</span><span class="n">{{last_p3_share}}<small> {{last_label}}</small></span><span class="muted">{{first_label}}: {{first_p3_share}}</span></div>
+  <div class="tile"><span class="lab">Wipes to a purple explosion</span><span class="n">{{last_boom_share}}<small> {{last_label}}</small></span><span class="muted">{{first_label}}: {{first_boom_share}}</span></div>
+  <div class="tile"><span class="lab">Deaths before the wipe, per pull</span><span class="n">{{last_pre_pp}}<small> {{last_label}}</small></span><span class="muted">{{first_label}}: {{first_pre_pp}}</span></div>
+</div>
+
+<section>
+  <div class="head"><h2>Every pull</h2>
+  <p>One bar per pull, a row per night, in the order they were pulled. Height is how long the pull lived before its wipe started; colour is the furthest stage it reached. Quick resets are left out. Hover for what ended it.</p></div>
+  <figure><div class="legend" id="lg-pulls"></div><svg id="c-pulls"></svg></figure>
+</section>
+
+<section>
+  <div class="head"><h2>Night by night</h2>
+  <p>Every number is a rate where the size of the night would otherwise decide it: per pull, per minute of the stage played before the wipe, or per window. The small arrow is the change from the night before, green where that is better and red where it is worse. Only what happened before each wipe counts.</p></div>
+  <div class="tblwrap"><table class="cmp" id="t-cmp"><thead></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>What ended the pulls</h2>
+  <p>Each wipe&rsquo;s cause, as on the night pages: what killed the raid in the first eight seconds after the wipe started, with a purple explosion or a missed Guillotine named outright when it did most of that killing, and <b>called reset</b> for a wipe that opens with the raid jumping off. Shares are of that night&rsquo;s wipes.</p></div>
+  <figure><div class="legend" id="lg-wc"></div><svg id="c-wc"></svg></figure>
+  <div class="tblwrap"><table class="hm" id="t-wc"><thead></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Deaths before the wipe</h2>
+  <p>Every death before its pull&rsquo;s wipe started, by mechanic, per ten pulls so the nights compare. Darker is more. Falls with no killing blow are split into Dreadmarch, ghost catch, the handover knockback and a plain fall.</p></div>
+  <div class="tblwrap"><table class="hm" id="t-pre"><thead></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="head"><h2>Players</h2>
+  <p>Deaths before the wipe per ten pulls the player was in, night by night, and the stage-one axe index (1.0 is that night&rsquo;s average for the same seconds alive; lower is better). A blank is a night they were not in.</p></div>
+  <div class="tblwrap"><table class="hm" id="t-pl"><thead></thead><tbody></tbody></table></div>
+</section>
+
+<footer>Built from the Warcraft Logs v2 API &middot; {{codes}}.</footer>
+</div>
+<div class="tip" id="tip"></div>
+<script id="data" type="application/json">__PAYLOAD__</script>
+<script>
+(function(){
+const D=JSON.parse(document.getElementById('data').textContent);
+const N=D.nights;
+const NS='http://www.w3.org/2000/svg';
+function mk(p,t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;}
+function txt(p,x,y,s,o={}){const e=mk(p,'text',Object.assign({x,y,fill:o.fill||'var(--muted)','font-size':o.size||11,
+  'font-family':'IBM Plex Mono, monospace','text-anchor':o.anchor||'middle'},o.attr||{}));e.textContent=s;return e;}
+const tip=document.getElementById('tip');
+function hook(el,html){
+  el.addEventListener('mousemove',ev=>{tip.innerHTML=html;tip.style.opacity=1;
+    const w=tip.offsetWidth;let x=ev.clientX+14;if(x+w>innerWidth-8)x=ev.clientX-w-14;
+    const hh=tip.offsetHeight;let y=ev.clientY+14;if(y+hh>innerHeight-8)y=Math.max(8,ev.clientY-hh-14);
+    tip.style.left=x+'px';tip.style.top=y+'px';});
+  el.addEventListener('mouseleave',()=>tip.style.opacity=0);
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f1=x=>x==null?'–':(+x).toFixed(1);
+const f2=x=>x==null?'–':(+x).toFixed(2);
+const pc=(a,b)=>b?Math.round(100*a/b)+'%':'–';
+const PH={P1:'var(--s1)',P2:'var(--s4)',INT:'var(--s5)',P3:'var(--crit)'};
+const PHN={P1:'Stage one',P2:'Stage two',INT:'Intermission',P3:'Stage three'};
+const nightHead=()=>N.map(n=>`<th><a href="/reports/${n.slug}">${esc(n.label)}</a></th>`).join('');
+
+/* ---------- every pull ---------- */
+(function(){
+  const s=document.getElementById('c-pulls'),W=900,L=64,R=10,rowH=70,gap=14,T=6;
+  const mx=Math.max(...N.flatMap(n=>n.pull_rows.map(p=>p.lived)));
+  const most=Math.max(...N.map(n=>n.pull_rows.length));
+  const bw=(W-L-R)/most;
+  N.forEach((n,i)=>{const y0=T+i*(rowH+gap),Y=v=>y0+rowH-rowH*v/mx;
+    txt(s,L-10,y0+rowH/2,n.label,{anchor:'end',size:11,fill:'var(--ink-2)'});
+    txt(s,L-10,y0+rowH/2+13,`${n.pulls} pulls`,{anchor:'end',size:9});
+    mk(s,'line',{x1:L,x2:W-R,y1:y0+rowH,y2:y0+rowH,stroke:'var(--rule)'});
+    [120,240,360,480].filter(t=>t<mx).forEach(t=>mk(s,'line',{x1:L,x2:W-R,y1:Y(t),y2:Y(t),stroke:'var(--grid)','stroke-dasharray':'2 3'}));
+    n.pull_rows.forEach((p,j)=>{const r=mk(s,'rect',{x:L+j*bw+1,y:Y(p.lived),width:Math.max(1,bw-2),height:y0+rowH-Y(p.lived),fill:PH[p.reached],opacity:.9});
+      hook(r,`<b>${esc(n.label)}, pull ${p.pull}</b><br>${PHN[p.reached]}, ended ${f1(p.pct)}%<br>${Math.floor(p.lived/60)}:${String(Math.round(p.lived%60)).padStart(2,'0')} before the wipe<br>${esc(p.cause||(p.kill?'kill':'–'))}`);});
+  });
+  const H=T+N.length*(rowH+gap);
+  txt(s,L,H+2,'grid lines every 2 minutes',{anchor:'start',size:9});
+  s.setAttribute('viewBox',`0 0 ${W} ${H+8}`);
+  document.getElementById('lg-pulls').innerHTML=Object.entries(PHN).map(([k,l])=>`<span><i style="background:${PH[k]}"></i>${l}</span>`).join('');
+})();
+
+/* ---------- night by night ---------- */
+(function(){
+  // [label, value(n) for display, number(n) for the arrow, better: +1 higher / -1 lower / 0 none]
+  const G=(t)=>({group:t});
+  const rows=[
+    G('The pulls'),
+    ['Pulls (quick resets left out)',n=>`${n.pulls}${n.resets?` <span class="sm">+${n.resets} resets</span>`:''}`,n=>n.pulls,0],
+    ['Minutes on the boss',n=>n.minutes,n=>n.minutes,0],
+    ['Best pull',n=>`${f1(n.best.pct)}% <span class="sm">${n.best.reached}, #${n.best.pull}</span>`,n=>['P1','P2','INT','P3'].indexOf(n.best.reached)*100+100-n.best.pct,1],
+    ['Reached stage two',n=>pc(n.at_least.P2,n.pulls),n=>n.at_least.P2/n.pulls,1],
+    ['Reached the intermission',n=>pc(n.at_least.INT,n.pulls),n=>n.at_least.INT/n.pulls,1],
+    ['Reached stage three',n=>pc(n.at_least.P3,n.pulls),n=>n.at_least.P3/n.pulls,1],
+    ['Median time before the wipe',n=>`${Math.round(n.lived_med)}s`,n=>n.lived_med,1],
+    ['Five longest pulls, median',n=>`${Math.round(n.lived_top5)}s`,n=>n.lived_top5,1],
+    ['Deaths before the wipe, per pull',n=>f1(n.pre_deaths/n.pulls),n=>n.pre_deaths/n.pulls,-1],
+    G('Stage one'),
+    ['Wipes to a purple explosion',n=>pc(n.wipe_causes['Purple orb explosion']||0,n.wipes),n=>(n.wipe_causes['Purple orb explosion']||0)/n.wipes,-1],
+    ['Purple explosions per 10 min of stage one',n=>f1(10*n.explosions_p1/n.p1_min),n=>n.explosions_p1/n.p1_min,-1],
+    ['Explosions in the first 25s',n=>n.explosions_opening,n=>n.explosions_opening/n.pulls,-1],
+    ['Axe ticks per minute alive, stage one',n=>f1(n.ax1),n=>n.ax1,-1],
+    ['Guillotines missed',n=>`${n.g_missed} <span class="sm">of ${n.g_windows}</span>`,n=>n.g_missed/Math.max(1,n.g_windows),-1],
+    ['Team members absent per Guillotine',n=>n.g_plan_windows?f2(n.g_absent/n.g_plan_windows):'–',n=>n.g_plan_windows?n.g_absent/n.g_plan_windows:null,-1],
+    ['Frontal deaths per pull (all stages)',n=>f2(n.frontal_deaths/n.pulls),n=>n.frontal_deaths/n.pulls,-1],
+    G('Stage two'),
+    ['Axe ticks per minute alive, stage two',n=>f1(n.ax2),n=>n.ax2,-1],
+    ['Shields broken',n=>`${pc(n.veils_broken,n.veils)} <span class="sm">${n.veils_broken} of ${n.veils}</span>`,n=>n.veils?n.veils_broken/n.veils:null,1],
+    ['Median time to break the shield',n=>n.veil_secs==null?'–':f1(n.veil_secs)+'s',n=>n.veil_secs,-1],
+    ['Soulcoilers killed',n=>`${pc(n.adds_killed,n.adds)} <span class="sm">${n.adds_killed} of ${n.adds}</span>`,n=>n.adds?n.adds_killed/n.adds:null,1],
+    ['Median Soulcoiler kill time',n=>n.add_ttk==null?'–':f1(n.add_ttk)+'s',n=>n.add_ttk,-1],
+    G('Intermission'),
+    ['Intermissions played out',n=>n.ints,n=>n.ints,0],
+    ['Fragments missed',n=>n.int_fragments?`${pc(n.int_missed,n.int_fragments)} <span class="sm">${n.int_missed} of ${n.int_fragments}</span>`:'–',n=>n.int_fragments?n.int_missed/n.int_fragments:null,-1],
+    ['Zul’jan into stage three, best',n=>n.int_z_best==null?'–':f1(n.int_z_best)+'%',n=>n.int_z_best,-1],
+    ['Zul’jan into stage three, median',n=>n.int_z_med==null?'–':f1(n.int_z_med)+'%',n=>n.int_z_med,-1],
+  ];
+  document.querySelector('#t-cmp thead').innerHTML=`<tr><th class="l"></th>${nightHead()}</tr>`;
+  document.querySelector('#t-cmp tbody').innerHTML=rows.map(r=>{
+    if(r.group)return `<tr class="grp"><td class="l" colspan="${N.length+1}">${esc(r.group)}</td></tr>`;
+    const [lab,show,num,dir]=r;
+    return `<tr><td class="l">${esc(lab)}</td>`+N.map((n,i)=>{
+      let arrow='';
+      if(i&&dir){const a=num(N[i-1]),b=num(n);
+        if(a!=null&&b!=null&&Math.abs(b-a)>1e-9){const good=(b-a)*dir>0;arrow=`<span class="d ${good?'pos':'neg'}">${b>a?'▲':'▼'}</span>`;}}
+      return `<td>${show(n)}${arrow}</td>`;}).join('')+'</tr>';}).join('');
+})();
+
+/* ---------- what ended the pulls ---------- */
+(function(){
+  const tot={};N.forEach(n=>Object.entries(n.wipe_causes).forEach(([k,v])=>tot[k]=(tot[k]||0)+v));
+  const order=Object.keys(tot).sort((a,b)=>tot[b]-tot[a]);
+  const main=order.slice(0,6);const rest=order.slice(6);
+  const C=['var(--crit)','var(--s4)','var(--s1)','var(--s5)','var(--s3)','var(--s2)'];
+  const col=k=>main.includes(k)?C[main.indexOf(k)]:'var(--inter)';
+  const bucket=n=>{const o={};main.forEach(k=>o[k]=n.wipe_causes[k]||0);o.Other=rest.reduce((s,k)=>s+(n.wipe_causes[k]||0),0);return o;};
+  const s=document.getElementById('c-wc'),W=900,L=64,R=10,rh=26,T=4;
+  N.forEach((n,i)=>{const y=T+i*(rh+8);let x=L;const b=bucket(n);
+    txt(s,L-10,y+rh/2+4,n.label,{anchor:'end',size:11,fill:'var(--ink-2)'});
+    Object.entries(b).forEach(([k,v])=>{if(!v)return;const w=(W-L-R)*v/n.wipes;
+      const r=mk(s,'rect',{x,y,width:Math.max(1,w-1),height:rh,fill:k==='Other'?'var(--inter)':col(k),opacity:.9});
+      hook(r,`<b>${esc(n.label)}</b><br>${esc(k)}: ${v} of ${n.wipes} wipes (${pc(v,n.wipes)})`+(k==='Other'?'<br>'+rest.filter(c=>n.wipe_causes[c]).map(c=>`${esc(c)} ${n.wipe_causes[c]}`).join('<br>'):''));
+      if(w>34)txt(s,x+w/2,y+rh/2+4,pc(v,n.wipes),{size:10,fill:'#fff'});x+=w;});
+  });
+  s.setAttribute('viewBox',`0 0 ${W} ${T+N.length*(rh+8)}`);
+  document.getElementById('lg-wc').innerHTML=main.map(k=>`<span><i style="background:${col(k)}"></i>${esc(k)}</span>`).join('')+(rest.length?'<span><i style="background:var(--inter)"></i>Other</span>':'');
+  document.querySelector('#t-wc thead').innerHTML=`<tr><th>Cause</th>${nightHead()}</tr>`;
+  document.querySelector('#t-wc tbody').innerHTML=order.map(k=>`<tr><td>${esc(k)}</td>`+N.map(n=>{const v=n.wipe_causes[k]||0;
+    return `<td${v?'':' class="muted"'}>${v?`${v} <span class="sm">${pc(v,n.wipes)}</span>`:'–'}</td>`;}).join('')+'</tr>').join('')
+    +`<tr><td><b>Wipes</b></td>${N.map(n=>`<td><b>${n.wipes}</b></td>`).join('')}</tr>`;
+})();
+
+/* ---------- heat helpers ---------- */
+const heat=(v,max,good)=>{if(v==null||!max)return '';const a=Math.min(1,v/max);
+  return ` style="background:color-mix(in srgb, ${good?'var(--s3)':'var(--crit)'} ${Math.round(a*55)}%, transparent)"`;};
+
+/* ---------- deaths before the wipe ---------- */
+(function(){
+  const tot={};N.forEach(n=>Object.entries(n.pre_groups).forEach(([k,v])=>tot[k]=(tot[k]||0)+v));
+  const order=Object.keys(tot).sort((a,b)=>tot[b]-tot[a]);
+  const rate=(n,k)=>10*(n.pre_groups[k]||0)/n.pulls;
+  const mx=Math.max(...order.flatMap(k=>N.map(n=>rate(n,k))));
+  document.querySelector('#t-pre thead').innerHTML=`<tr><th>Mechanic</th>${nightHead()}</tr>`;
+  document.querySelector('#t-pre tbody').innerHTML=order.map(k=>`<tr><td>${esc(k)}</td>`+N.map(n=>{const c=n.pre_groups[k]||0;
+    return c?`<td${heat(rate(n,k),mx)}>${f1(rate(n,k))} <span class="sm">${c}</span></td>`:'<td class="muted">–</td>';}).join('')+'</tr>').join('')
+    +`<tr><td><b>All, per 10 pulls</b></td>${N.map(n=>`<td><b>${f1(10*n.pre_deaths/n.pulls)}</b> <span class="sm">${n.pre_deaths}</span></td>`).join('')}</tr>`;
+})();
+
+/* ---------- players ---------- */
+(function(){
+  const names=[...new Set(N.flatMap(n=>Object.keys(n.players)))];
+  const last=n=>{for(let i=N.length-1;i>=0;i--)if(N[i].players[n])return N[i].players[n];};
+  const rate=(p)=>p?10*p.deaths/p.pulls:null;
+  const avg=n=>{const L=N.map(x=>x.players[n]).filter(Boolean);const pu=L.reduce((s,p)=>s+p.pulls,0);return pu?10*L.reduce((s,p)=>s+p.deaths,0)/pu:0;};
+  names.sort((a,b)=>avg(b)-avg(a));
+  const mx=Math.max(...names.flatMap(n=>N.map(x=>rate(x.players[n])||0)));
+  const ccol=n=>{const p=last(n);return p&&p.cls?`var(--cls-${p.cls})`:'var(--muted)';};
+  document.querySelector('#t-pl thead').innerHTML=`<tr><th rowspan="2">Player</th><th colspan="${N.length}">Deaths before the wipe per 10 pulls</th><th colspan="${N.length}">Axe index, stage one</th></tr><tr>${nightHead()}${nightHead()}</tr>`;
+  document.querySelector('#t-pl tbody').innerHTML=names.map(n=>`<tr><td><span style="color:${ccol(n)}">${esc(n)}</span></td>`
+    +N.map(x=>{const p=x.players[n];if(!p)return '<td></td>';const r=rate(p);
+      const why=Object.entries(p.groups).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${v}× ${k}`).join(', ');
+      return `<td${heat(r,mx)} title="${esc(p.deaths+' in '+p.pulls+' pulls'+(why?': '+why:''))}">${f1(r)}</td>`;}).join('')
+    +N.map(x=>{const p=x.players[n];if(!p||p.ax1==null)return '<td></td>';const v=p.ax1;
+      return `<td${v>=1.5?' class="neg"':v<=.67?' class="pos"':''}>${f2(v)}</td>`;}).join('')+'</tr>').join('');
+})();
+})();
+</script>

@@ -117,10 +117,10 @@ FALL_MARCH = "Walked off by Dreadmarch"
 FALL_CAUGHT = "Caught by a ghost, walked off"
 FALL_KNOCKBACK = "Knocked off at the handover"
 FALL_OTHER = "Fell or jumped off"
-# How far either side of the wipe's first death an explosion or a Guillotine
-# miss counts as what started it.
+# An explosion or a Guillotine miss counts as the wipe's cause from this long
+# before its first death to the end of its opening (WIPE_OPEN_MS): a Grim
+# Guillotine missed seven seconds into a collapse still kills twelve.
 WIPE_LEAD_MS = 2500
-WIPE_LAG_MS = 1000
 # The opening of the wipe that decides its cause: deaths this long after the
 # first one.
 WIPE_OPEN_MS = 8000

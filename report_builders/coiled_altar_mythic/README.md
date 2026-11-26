@@ -53,8 +53,9 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   intermission with the wipe starting inside it is marked and left out of totals.
   Zul'jan's P3 start is read 1.5s after the handover (the last regen tick lands on it).
 - **What ended the pull**: the cause is what kills the wipe's first 8s. A purple
-  explosion (a row in `orbs()`) or a missed Guillotine within 2.5s before / 1s
-  after the wipe's first death names it when its deaths are in that opening; 3+
+  explosion (a row in `orbs()`) or a missed Guillotine from 2.5s before the
+  wipe's first death to the end of the opening names it when its deaths are in
+  that opening (a Guillotine that only killed soakers is "Guillotine soakers died"); 3+
   Eternal Nightfall deaths is the shield. An opening that is at least half
   unexplained falls is a **called reset**, and its reason is whoever died before
   the first jump. Otherwise the commonest mechanic in the opening; a plain fall
