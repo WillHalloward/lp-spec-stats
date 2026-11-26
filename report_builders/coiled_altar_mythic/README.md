@@ -12,7 +12,7 @@ shares its cache under `coiled_altar/cache/`. Styling is lifted from the Twin
 Fangs template at render time. Research and the nerf timeline are in
 `../coiled_altar/MYTHIC.md`.
 
-Sections: the pulls, then stage one (axes, orb runners and explosions, orbs per
+Sections: the pulls, what ended them (one cause per wipe, and every death before it by mechanic), then stage one (axes, orb runners and explosions, orbs per
 Sever, Guillotine soaks, Sever deaths) and stage two (axes, the Veil burn, the
 Soulcoiler, Soul Sever deaths), then the intermission (Zul'jan's health through it,
 fragments blocked and missed, damage into Zul'jan per player). Stage three appears inside those tables with its
@@ -52,5 +52,14 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   hits ÷ players hit, per 100ms bucket of ≥8 players (two can land at once). An
   intermission with the wipe starting inside it is marked and left out of totals.
   Zul'jan's P3 start is read 1.5s after the handover (the last regen tick lands on it).
+- **What ended the pull**: the cause is what kills the wipe's first 8s. A purple
+  explosion (a row in `orbs()`) or a missed Guillotine within 2.5s before / 1s
+  after the wipe's first death names it when its deaths are in that opening; 3+
+  Eternal Nightfall deaths is the shield. An opening that is at least half
+  unexplained falls is a **called reset**, and its reason is whoever died before
+  the first jump. Otherwise the commonest mechanic in the opening; a plain fall
+  loses ties. Deaths with no killing blow go through the heroic `edge()` logic
+  (handover knockback band, Dreadmarch cast or ghost catch, else a fall), and a
+  death logged twice with no return in between counts once.
 - **Soulcoiler**: keyed by Spiritcackle cast (instance ids recycle). Killed when
   a hit reads `hitPoints == 0` with `resourceActor == 2`.

@@ -88,3 +88,42 @@ INT_AURA = "Spirit Erasure"
 # A volley counts as fragments only when it lands on this many players at once.
 GHOST_BLAST_MIN_TARGETS = 8
 from report_builders.coiled_altar.spells import LUST  # noqa: E402,F401
+
+# --- what ended each pull ---------------------------------------------------
+# Deaths grouped by the mechanic behind the killing blow. Anything not listed
+# shows under its own ability name.
+DEATH_GROUPS = {
+    "Venom Rupture": "Orbs and venom",
+    "Mutagenic Venom": "Orbs and venom",
+    "Volatile Venom": "Orbs and venom",
+    "Coalesced Venom": "Orbs and venom",
+    "Toxic Deluge": "Orbs and venom",
+    "Noxious Ground": "Orbs and venom",
+    "Axegrinder": "Spinning axes",
+    "Sever": "Frontals",
+    "Soul Sever": "Frontals",
+    "Blighted Sever": "Frontals",
+    "Guillotine": "Guillotine",
+    "Execution": "Guillotine",
+    "Grim Guillotine": "Guillotine",
+    "Grim Execution": "Guillotine",
+    "Eternal Nightfall": "Shield not broken",
+    "Malevolent Resonance": "Ghosts touching (Malevolent Resonance)",
+    "Gravebound": "Souls (Gravebound)",
+    "Spirit Erasure": "Intermission fragments (Spirit Erasure)",
+}
+# Deaths with no killing ability are people going off the platform.
+FALL_MARCH = "Walked off by Dreadmarch"
+FALL_CAUGHT = "Caught by a ghost, walked off"
+FALL_KNOCKBACK = "Knocked off at the handover"
+FALL_OTHER = "Fell or jumped off"
+# How far either side of the wipe's first death an explosion or a Guillotine
+# miss counts as what started it.
+WIPE_LEAD_MS = 2500
+WIPE_LAG_MS = 1000
+# The opening of the wipe that decides its cause: deaths this long after the
+# first one.
+WIPE_OPEN_MS = 8000
+# A wipe that opens with this share of falls nobody was marched or caught into
+# is the raid jumping to reset.
+RESET_FALL_SHARE = 0.5

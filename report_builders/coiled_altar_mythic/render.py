@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 from . import spells as S
@@ -109,6 +110,23 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
     )
     closest = max((w for w in veil_res), key=lambda w: w["absorbed"], default=None)
 
+    # what ended each pull
+    W = d["wipes"]["wipes"]
+    pre = d["wipes"]["before"]
+    wc = Counter(r["cause"] for r in W).most_common()
+    pc = Counter(x["group"] for x in pre).most_common()
+    w_tok = {
+        "w_count": len(W),
+        "w_top": wc[0][0].lower() if wc else "–",
+        "w_top_n": wc[0][1] if wc else 0,
+        "w_second": wc[1][0].lower() if len(wc) > 1 else "–",
+        "w_second_n": wc[1][1] if len(wc) > 1 else 0,
+        "pre_deaths": len(pre),
+        "pre_top": pc[0][0] if pc else "–",
+        "pre_top_n": pc[0][1] if pc else 0,
+        "pre_top_pulls": len({x["pull"] for x in pre if pc and x["group"] == pc[0][0]}),
+    }
+
     return {
         "report": a.code,
         "boss": a.boss,
@@ -142,6 +160,7 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
         "ax2_second": t2b,
         "bout_gap": f"{S.AXE_BOUT_GAP_MS / 1000:.2f}",
         "cascade_n": S.CASCADE_N,
+        "w_open": S.WIPE_OPEN_MS // 1000,
         "cascade_s": f"{S.CASCADE_S:g}",
         "reset_s": S.RESET_MAX_SEC,
         "recover_s": f"{S.RECOVER_S:g}",
@@ -187,6 +206,7 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
         "adds_killed": len(killed),
         "add_ttk": f"{sorted(x['ttk'] for x in killed)[len(killed) // 2]:.0f}" if killed else "–",
         **i_tok,
+        **w_tok,
     }
 
 

@@ -34,8 +34,22 @@ __SHARED_CSS__
 
 <section>
   <div class="head"><h2>The pulls</h2>
-  <p>Each bar is one pull, coloured by stage. The black tick is where the wipe started (see How this is read at the bottom), with the ability that killed that first player. Pulls marked &times; were reset inside the first half-minute; each carries Malacrass&rsquo;s Unworthy, a big hit at about ten seconds on some of the raid (what triggers it is not known yet). They are left out of every number below.</p></div>
+  <p>Each bar is one pull, coloured by stage. The black tick is where the wipe started (see How this is read at the bottom), labelled with what caused it (see What ended the pulls). Pulls marked &times; were reset inside the first half-minute; each carries Malacrass&rsquo;s Unworthy, a big hit at about ten seconds on some of the raid (what triggers it is not known yet). They are left out of every number below.</p></div>
   <figure><div class="legend" id="lg-pulls"></div><svg id="c-pulls"></svg></figure>
+</section>
+
+<section>
+  <div class="head"><h2>What ended the pulls</h2>
+  <p>Every wipe gets one cause: what killed the raid in the first {{w_open}} seconds after the wipe started. A purple explosion or a missed Guillotine right at that moment names it outright, and a shield not broken shows as Eternal Nightfall deaths. <b>Called reset</b> is a wipe that opens with the raid jumping off (deaths with no killing blow, nobody walked off by Dreadmarch or caught by a ghost); the reason for the call is whoever was already dead. Of {{w_count}} wipes, {{w_top_n}} were a {{w_top}} and {{w_second_n}} a {{w_second}}.</p></div>
+  <div class="tblwrap"><table id="t-wc"><thead><tr><th class="l">Cause</th><th>Wipes</th><th class="l">Pulls</th></tr></thead><tbody></tbody></table></div>
+  <details class="lgwrap"><summary>Every wipe</summary><div class="tblwrap"><table id="t-wipes"><thead><tr><th class="l">Pull</th><th>Stage</th><th>Wipe at</th><th class="l">Cause</th><th class="l">Detail</th><th>Dead before</th><th class="l">First to die</th></tr></thead><tbody></tbody></table></div></details>
+</section>
+
+<section>
+  <div class="head"><h2>Deaths before the wipe</h2>
+  <p>Every death before its pull&rsquo;s wipe started, by the mechanic behind the killing blow; a battle-rezzed player who dies again counts twice. Deaths with no killing blow are people going off the platform, split into walked off by Dreadmarch, caught by a ghost and walked off, knocked off when Malacrass hands over, or a plain fall. <b>Souls</b> is Gravebound: a soul left uncollected, or one collected while already low. {{pre_deaths}} deaths before a wipe; the most common was {{pre_top}}, {{pre_top_n}} deaths in {{pre_top_pulls}} pulls.</p></div>
+  <div class="tblwrap"><table id="t-pre"><thead><tr><th class="l">Mechanic</th><th>Deaths</th><th>Pulls</th><th class="l">Who</th></tr></thead><tbody></tbody></table></div>
+  <details class="lgwrap"><summary>Per player</summary><div class="tblwrap"><table id="t-pre-p"><thead><tr><th class="l">Player</th><th>Deaths</th><th class="l">To</th></tr></thead><tbody></tbody></table></div></details>
 </section>
 
 <h2 class="phase-h">Stage one &middot; Zul&rsquo;jan</h2>
@@ -195,6 +209,26 @@ const pulls=D.pulls.filter(p=>!p.reset).map(p=>p.pull);
   for(let t=0;t<=mx;t+=60){mk(s,'line',{x1:X(t),x2:X(t),y1:T,y2:T+D.pulls.length*rh,stroke:'var(--grid)'});txt(s,X(t),T+D.pulls.length*rh+12,`${t/60}m`,{size:9.5});}
   s.setAttribute('viewBox',`0 0 ${W} ${T+D.pulls.length*rh+18}`);
   document.getElementById('lg-pulls').innerHTML=Object.entries(PHN).map(([k,l])=>`<span><i style="background:${PH[k]}"></i>${l}</span>`).join('')+`<span><i style="background:var(--ink);width:3px"></i>wipe start</span>`;
+})();
+
+/* ---------- what ended the pulls ---------- */
+(function(){
+  const W=D.wipes.wipes,B=D.wipes.before;
+  const by={};W.forEach(r=>(by[r.cause]=by[r.cause]||[]).push(r));
+  const bad=c=>c==='Called reset'?'tag':'tag bad';
+  body('t-wc',Object.entries(by).sort((a,b)=>b[1].length-a[1].length).map(([c,L])=>`<tr><td class="l"><span class="${bad(c)}">${esc(c)}</span></td><td><b>${L.length}</b></td>
+    <td class="l muted">${L.map(r=>r.pull+(r.phase!=='P1'?' <span class="sm">'+r.phase+'</span>':'')).join(', ')}</td></tr>`).join(''),'No wipes.',3);
+  body('t-wipes',W.map(r=>`<tr><td class="l">${r.pull}</td><td>${r.phase}</td><td>${f1(r.t)}s</td><td class="l"><span class="${bad(r.cause)}">${esc(r.cause)}</span></td>
+    <td class="l muted">${esc(r.detail)}</td><td>${r.dead_before||'–'}</td><td class="l">${r.first?who(r.first):'–'}</td></tr>`).join(''),'No wipes.',7);
+  const g={};B.forEach(x=>(g[x.group]=g[x.group]||[]).push(x));
+  body('t-pre',Object.entries(g).sort((a,b)=>b[1].length-a[1].length).map(([k,L])=>{
+    const c={};L.forEach(x=>c[x.player]=(c[x.player]||0)+1);
+    return `<tr><td class="l">${esc(k)}</td><td><b>${L.length}</b></td><td>${new Set(L.map(x=>x.pull)).size}</td>
+    <td class="l names">${Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([n,v])=>nm(n)+(v>1?' ×'+v:'')).join(' ')}</td></tr>`;}).join(''),'Nobody died before a wipe.',4);
+  const p={};B.forEach(x=>{(p[x.player]=p[x.player]||{})[x.group]=(p[x.player][x.group]||0)+1;});
+  const tot=o=>Object.values(o).reduce((a,b)=>a+b,0);
+  body('t-pre-p',Object.entries(p).sort((a,b)=>tot(b[1])-tot(a[1])).map(([n,o])=>`<tr><td class="l">${who(n)}</td><td><b>${tot(o)}</b></td>
+    <td class="l muted">${Object.entries(o).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${v}× ${esc(k)}`).join(', ')}</td></tr>`).join(''),'Nobody died before a wipe.',3);
 })();
 
 /* ---------- axes ---------- */

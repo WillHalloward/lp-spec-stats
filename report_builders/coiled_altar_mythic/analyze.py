@@ -1108,10 +1108,134 @@ class Analysis(_Base):
             }
         return {"rows": rows, "players": players, "best": best}
 
+    # ---- what ended each pull -------------------------------------------
+
+    def _death_causes(self, fid: int) -> list[dict]:
+        """The pull's deaths with a mechanic each, log echoes dropped.
+
+        A death with no killing ability is somebody off the platform; what put
+        them there is read the heroic `edge()` way: the handover knockback band,
+        then Dreadmarch by cast or by ghost catch, else a plain fall.
+        """
+        deb = sorted(self.stream("debuffs", fid), key=lambda e: e["timestamp"])
+        sources = self.march_sources(fid)
+        bounds = self.phase_bounds(fid)
+        int_start = bounds["INT"][0] if "INT" in bounds else None
+        lo, hi = self.KNOCKBACK_BAND
+        ids = {self.name(e.get("targetID")): e["targetID"] for e in self.stream("deaths", fid) if e.get("targetID")}
+        out = []
+        for d in self.deaths[fid]:
+            # the same death logged twice: they never came back in between
+            if out and not self.alive(fid, d["player"], d["ts"] - 200) and any(
+                o["player"] == d["player"] for o in out
+            ):
+                continue
+            ab = d["ability"]
+            if ab:
+                cause, group = ab, S.DEATH_GROUPS.get(ab, ab)
+            else:
+                ctl = self._control_at(deb, ids.get(d["player"]), d["ts"], sources)
+                off = (d["ts"] - int_start) / 1000 if int_start else None
+                if off is not None and lo <= off <= hi:
+                    cause = S.FALL_KNOCKBACK
+                elif f"{S.DREADMARCH}:touch" in ctl:
+                    cause = S.FALL_CAUGHT
+                elif f"{S.DREADMARCH}:cast" in ctl or f"{S.DREADMARCH}:unknown" in ctl:
+                    cause = S.FALL_MARCH
+                else:
+                    cause = S.FALL_OTHER
+                group = cause
+            out.append({**d, "cause": cause, "group": group})
+        return out
+
+    def wipes(self) -> dict:
+        """One cause per wipe, and every death before it by mechanic.
+
+        The cause is what kills the opening of the wipe (its first
+        `WIPE_OPEN_MS`). A purple explosion or a missed Guillotine right at the
+        wipe's start names it outright when it does the killing; a shield not
+        broken shows as Eternal Nightfall deaths. A wipe that opens with
+        unexplained falls is the raid jumping to reset, and what had already
+        gone wrong is listed beside it.
+        """
+        ex = self.orbs()["explosions"]
+        gw = self.guillotine()["windows"]
+        rows, before = [], []
+        for fid in self.counted():
+            w = self.wipe[fid]
+            deaths = self._death_causes(fid)
+            pre = [d for d in deaths if w is None or d["ts"] < w]
+            for d in pre:
+                before.append(
+                    {
+                        "pull": self.num[fid],
+                        "t": round(self.rel(fid, d["ts"]), 1),
+                        "phase": self.phase_at(fid, d["ts"]),
+                        "player": d["player"],
+                        "cause": d["cause"],
+                        "group": d["group"],
+                    }
+                )
+            if w is None:
+                continue
+            wt = self.rel(fid, w)
+            opening = [d for d in deaths if w <= d["ts"] <= w + S.WIPE_OPEN_MS]
+            groups = Counter(d["group"] for d in opening)
+            near = lambda t: -S.WIPE_LEAD_MS / 1000 <= t - wt <= S.WIPE_LAG_MS / 1000
+            boom = [e for e in ex if e["pull"] == self.num[fid] and near(e["t"])]
+            miss = [g for g in gw if g["pull"] == self.num[fid] and g["missed"] and near(g["t"])]
+            cands = []
+            if boom:
+                cands.append(("Purple orb explosion", "Orbs and venom",
+                              "left at a Deluge" if boom[0]["how"] == "left" else "touched another orb"))
+            if miss:
+                cands.append(("Guillotine missed", "Guillotine",
+                              f"{'Grim ' if miss[0]['kind'] != 'Guillotine' else ''}Guillotine {miss[0]['n']}, "
+                              f"{len(miss[0]['soakers'])} under it"))
+            if groups.get("Shield not broken", 0) >= 3:
+                cands.append(("Shield not broken", "Shield not broken", "Eternal Nightfall finished"))
+            cands = [c for c in cands if groups.get(c[1], 0)]
+            if cands:
+                cause, _, detail = max(cands, key=lambda c: groups[c[1]])
+            elif opening and groups.get(S.FALL_OTHER, 0) >= S.RESET_FALL_SHARE * len(opening):
+                cause = "Called reset"
+                # the call is the first jump; whatever died before it is why
+                call = next(d["ts"] for d in opening if d["group"] == S.FALL_OTHER)
+                called = [d for d in deaths if d["ts"] < call]
+                gone = Counter(d["group"] for d in called)
+                detail = f"{len(called)} already dead" + (
+                    ": " + ", ".join(f"{n} to {g}" for g, n in gone.most_common(3))
+                    if gone else ""
+                )
+            else:
+                # a plain fall loses a tie to anything that explains a death
+                top = max(groups, key=lambda g: (groups[g], g != S.FALL_OTHER)) if groups else "unknown"
+                cause, detail = top, ", ".join(f"{n}× {g}" for g, n in groups.most_common(3))
+            rows.append(
+                {
+                    "pull": self.num[fid],
+                    "phase": self.phase_at(fid, w),
+                    "t": round(wt, 1),
+                    "cause": cause,
+                    "detail": detail,
+                    "dead_before": len(pre),
+                    "opening": dict(groups),
+                    "first": next((d["player"] for d in deaths if d["ts"] == w), None),
+                }
+            )
+        return {"wipes": rows, "before": before}
+
     def build(self) -> dict:
+        w = self.wipes()
+        pulls = self.pulls()
+        by = {r["pull"]: r["cause"] for r in w["wipes"]}
+        for p in pulls:
+            if p["pull"] in by:
+                p["wipe_by"] = by[p["pull"]]
         return {
+            "wipes": w,
             "swaps": self.swaps(),
-            "pulls": self.pulls(),
+            "pulls": pulls,
             "axes": self.axes(),
             "orbs": self.orbs(),
             "guillotine": self.guillotine(),
