@@ -39,12 +39,12 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   count (removals reset it). A jump of 15+ is a purple explosion; one within 1.5s
   of a Toxic Deluge cast is a Mutation left on the ground, otherwise "touched".
   The holders list is proximity in time, not proof of contact.
-- **Set off by**: whoever's Volatile or Mutagenic Venom comes off within 30ms of
-  the explosion's first Rupture stack (clear cases land 1-12ms apart; a
-  collision drops both carriers'). `moved` is yards travelled in the second
-  before, from positions on hits taken (stale reads as 0). Nobody's coming off
-  is left unattributed: usually two orbs on the ground, but sometimes a purple
-  carrier nearby kept theirs.
+- **Orb came off with it**: whoever's Volatile or Mutagenic Venom comes off
+  within 30ms of the explosion's first Rupture stack. It is not who touched it:
+  in every explosion listing two or more, they stood 16-88 yd apart (orb radius
+  6 yd), and about half the carriers at each explosion kept theirs. Do not turn
+  it back into blame without a way to place the orbs. Rows left for a Deluge
+  name nobody.
 - **Guillotine**: one per window. The marking cast is the one with a player
   target; soakers are everyone hit within 0.6s of the landing. Execution in the
   same instant means a miss. Every soaker gets a 100s `Guillotine` debuff and
@@ -60,8 +60,8 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   Zul'jan's P3 start is read 1.5s after the handover (the last regen tick lands on it).
 - **What ended the pull**: the cause is what kills the wipe's first 8s. A purple
   explosion (a row in `orbs()`) or a missed Guillotine from 2.5s before the
-  wipe's first death to the end of the opening names it when its deaths are in
-  that opening (a Guillotine that only killed soakers is "Guillotine soakers died"); 3+
+  wipe's first death to the end of the opening names it when it did most of
+  that opening's killing (a Guillotine that only killed soakers is "Guillotine soakers died"); 3+
   Eternal Nightfall deaths is the shield. An opening that is at least half
   unexplained falls is a **called reset**, and its reason is whoever died before
   the first jump. Otherwise the commonest mechanic in the opening; a plain fall

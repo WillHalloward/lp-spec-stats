@@ -39,10 +39,9 @@ EXPLOSION_STACKS = 15
 # one down, this long before it went off.
 EXPLOSION_HOLD_MS = 3000
 
-# Who set it off: a carrier whose orb debuff comes off this close to the
-# explosion's first Rupture stack. Every clear case over four nights lands
-# 1-12ms apart (one collision at 21-24ms); a carrier merely nearby drops theirs
-# 50ms+ either side.
+# A carrier whose orb debuff comes off within this of an explosion's first
+# Rupture stack lost it in that explosion. Not proof of contact (see
+# Analysis._set_off): co-listed carriers stand 16-88 yd apart.
 SET_OFF_MS = 30
 # A carried orb drops by itself after five seconds; one that drops on the
 # explosion's millisecond at full time was put down on top of another orb.

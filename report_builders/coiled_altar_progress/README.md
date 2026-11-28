@@ -20,7 +20,8 @@ compare with the night before; each row declares which direction is better.
 Sections: every pull, the checkpoint funnel (past the opening orbs at 25s, each
 stage-one Guillotine, stage two, the first shield broken, the intermission,
 stage three; only the first shield, since Malacrass often dies before a
-second), the night-by-night table, wipe causes, deaths before the wipe, who set
-off the purple explosions (from the night builder's `set_off`), and a player
+second), the night-by-night table, wipe causes, deaths before the wipe, and a player
 table with a picker: deaths, stage-one axe index, Guillotine absences, damage
-per shield and per Soulcoiler, intermission DPS, explosions set off.
+per shield and per Soulcoiler, intermission DPS. A stage counts as reached only
+if it started before the wipe, everywhere on the page. There is deliberately no
+"who set off the explosion" count: see the night builder's README.

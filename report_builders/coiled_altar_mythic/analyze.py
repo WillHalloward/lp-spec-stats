@@ -400,15 +400,15 @@ class Analysis(_Base):
         return best if best and abs(best[0] - ts) <= S.POS_MAX_AGE_MS else None
 
     def _set_off(self, fid: int, t: float, spans: dict) -> tuple[list[dict], str | None]:
-        """Who set an explosion off: whoever's orb debuff came off with it.
+        """Whose orb came off on the explosion's own millisecond.
 
-        An orb touching a Virulent Mutation removes its carrier's Volatile or
-        Mutagenic Venom on the same millisecond the twenty Rupture stacks land
-        (1 to 12ms on every clear case over four nights). Both carriers in a
-        collision lose theirs. When nobody loses one it is most likely two
-        orbs meeting on the ground, but a purple carrier nearby sometimes
-        keeps theirs through it, so those stay unattributed. `moved` is how far each of them
-        travelled in the second before, to say who walked into whom.
+        This is NOT who touched it. Checked over four nights: in every
+        explosion where two or more carriers lose their orb on the instant,
+        they stood 16-88 yd apart (the orb radius is 6 yd), and about half of
+        the carriers at each explosion kept theirs through it. So it marks who
+        was holding an orb that went with the blast, nothing more; the log has
+        no position for the orbs themselves to say who walked into what.
+        `moved` is yards travelled in the second before.
         """
         out = []
         for n, L in spans.items():
@@ -554,7 +554,8 @@ class Analysis(_Base):
                     # A Mutation still on the ground when the next Deluge is
                     # cast blows up on the cast, with nobody carrying it.
                     left = any(abs(t - d) <= S.DELUGE_GRACE_MS for d in deluges)
-                    set_off, kind = self._set_off(fid, t, spans)
+                    # a Mutation left for the Deluge has no carrier to name
+                    set_off, kind = ([], None) if left else self._set_off(fid, t, spans)
                     explosions.append(
                         {
                             "how": "left" if left else "touched",

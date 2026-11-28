@@ -51,10 +51,11 @@ def night(code: str, date: str, plan: str | None) -> dict:
     rank = lambda p: (STAGES.index(p["reached"]), -p["pct"])
     best = max(pulls, key=rank)
     reached = Counter(p["reached"] for p in pulls)
-    at_least = lambda k: sum(1 for p in pulls if STAGES.index(p["reached"]) >= STAGES.index(k))
-
     # how long each pull lived before its wipe started: the plainest progress line
     lived = [p["wipe"] if p["wipe"] is not None else p["dur"] for p in pulls]
+    # a stage counts as reached only if it started before the wipe, the same
+    # test as the funnel; a pull whose raid was already dying can still log one
+    at_least = lambda k: sum(1 for p, l in zip(pulls, lived) if k in p["phases"] and p["phases"][k][0] < l) if k != "P1" else len(pulls)
 
     W = d["wipes"]["wipes"]
     pre = d["wipes"]["before"]
@@ -94,7 +95,7 @@ def night(code: str, date: str, plan: str | None) -> dict:
 
     players = defaultdict(lambda: {"pulls": 0, "deaths": 0, "groups": Counter(), "ax1": None, "ax2": None,
                                    "g_absent": 0, "g_expected": 0, "veil_per": None, "add_per": None,
-                                   "int_dps": None, "set_off": 0, "set_off_purple": 0})
+                                   "int_dps": None})
     for p in pulls:
         for name in a.players.get(next(f for f, k in a.num.items() if k == p["pull"]), []):
             players[name]["pulls"] += 1
@@ -104,11 +105,15 @@ def night(code: str, date: str, plan: str | None) -> dict:
     for k, key in (("P1", "ax1"), ("P2", "ax2")):
         for r in d["axes"][k]["players"]:
             players[r["name"]][key] = r["index"]
+    # absences against the Guillotines a team member was there for: soaked on
+    # their own team or absent. Tanks (flex) are never absent, and a member
+    # still carrying the last Guillotine's debuff was not expected.
+    flex = set((a.plan or {}).get("flex", []))
     for w in gw:
         if w["absent"] is None:
             continue
-        on_team = set(w["soakers"]) - set(w["extra"] or [])
-        for n_ in set(w["absent"]) | set(w["locked"] or []) | on_team:
+        on_team = set(w["soakers"]) - set(w["extra"] or []) - flex
+        for n_ in set(w["absent"]) | on_team:
             players[n_]["g_expected"] += 1
         for n_ in w["absent"]:
             players[n_]["g_absent"] += 1
@@ -118,10 +123,6 @@ def night(code: str, date: str, plan: str | None) -> dict:
         players[r["name"]]["add_per"] = round(r["damage"] / r["adds"]) if r["adds"] else None
     for r in d["intermission"]["players"]:
         players[r["name"]]["int_dps"] = r["dps"]
-    for e in ex:
-        for x in e["set_off"]:
-            players[x["name"]]["set_off"] += 1
-            players[x["name"]]["set_off_purple"] += x["orb"] == "purple"
     roster = a.roster()
 
     return {
@@ -171,14 +172,11 @@ def night(code: str, date: str, plan: str | None) -> dict:
         "int_z_best": min(z) if z else None,
         "int_z_med": _med(z),
         "funnel": funnel,
-        "set_off_named": sum(1 for e in ex if e["set_off"]),
-        "set_off_kinds": dict(Counter(e["set_off_kind"] or "nobody's orb came off" for e in ex)),
         "players": {
             k: {"pulls": v["pulls"], "deaths": v["deaths"], "groups": dict(v["groups"]),
                 "ax1": v["ax1"], "ax2": v["ax2"],
                 "g_absent": v["g_absent"], "g_expected": v["g_expected"],
                 "veil_per": v["veil_per"], "add_per": v["add_per"], "int_dps": v["int_dps"],
-                "set_off": v["set_off"], "set_off_purple": v["set_off_purple"],
                 "cls": (roster.get(k) or {}).get("class", ""), "role": (roster.get(k) or {}).get("role", "")}
             for k, v in players.items() if v["pulls"]
         },

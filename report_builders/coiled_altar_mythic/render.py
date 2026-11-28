@@ -115,10 +115,6 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
     pre = d["wipes"]["before"]
     wc = Counter(r["cause"] for r in W).most_common()
     pc = Counter(x["group"] for x in pre).most_common()
-    s_tok = {
-        "set_off_of": len(ex_pre),
-        "set_off_named": sum(1 for e in ex_pre if e["set_off"]),
-    }
     w_tok = {
         "w_count": len(W),
         "w_top": wc[0][0].lower() if wc else "–",
@@ -211,7 +207,6 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
         "add_ttk": f"{sorted(x['ttk'] for x in killed)[len(killed) // 2]:.0f}" if killed else "–",
         **i_tok,
         **w_tok,
-        **s_tok,
     }
 
 
