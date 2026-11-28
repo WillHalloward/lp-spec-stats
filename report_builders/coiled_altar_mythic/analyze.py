@@ -543,6 +543,27 @@ class Analysis(_Base):
             out.append((c, tank, n))
         return out
 
+    def _left(self, fid: int, T: float, orbs: list[dict]) -> list[dict]:
+        """For a Mutation left on the ground until the Deluge: every purple
+        still lying there that a carry put down, and whose it was. One dropped
+        by its carrier dying is flagged (19 Nov, first log, pull 3 on POV:
+        Atheniás kept a purple into the frontal, died, and it went off 27s
+        later on the Deluge)."""
+        died = {}
+        for d in self.deaths[fid]:
+            died.setdefault(d["player"], []).append(d["ts"])
+        out = []
+        for i, o in enumerate(orbs):
+            if o["kind"] != "purple" or o["by"] is None or o["t"] > T or (o["gone"] is not None and o["gone"] < T - 5):
+                continue
+            who = self.name(o["by"])
+            death = next((x for x in died.get(who, []) if abs(o["t"] - x) <= 100), None)
+            out.append({"yd": None, "who": who, "carried": "purple", "into": None, "left": True,
+                        "age": round((T - o["t"]) / 1000, 1),
+                        "died_to": next((d["ability"] for d in self.deaths[fid] if d["player"] == who and d["ts"] == death), None) if death else None,
+                        "_ground": [i]})
+        return sorted(out, key=lambda c: -c["age"])
+
     def _contact(self, fid: int, T: float, orbs: list[dict], spans_by_id) -> list[dict]:
         """Contacts just before an explosion at T: a carried purple reaching
         any orb on the ground, or a carried green reaching a purple on the
@@ -742,7 +763,7 @@ class Analysis(_Base):
                         world = self._orb_world(fid, spans_by_id)
                     # a Mutation left for the Deluge names nobody: a carry
                     # ending on the Deluge's millisecond may be the Deluge's doing
-                    contacts = [] if left else self._contact(fid, t, world, spans_by_id)
+                    contacts = self._left(fid, t, world) if left else self._contact(fid, t, world, spans_by_id)
                     # the ground orbs in that explosion are spent, so they
                     # cannot match the next one
                     for c in contacts:
@@ -762,7 +783,11 @@ class Analysis(_Base):
                             "contacts": contacts,
                             # who made contact: whoever carried or had just
                             # dropped one of the two orbs
-                            "named": sorted({n for c in contacts for n in (c["who"], c.get("circle")) if n}),
+                            # a Deluge explosion only names someone when one
+                            # purple was left: leftover frontal guesses can
+                            # leave stale ones in the replay
+                            "named": [] if left and len(contacts) != 1 else
+                            sorted({n for c in contacts for n in (c["who"], c.get("circle")) if n}),
                             # the explosion that kills the wipe's first player
                             # lands a hair after that death is logged
                             "before_wipe": t <= cut + 1500,

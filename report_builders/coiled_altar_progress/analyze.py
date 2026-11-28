@@ -124,7 +124,7 @@ def night(code: str, date: str, plan: str | None) -> dict:
     for r in d["intermission"]["players"]:
         players[r["name"]]["int_dps"] = r["dps"]
     touched = [e for e in ex if e["how"] == "touched"]
-    for e in touched:
+    for e in ex:  # Deluge explosions name someone only when one purple was left
         for n_ in e["named"]:
             players[n_]["named_clear" if len(e["named"]) == 1 else "named_shared"] += 1
     for r in d["orbs"]["carriers"]:

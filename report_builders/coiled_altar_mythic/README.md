@@ -70,7 +70,11 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   purples overlap safely (POV), so neither is looked at.
   Over 19-26 Nov it names someone in 33 of 36 touched explosions before a
   wipe; 10.1% of quiet 0.7s windows with a purple out show a contact anyway
-  (`CONTACT_FALSE_RATE`, quoted on the page). Deluge explosions name nobody.
+  (`CONTACT_FALSE_RATE`, quoted on the page). A Deluge explosion ("left")
+  lists every purple the replay still has down, with its placer, age and
+  whether it was dropped by its carrier dying; it names someone only when one
+  purple is left, since stale frontal guesses leave old ones (ages of 74-193s
+  show up).
   **POV-checked (Aeonara), 26 Nov:** pulls 6 and 12 (Aeonara purple into a
   green), 11 (Indris's purple put down in Huibalast's), 20 and 25 (Huibalast
   purple into a green; 25's he had placed himself), 26 (Twilightnil through a
@@ -79,10 +83,11 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   Valanarr's just-placed purple). 22 Nov: pull 10 (Iylenvur, Alter Time back
   across a green while carrying a purple). All 9 match; 22 Nov pull 14
   (gateway past a green) names Alfi, carrier not visible on the recording.
-  Open: 19 Nov pull 3, where the recording reads as a purple going off by
-  itself ~25s after a frontal victim dropped it, but the log has Huibalast
-  dying to the 60s frontal with a green, and Atheniás carrying a purple 1.6 yd
-  from Huibalast's purple placed at 54s when it went off at 93s. Each miss before fixing came
+  19 Nov "pull 3" on POV is the 20:09 pull, in an earlier log
+  (`JB1PNgTMDARcHzZ6`, 20:05-20:56) that `3aw7TmPX2t6Zfr4g` (from 20:13) does
+  not include: Atheniás kept a purple into the 60s frontal, died, and it went
+  off on the 87s Deluge 27s later. The replay lists Atheniás (27.1s, dropped
+  dying to Sever) and Huibalast (28.7s) for it. Each miss before fixing came
   from one model gap: the 0.7s window (11), position lag (20), carries starting
   or ending on the explosion (26, 32), and the frontal guess (28).
 - **What does not work** (tested 19-26 Nov, don't rebuild): an orb debuff
