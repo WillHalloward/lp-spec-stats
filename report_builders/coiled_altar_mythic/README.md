@@ -51,8 +51,11 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
     against 9-14% of random moments, but 5/16 against 25% on 26 Nov.
   - *An orb timing out (dropped at the carrier's feet) in the 1.5s before*:
     6/16 on 26 Nov against 14%, but hits name up to six carriers.
-  The orbs themselves (Coalesced Venom, Virulent Mutation) log no events with
-  positions, which is what attribution would need.
+  What attribution needs is where the orbs are, and that IS in the log, just
+  not in the streams this builder fetches: query events by `sourceID` for the
+  `Coalesced Venom Stalker` and `Virulent Mutation` actors. Each orb that appears
+  (on a Deluge, or dropped when a carry times out) is a `cast` with x/y and a
+  `summon` with an instance id. Untested beyond one pull (26 Nov pull 20).
 - **Guillotine**: one per window. The marking cast is the one with a player
   target; soakers are everyone hit within 0.6s of the landing. Execution in the
   same instant means a miss. Every soaker gets a 100s `Guillotine` debuff and
