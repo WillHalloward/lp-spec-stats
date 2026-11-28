@@ -43,25 +43,38 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   (`Coalesced Venom Stalker` green, `Virulent Mutation` purple) log every orb
   that appears as a `cast` with x/y: on a Deluge, and where a carry ends.
   `Fetcher.source_events` pulls them by `sourceID` (the API ignores `targetID`
-  there). `_orb_world` replays the pull: a pickup takes the nearest live orb of
-  its colour within 6 yd (92% of pickups match; 99.9% of carry ends match a
-  drop), a frontal removes the N orbs nearest its tank where N is its Rupture
-  jump (never all: 233 orbs lay through a frontal and were picked up later),
-  and the push removes everything. A contact is a carried purple reaching any
-  ground orb, or a carried green reaching a ground purple, within 6 yd at the
-  explosion, having been further 0.7s before; or an orb put down (a carry
-  ending, carrier alive) inside another player's carried purple in the 1.7s
-  before, naming both (a green goes off in 19-51ms, a purple after ~1s; 3 of 8
-  purple placements like that exploded). Ground orbs do not set each other off
-  (they sit within 6 yd in half of all stage-one seconds) and two carried
-  purples overlap safely (POV), so neither is looked at. Over 19-26 Nov it
-  names someone in 21 of 36 touched explosions before a wipe; 9.2% of quiet
-  0.7s windows with a purple out show a contact anyway
-  (`CONTACT_FALSE_RATE`, quoted on the page; 23.7% without the frontal
-  removal). Deluge explosions name nobody. Checked against a POV recording:
-  26 Nov pulls 6 and 12 (Aeonara, purple into a green) are both right, and
-  pull 11 (Indris's purple put down in Huibalast's carried purple) is what
-  the placement rule was built from.
+  there). `_orb_world` replays the pull:
+  - a pickup takes the nearest live orb of its colour within 6 yd (92.9% of
+    pickups find one; 99.9% of carry ends match a drop);
+  - a frontal detonates N orbs, N being its Rupture jump, from a 45-degree cone
+    from Zul'jan (position from the raid's hits on him) through its tank,
+    nearest the centre line first. Never all of them: 233 orbs lay through a
+    frontal and were picked up later. The cone beat "nearest the tank" on
+    every measure (pickups 92.9% vs 91.4%, false rate 9% vs 11%), and 30-60
+    degrees barely differ;
+  - the push removes everything.
+  Carrier positions are interpolated between the hits they take.
+  A contact is (1) a carried purple reaching any ground orb, or a carried green
+  reaching a ground purple, within 6 yd, having been beyond 6 yd 0.7s before;
+  a carry that ends up to 0.15s before the explosion (the contact ended it) or
+  starts up to 0.15s after (a Demonic Gateway picks orbs up on the way) still
+  counts, as does the carrier's position up to 0.1s after (a gateway is a
+  jump that interpolation trails); or (2) an orb put down by a carry ending
+  inside another player's carried purple in the 1.7s before, naming both (a
+  green goes off in 19-51ms, a purple after ~1s). The carry's own just-placed
+  orb never counts. Ground orbs do not set each other off and two carried
+  purples overlap safely (POV), so neither is looked at.
+  Over 19-26 Nov it names someone in 30 of 36 touched explosions before a
+  wipe; 9.6% of quiet 0.7s windows with a purple out show a contact anyway
+  (`CONTACT_FALSE_RATE`, quoted on the page). Deluge explosions name nobody.
+  **POV-checked (Aeonara), 26 Nov:** pulls 6 and 12 (Aeonara purple into a
+  green), 11 (Indris's purple put down in Huibalast's), 20 and 25 (Huibalast
+  purple into a green; 25's he had placed himself), 26 (Twilightnil through a
+  gateway, green on the way, purple at the end), 28 (Alfi through a gateway,
+  purple on the way, Alfi's own old green at the end), 32 (Huibalast into
+  Valanarr's just-placed purple). All 8 match. Each miss before fixing came
+  from one model gap: the 0.7s window (11), position lag (20), carries starting
+  or ending on the explosion (26, 32), and the frontal guess (28).
 - **What does not work** (tested 19-26 Nov, don't rebuild): an orb debuff
   dropping on the explosion's millisecond (31 of the 33 it named died in it;
   debuffs come off 3-50ms before a logged death), a carry cut short with the

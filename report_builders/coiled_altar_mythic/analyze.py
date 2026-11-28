@@ -15,6 +15,7 @@ The paging, caching, roster and phase helpers come from the heroic builder.
 
 from __future__ import annotations
 
+import math
 import statistics
 from bisect import bisect_right
 from collections import Counter, defaultdict
@@ -395,10 +396,30 @@ class Analysis(_Base):
         return self._memo[key]
 
     def _where(self, fid: int, tid: int, ts: float):
+        """Position at ts: between the samples either side when both are close
+        enough (people run ~5 yd/s and hits can be 0.3s apart), else the
+        nearest sample."""
         L = self._positions(fid).get(tid) or []
         i = bisect_right(L, (ts, float("inf"), 0))
-        best = min(L[max(0, i - 1): i + 1], key=lambda p: abs(p[0] - ts), default=None)
+        lo = L[i - 1] if i else None
+        hi = L[i] if i < len(L) else None
+        if lo and hi and ts - lo[0] <= S.POS_MAX_AGE_MS and hi[0] - ts <= S.POS_MAX_AGE_MS and hi[0] > lo[0]:
+            f = (ts - lo[0]) / (hi[0] - lo[0])
+            return (ts, lo[1] + f * (hi[1] - lo[1]), lo[2] + f * (hi[2] - lo[2]))
+        best = min((p for p in (lo, hi) if p), key=lambda p: abs(p[0] - ts), default=None)
         return best if best and abs(best[0] - ts) <= S.POS_MAX_AGE_MS else None
+
+    def _boss_at(self, fid: int, ts: float):
+        """Zul'jan's position, from the raid's hits on him."""
+        key = ("boss", fid)
+        if key not in self._memo:
+            ids = {x["id"] for x in self.meta["masterData"]["actors"] if x["name"] == S.SERPENT}
+            self._memo[key] = sorted((e["timestamp"], e["x"] / 100, e["y"] / 100) for e in self.stream("done", fid)
+                                     if e.get("targetID") in ids and e.get("resourceActor") == 2 and e.get("x") is not None)
+        L = self._memo[key]
+        i = bisect_right(L, (ts, float("inf"), 0))
+        best = min(L[max(0, i - 1): i + 1], key=lambda p: abs(p[0] - ts), default=None)
+        return best if best and abs(best[0] - ts) <= 2000 else None
 
     def _orb_world(self, fid: int, spans_by_id: list[tuple[int, float, float, str]]) -> list[dict]:
         """Every orb that lay on the ground in a pull: where, from when, until
@@ -415,7 +436,7 @@ class Analysis(_Base):
                     continue
                 seen.add(k)
                 orbs.append({"t": e["timestamp"], "x": e["x"] / 100, "y": e["y"] / 100, "kind": kind,
-                             "gone": None, "by": None})
+                             "gone": None, "by": None, "why": None})
         orbs.sort(key=lambda o: o["t"])
         # a carry that ends puts its orb down where the carrier stands
         for tid, a, z, kind in spans_by_id:
@@ -440,7 +461,7 @@ class Analysis(_Base):
             if step[0] == "push":
                 for o in orbs:
                     if o["t"] <= ts and o["gone"] is None:
-                        o["gone"] = ts
+                        o["gone"], o["why"] = ts, "push"
                 continue
             live = lambda kinds: [o for o in orbs if o["kind"] in kinds and o["t"] <= ts + 50 and o["gone"] is None]
             if step[0] == "pick":
@@ -449,15 +470,33 @@ class Analysis(_Base):
                 if w and L:
                     o = min(L, key=lambda o: dist(o, w))
                     if dist(o, w) <= S.ORB_PICKUP_YD:
-                        o["gone"] = ts
+                        o["gone"], o["why"] = ts, ("pick", step[1])
                 continue
             _, tank, n = step
             w = self._where(fid, tank, ts) if tank is not None else None
             if not w or n <= 0:
                 continue
-            near = sorted((o for o in live(("green", "purple")) if dist(o, w) <= S.FRONTAL_REACH_YD), key=lambda o: dist(o, w))
-            for o in near[:n]:
-                o["gone"] = ts
+            boss = self._boss_at(fid, ts)
+            if boss and S.FRONTAL_HALF_ANGLE:
+                # a cone from the boss through the tank: the n orbs inside it
+                # nearest its centre line go
+                ax, ay = w[1] - boss[1], w[2] - boss[2]
+                norm = (ax * ax + ay * ay) ** 0.5 or 1.0
+
+                def angle(o):
+                    ox, oy = o["x"] - boss[1], o["y"] - boss[2]
+                    r = (ox * ox + oy * oy) ** 0.5 or 1.0
+                    c = max(-1.0, min(1.0, (ox * ax + oy * ay) / (r * norm)))
+                    return math.degrees(math.acos(c)), r
+
+                inside = [(angle(o), o) for o in live(("green", "purple"))]
+                inside = [(g, o) for (g, r), o in inside if g <= S.FRONTAL_HALF_ANGLE and r <= S.FRONTAL_REACH_YD]
+                pick = [o for _, o in sorted(inside, key=lambda p: p[0])][:n]
+            else:
+                pick = sorted((o for o in live(("green", "purple")) if dist(o, w) <= S.FRONTAL_REACH_YD),
+                              key=lambda o: dist(o, w))[:n]
+            for o in pick:
+                o["gone"], o["why"] = ts, "frontal"
         return orbs
 
     def _frontal_hits(self, fid: int) -> list[tuple[float, int | None, int]]:
@@ -512,19 +551,26 @@ class Analysis(_Base):
         g_then = {i for i, _ in ground(then)}
         out = []
         for tid, a, z, kind in spans_by_id:
-            if not (a <= at <= z):
+            # the contact itself can end a carry, and a gateway can start one
+            # on the explosion's own millisecond
+            if not (a <= T + S.CARRY_EDGE_MS and z >= T - S.CARRY_EDGE_MS):
                 continue
-            w = self._where(fid, tid, at)
-            if not w:
+            # where the carrier was at the contact; a gateway is a jump that
+            # interpolation trails, so the next 0.1s counts too
+            ws = [p for p in (self._where(fid, tid, min(max(ts, a), z)) for ts in (at, T + S.POS_LEAD_MS)) if p]
+            if not ws:
                 continue
+            w = ws[0]
             w0 = self._where(fid, tid, then) if a <= then else None
             for i, o in g_now:
                 if kind == "green" and o["kind"] != "purple":
                     continue
-                d = dist((w[1], w[2]), (o["x"], o["y"]))
+                if o["by"] == tid and o["t"] >= a:
+                    continue  # the orb this very carry put down
+                d = min(dist((p[1], p[2]), (o["x"], o["y"])) for p in ws)
                 if d > S.ORB_TOUCH_YD:
                     continue
-                if w0 and i in g_then and dist((w0[1], w0[2]), (o["x"], o["y"])) <= S.ORB_TOUCH_YD:
+                if w0 and i in g_then and dist((w0[1], w0[2]), (o["x"], o["y"])) <= S.ORB_FRESH_YD:
                     continue  # already that close: not this moment's contact
                 out.append({"yd": round(d, 1), "who": self.name(tid), "carried": kind,
                             "into": o["kind"], "_ground": [i]})
@@ -673,7 +719,7 @@ class Analysis(_Base):
                     for c in contacts:
                         for i in c.pop("_ground"):
                             if world[i]["gone"] is None:
-                                world[i]["gone"] = t
+                                world[i]["gone"], world[i]["why"] = t, "explosion"
                     explosions.append(
                         {
                             "how": "left" if left else "touched",

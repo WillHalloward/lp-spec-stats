@@ -49,20 +49,35 @@ ORB_TOUCH_YD = 6.0
 # A contact is fresh if the pair was further apart than ORB_TOUCH_YD this long
 # before the explosion, or one of the two was not there yet.
 ORB_FRESH_MS = 700
+# ...and "further apart" means beyond this. Contact can read a little over
+# 6 yd once positions lag (26 Nov pull 25 on POV: 6.0 yd), but a pair already
+# inside 6 yd 0.7s before was not this moment's contact.
+ORB_FRESH_YD = 6.0
 # An orb put down (a carry ending) inside another player's carried purple
 # detonates: a green at once (19-51ms), a purple after about a second
 # (984-1538ms; seen on POV, 26 Nov pull 11). Two carried purples overlapping
 # do not. A placement counts this long before the explosion.
 ORB_PLACED_MS = 1700
+# A carry that ends this soon before the explosion (the contact ended it) or
+# starts this soon before/at it (a Demonic Gateway picks orbs up on the way)
+# still counts as carried. Both seen on POV, 26 Nov pulls 26 and 32.
+CARRY_EDGE_MS = 150
 # Measured over 19-26 Nov: quiet stage-one 0.7s windows with a purple carried
-# that still show a contact (9.2%; 23.7% without the frontal removal). The
+# that still show a contact (9.6% with the cone frontals, interpolated
+# positions and the 0.1s lead; all 8 POV-checked contacts on 26 Nov match). The
 # page quotes it; re-measure if the contact rules change.
-CONTACT_FALSE_RATE = 0.092
+CONTACT_FALSE_RATE = 0.096
 # A pickup takes the nearest live orb of its colour within this.
 ORB_PICKUP_YD = 6.0
-# A frontal's orbs are taken from those nearest its tank, never further than
-# this (the cone is not in the log).
-FRONTAL_REACH_YD = 25.0
+# A frontal's orbs are the ones in a cone from Zul'jan through its tank (his
+# position comes from the raid's hits on him), nearest the centre line first,
+# never further than FRONTAL_REACH_YD from him. 0 falls back to nearest the tank.
+FRONTAL_HALF_ANGLE = 45.0
+FRONTAL_REACH_YD = 40.0
+# A carrier's position counts up to this long after the explosion too: a
+# Demonic Gateway is a jump, and interpolation trails it (26 Nov pull 28 on
+# POV: 6.9 yd at the explosion, 5.9 yd 0.1s later).
+POS_LEAD_MS = 100
 # A carrier's position is the nearest hit they took, within this.
 POS_MAX_AGE_MS = 600
 
