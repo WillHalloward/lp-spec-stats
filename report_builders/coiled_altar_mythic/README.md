@@ -39,12 +39,20 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   count (removals reset it). A jump of 15+ is a purple explosion; one within 1.5s
   of a Toxic Deluge cast is a Mutation left on the ground, otherwise "touched".
   The holders list is proximity in time, not proof of contact.
-- **Orb came off with it**: whoever's Volatile or Mutagenic Venom comes off
-  within 30ms of the explosion's first Rupture stack. It is not who touched it:
-  in every explosion listing two or more, they stood 16-88 yd apart (orb radius
-  6 yd), and about half the carriers at each explosion kept theirs. Do not turn
-  it back into blame without a way to place the orbs. Rows left for a Deluge
-  name nobody.
+- **Who set off an explosion is not in the log.** Tested over four nights
+  (19-26 Nov, 43 explosions before a wipe), so don't rebuild these:
+  - *Orb debuff dropping on the explosion's millisecond*: 31 of the 33 carriers
+    it named died in that same explosion, and death drops every debuff. Those
+    named were 16-88 yd apart (orb radius 6 yd): it lists victims, not causes.
+  - *A carried orb cut short without the carrier dying*: about 2,900 carries,
+    almost all run the full 5s or end on a death; only 2 early drops land on an
+    explosion. Touching a purple does not end the carrier's debuff early.
+  - *A pickup in the 0.7s before*: 6/7 and 7/10 explosions on 19 and 22 Nov
+    against 9-14% of random moments, but 5/16 against 25% on 26 Nov.
+  - *An orb timing out (dropped at the carrier's feet) in the 1.5s before*:
+    6/16 on 26 Nov against 14%, but hits name up to six carriers.
+  The orbs themselves (Coalesced Venom, Virulent Mutation) log no events with
+  positions, which is what attribution would need.
 - **Guillotine**: one per window. The marking cast is the one with a player
   target; soakers are everyone hit within 0.6s of the landing. Execution in the
   same instant means a miss. Every soaker gets a 100s `Guillotine` debuff and
