@@ -379,6 +379,72 @@ class Analysis(_Base):
 
     # ---- orbs -----------------------------------------------------------
 
+    def _positions(self, fid: int) -> dict[str, list[tuple[float, float, float]]]:
+        """Player name -> [(ts, x, y)] in yards, from the positions on hits taken."""
+        key = ("pos", fid)
+        if key not in self._memo:
+            out: dict[str, list] = defaultdict(list)
+            for e in self.stream("taken", fid):
+                if e.get("x") is None or not self.is_player(e.get("targetID")):
+                    continue
+                out[self.name(e["targetID"])].append((e["timestamp"], e["x"] / 100, e["y"] / 100))
+            for L in out.values():
+                L.sort()
+            self._memo[key] = out
+        return self._memo[key]
+
+    def _where(self, fid: int, name: str, ts: float):
+        L = self._positions(fid).get(name) or []
+        i = bisect_right(L, (ts, float("inf"), 0))
+        best = min(L[max(0, i - 1): i + 1], key=lambda p: abs(p[0] - ts), default=None)
+        return best if best and abs(best[0] - ts) <= S.POS_MAX_AGE_MS else None
+
+    def _set_off(self, fid: int, t: float, spans: dict) -> tuple[list[dict], str | None]:
+        """Who set an explosion off: whoever's orb debuff came off with it.
+
+        An orb touching a Virulent Mutation removes its carrier's Volatile or
+        Mutagenic Venom on the same millisecond the twenty Rupture stacks land
+        (1 to 12ms on every clear case over four nights). Both carriers in a
+        collision lose theirs. When nobody loses one it is most likely two
+        orbs meeting on the ground, but a purple carrier nearby sometimes
+        keeps theirs through it, so those stay unattributed. `moved` is how far each of them
+        travelled in the second before, to say who walked into whom.
+        """
+        out = []
+        for n, L in spans.items():
+            for a, z, kind in L:
+                if z == a or abs(z - t) > S.SET_OFF_MS:
+                    continue
+                now, before = self._where(fid, n, t), self._where(fid, n, t - 1000)
+                moved = (
+                    round(((now[1] - before[1]) ** 2 + (now[2] - before[2]) ** 2) ** 0.5, 1)
+                    if now and before
+                    else None
+                )
+                out.append(
+                    {
+                        "name": n,
+                        "orb": kind,
+                        "held": round((z - a) / 1000, 1),
+                        "expired": (z - a) >= S.ORB_EXPIRE_MS,
+                        "moved": moved,
+                    }
+                )
+        out.sort(key=lambda x: -(x["moved"] or 0))
+        p = sum(1 for x in out if x["orb"] == "purple")
+        g = len(out) - p
+        if not out:
+            kind = None
+        elif p and g:
+            kind = "green and purple carriers collided"
+        elif p >= 2:
+            kind = "purple carriers collided"
+        elif p:
+            kind = "purple carried into an orb"
+        else:
+            kind = "green carried into a purple"
+        return out, kind
+
     def orbs(self) -> dict:
         green = self.ids_named(S.GREEN)
         purple = self.ids_named(S.PURPLE)
@@ -488,6 +554,7 @@ class Analysis(_Base):
                     # A Mutation still on the ground when the next Deluge is
                     # cast blows up on the cast, with nobody carrying it.
                     left = any(abs(t - d) <= S.DELUGE_GRACE_MS for d in deluges)
+                    set_off, kind = self._set_off(fid, t, spans)
                     explosions.append(
                         {
                             "how": "left" if left else "touched",
@@ -498,6 +565,8 @@ class Analysis(_Base):
                             "with_frontal": on_frontal,
                             "killed": sum(1 for d in rup_deaths if 0 <= d - t <= 2500),
                             "holders": holders,
+                            "set_off": set_off,
+                            "set_off_kind": kind,
                             # the explosion that kills the wipe's first player
                             # lands a hair after that death is logged
                             "before_wipe": t <= cut + 1500,

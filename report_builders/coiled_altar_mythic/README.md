@@ -39,6 +39,12 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   count (removals reset it). A jump of 15+ is a purple explosion; one within 1.5s
   of a Toxic Deluge cast is a Mutation left on the ground, otherwise "touched".
   The holders list is proximity in time, not proof of contact.
+- **Set off by**: whoever's Volatile or Mutagenic Venom comes off within 30ms of
+  the explosion's first Rupture stack (clear cases land 1-12ms apart; a
+  collision drops both carriers'). `moved` is yards travelled in the second
+  before, from positions on hits taken (stale reads as 0). Nobody's coming off
+  is left unattributed: usually two orbs on the ground, but sometimes a purple
+  carrier nearby kept theirs.
 - **Guillotine**: one per window. The marking cast is the one with a player
   target; soakers are everyone hit within 0.6s of the landing. Execution in the
   same instant means a miss. Every soaker gets a 100s `Guillotine` debuff and

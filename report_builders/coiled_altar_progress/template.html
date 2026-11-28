@@ -7,6 +7,8 @@ __SHARED_CSS__
 .cmp td.l{white-space:normal;min-width:220px}
 .cmp tr.grp td{background:var(--surface-2);font-family:"Barlow Condensed",sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--ink-2)}
 .d{font-size:10px;margin-left:4px}
+#pl-pick button{font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--surface);color:var(--ink-2);border:1px solid var(--rule);padding:4px 9px;border-radius:3px;cursor:pointer}
+#pl-pick button.on{border-color:var(--accent);color:var(--ink);background:var(--surface-2)}
 .tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:0 5px;border-radius:2px;border:1px solid var(--rule)}
 </style>
 <div class="wrap">
@@ -34,6 +36,13 @@ __SHARED_CSS__
 </section>
 
 <section>
+  <div class="head"><h2>How far the pulls got</h2>
+  <p>The share of each night&rsquo;s pulls still alive past each point of the fight, before its wipe started: past the opening orbs, past each Guillotine of stage one (48s and 133s), into stage two, through the first shield, into the intermission and into stage three. Where a night&rsquo;s bar drops sharply is the wall that night. Quick resets are left out.</p></div>
+  <figure><div class="legend" id="lg-fun"></div><svg id="c-fun"></svg></figure>
+  <div class="tblwrap"><table class="hm" id="t-fun"><thead></thead><tbody></tbody></table></div>
+</section>
+
+<section>
   <div class="head"><h2>Night by night</h2>
   <p>Every number is a rate where the size of the night would otherwise decide it: per pull, per minute of the stage played before the wipe, or per window. The small arrow is the change from the night before, green where that is better and red where it is worse. Only what happened before each wipe counts.</p></div>
   <div class="tblwrap"><table class="cmp" id="t-cmp"><thead></thead><tbody></tbody></table></div>
@@ -53,8 +62,16 @@ __SHARED_CSS__
 </section>
 
 <section>
+  <div class="head"><h2>Who set off the purple explosions</h2>
+  <p>An orb touching a purple drops its carrier&rsquo;s orb debuff on the explosion&rsquo;s own millisecond, so whoever loses one then set it off; in a collision both carriers do. <b>Nobody&rsquo;s orb came off</b> is most likely two orbs meeting on the ground, though a purple carrier was sometimes close by and kept theirs; those are left unattributed. Explosions before each wipe only; the night pages list every one with how long the orb was held and how far each carrier moved in the second before.</p></div>
+  <div class="tblwrap"><table class="hm" id="t-sok"><thead></thead><tbody></tbody></table></div>
+</section>
+
+<section>
   <div class="head"><h2>Players</h2>
-  <p>Deaths before the wipe per ten pulls the player was in, night by night, and the stage-one axe index (1.0 is that night&rsquo;s average for the same seconds alive; lower is better). A blank is a night they were not in.</p></div>
+  <p>One mechanic at a time, player by player, night by night. A blank is a night they were not in, or had nothing to count. Hover a cell for the raw numbers.</p></div>
+  <div class="legend" id="pl-pick" style="gap:6px"></div>
+  <p class="muted" id="pl-note" style="font-size:13px;margin:4px 0 8px"></p>
   <div class="tblwrap"><table class="hm" id="t-pl"><thead></thead><tbody></tbody></table></div>
 </section>
 
@@ -192,22 +209,82 @@ const heat=(v,max,good)=>{if(v==null||!max)return '';const a=Math.min(1,v/max);
     +`<tr><td><b>All, per 10 pulls</b></td>${N.map(n=>`<td><b>${f1(10*n.pre_deaths/n.pulls)}</b> <span class="sm">${n.pre_deaths}</span></td>`).join('')}</tr>`;
 })();
 
+/* ---------- the funnel ---------- */
+(function(){
+  const labs=N[0].funnel.map(f=>f.label);
+  const C=['var(--s1)','var(--s4)','var(--s3)','var(--crit)','var(--s5)','var(--s2)'];
+  const s=document.getElementById('c-fun'),W=900,L=44,R=12,T=10,H=220,B=64;
+  const X=i=>L+(W-L-R)*i/(labs.length-1),Y=v=>T+H*(1-v);
+  [0,.25,.5,.75,1].forEach(v=>{mk(s,'line',{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:'var(--grid)'});txt(s,L-6,Y(v)+4,Math.round(v*100)+'%',{anchor:'end',size:9.5});});
+  labs.forEach((l,i)=>{const words=l.replace(/ \(/,'\n(').split('\n');words.forEach((w,k)=>txt(s,X(i),T+H+16+k*12,w,{size:9.5}));});
+  N.forEach((n,k)=>{const pts=n.funnel.map((f,i)=>[X(i),Y(f.n/n.pulls)]);
+    mk(s,'polyline',{points:pts.map(p=>p.join(',')).join(' '),fill:'none',stroke:C[k%C.length],'stroke-width':2.5});
+    pts.forEach((p,i)=>{const c=mk(s,'circle',{cx:p[0],cy:p[1],r:4,fill:C[k%C.length]});
+      hook(c,`<b>${esc(n.label)}</b><br>${esc(labs[i])}<br>${n.funnel[i].n} of ${n.pulls} pulls (${pc(n.funnel[i].n,n.pulls)})`);});});
+  s.setAttribute('viewBox',`0 0 ${W} ${T+H+B}`);
+  document.getElementById('lg-fun').innerHTML=N.map((n,k)=>`<span><i style="background:${C[k%C.length]}"></i>${esc(n.label)}</span>`).join('');
+  document.querySelector('#t-fun thead').innerHTML=`<tr><th>Checkpoint</th>${nightHead()}</tr>`;
+  document.querySelector('#t-fun tbody').innerHTML=labs.map((l,i)=>`<tr><td>${esc(l)}</td>`+N.map(n=>{const f=n.funnel[i],prev=i?n.funnel[i-1].n:n.pulls;
+    const lost=prev-f.n;return `<td title="${lost} of ${prev} lost here">${pc(f.n,n.pulls)} <span class="sm">${f.n}${lost?' −'+lost:''}</span></td>`;}).join('')+'</tr>').join('');
+})();
+
+/* ---------- who set off the explosions ---------- */
+(function(){
+  const kinds=[...new Set(N.flatMap(n=>Object.keys(n.set_off_kinds)))].sort((a,b)=>a.startsWith('nobody')?1:b.startsWith('nobody')?-1:0);
+  const names=[...new Set(N.flatMap(n=>Object.entries(n.players).filter(([k,v])=>v.set_off).map(([k])=>k)))];
+  const tot=k=>N.reduce((s,n)=>s+((n.players[k]||{}).set_off||0),0);
+  names.sort((a,b)=>tot(b)-tot(a));
+  const ccol=k=>{for(let i=N.length-1;i>=0;i--){const p=N[i].players[k];if(p&&p.cls)return `var(--cls-${p.cls})`;}return 'var(--muted)';};
+  document.querySelector('#t-sok thead').innerHTML=`<tr><th></th>${nightHead()}<th>All</th></tr>`;
+  const mx=Math.max(1,...names.flatMap(k=>N.map(n=>(n.players[k]||{}).set_off||0)));
+  document.querySelector('#t-sok tbody').innerHTML=
+    `<tr><td><b>Explosions before a wipe</b></td>${N.map(n=>`<td><b>${n.explosions}</b></td>`).join('')}<td><b>${N.reduce((s,n)=>s+n.explosions,0)}</b></td></tr>`
+    +kinds.map(k=>`<tr><td class="muted">${esc(k)}</td>${N.map(n=>`<td class="muted">${n.set_off_kinds[k]||'–'}</td>`).join('')}<td class="muted">${N.reduce((s,n)=>s+(n.set_off_kinds[k]||0),0)}</td></tr>`).join('')
+    +`<tr class="grp"><td colspan="${N.length+2}" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px">Set off by</td></tr>`
+    +names.map(k=>`<tr><td><span style="color:${ccol(k)}">${esc(k)}</span></td>`+N.map(n=>{const p=n.players[k];if(!p)return '<td></td>';
+      return p.set_off?`<td${heat(p.set_off,mx)} title="${p.set_off_purple} carrying a purple, ${p.set_off-p.set_off_purple} a green, in ${p.pulls} pulls">${p.set_off}</td>`:'<td class="muted">–</td>';}).join('')+`<td><b>${tot(k)}</b></td></tr>`).join('');
+})();
+
 /* ---------- players ---------- */
 (function(){
+  const M1=x=>x==null?'–':(x/1e6).toFixed(1)+'M';
+  const METRICS=[
+    {key:'deaths',lab:'Deaths before the wipe',note:'Per ten pulls the player was in. Lower is better.',bad:true,
+      v:p=>p.pulls?10*p.deaths/p.pulls:null,show:v=>f1(v),tip:p=>`${p.deaths} in ${p.pulls} pulls: `+Object.entries(p.groups).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${v}× ${k}`).join(', ')},
+    {key:'ax',lab:'Axes, stage one',note:'Axe ticks against that night’s average for the same seconds alive; 1.0 is average, lower is better.',bad:true,
+      v:p=>p.ax1,show:v=>f2(v),tip:p=>`stage two: ${f2(p.ax2)}`},
+    {key:'g',lab:'Guillotine absences',note:'Share of their team’s Guillotines they were alive for and not under. Lower is better.',bad:true,
+      v:p=>p.g_expected?p.g_absent/p.g_expected:null,show:v=>Math.round(100*v)+'%',tip:p=>`${p.g_absent} absent of ${p.g_expected} Guillotines`},
+    {key:'veil',lab:'Damage into the shield',note:'Per shield in stage two they were in, absorbed or not. Higher is better.',bad:false,
+      v:p=>p.veil_per,show:M1,tip:p=>M1(p.veil_per)+' per shield'},
+    {key:'add',lab:'Damage per Soulcoiler',note:'Damage into each Soulcoiler they were in for. Higher is better.',bad:false,
+      v:p=>p.add_per,show:M1,tip:p=>M1(p.add_per)+' per Soulcoiler'},
+    {key:'int',lab:'Intermission DPS',note:'Damage into Zul’jan per second alive in the intermission. Higher is better.',bad:false,
+      v:p=>p.int_dps,show:M1,tip:p=>M1(p.int_dps)+' per second'},
+    {key:'so',lab:'Explosions set off',note:'Purple explosions before a wipe whose orb was theirs, per ten pulls. Lower is better.',bad:true,
+      v:p=>p.pulls?10*p.set_off/p.pulls:null,show:v=>f1(v),tip:p=>`${p.set_off} in ${p.pulls} pulls`},
+  ];
   const names=[...new Set(N.flatMap(n=>Object.keys(n.players)))];
-  const last=n=>{for(let i=N.length-1;i>=0;i--)if(N[i].players[n])return N[i].players[n];};
-  const rate=(p)=>p?10*p.deaths/p.pulls:null;
-  const avg=n=>{const L=N.map(x=>x.players[n]).filter(Boolean);const pu=L.reduce((s,p)=>s+p.pulls,0);return pu?10*L.reduce((s,p)=>s+p.deaths,0)/pu:0;};
-  names.sort((a,b)=>avg(b)-avg(a));
-  const mx=Math.max(...names.flatMap(n=>N.map(x=>rate(x.players[n])||0)));
-  const ccol=n=>{const p=last(n);return p&&p.cls?`var(--cls-${p.cls})`:'var(--muted)';};
-  document.querySelector('#t-pl thead').innerHTML=`<tr><th rowspan="2">Player</th><th colspan="${N.length}">Deaths before the wipe per 10 pulls</th><th colspan="${N.length}">Axe index, stage one</th></tr><tr>${nightHead()}${nightHead()}</tr>`;
-  document.querySelector('#t-pl tbody').innerHTML=names.map(n=>`<tr><td><span style="color:${ccol(n)}">${esc(n)}</span></td>`
-    +N.map(x=>{const p=x.players[n];if(!p)return '<td></td>';const r=rate(p);
-      const why=Object.entries(p.groups).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${v}× ${k}`).join(', ');
-      return `<td${heat(r,mx)} title="${esc(p.deaths+' in '+p.pulls+' pulls'+(why?': '+why:''))}">${f1(r)}</td>`;}).join('')
-    +N.map(x=>{const p=x.players[n];if(!p||p.ax1==null)return '<td></td>';const v=p.ax1;
-      return `<td${v>=1.5?' class="neg"':v<=.67?' class="pos"':''}>${f2(v)}</td>`;}).join('')+'</tr>').join('');
+  const ccol=k=>{for(let i=N.length-1;i>=0;i--){const p=N[i].players[k];if(p&&p.cls)return `var(--cls-${p.cls})`;}return 'var(--muted)';};
+  let cur=METRICS[0];
+  function draw(){
+    document.getElementById('pl-note').textContent=cur.note;
+    const vals=k=>N.map(n=>n.players[k]?cur.v(n.players[k]):null);
+    const has=names.filter(k=>vals(k).some(v=>v!=null&&(cur.key!=='so'||v>0)));
+    const mean=k=>{const L=vals(k).filter(v=>v!=null);return L.length?L.reduce((a,b)=>a+b,0)/L.length:0;};
+    has.sort((a,b)=>cur.bad?mean(b)-mean(a):mean(b)-mean(a));
+    const all=has.flatMap(vals).filter(v=>v!=null);const mx=Math.max(...all),mn=Math.min(...all);
+    document.querySelector('#t-pl thead').innerHTML=`<tr><th>Player</th>${nightHead()}<th>Trend</th></tr>`;
+    document.querySelector('#t-pl tbody').innerHTML=has.map(k=>{const V=vals(k);const L=V.filter(v=>v!=null);
+      let tr='';if(L.length>=2){const d=L[L.length-1]-L[0];if(Math.abs(d)>1e-9){const good=cur.bad?d<0:d>0;tr=`<span class="${good?'pos':'neg'}">${d>0?'▲':'▼'}</span>`;}}
+      return `<tr><td><span style="color:${ccol(k)}">${esc(k)}</span></td>`+N.map((n,i)=>{const p=n.players[k],v=V[i];if(v==null)return '<td></td>';
+        const sh=cur.bad?heat(v,mx):heat(mx>mn?(v-mn)/(mx-mn):0,1,true);
+        return `<td${sh} title="${esc(cur.tip(p))}">${cur.show(v)}</td>`;}).join('')+`<td>${tr}</td></tr>`;}).join('');
+    document.querySelectorAll('#pl-pick button').forEach(b=>b.classList.toggle('on',b.dataset.k===cur.key));
+  }
+  document.getElementById('pl-pick').innerHTML=METRICS.map(m=>`<button data-k="${m.key}">${esc(m.lab)}</button>`).join('');
+  document.querySelectorAll('#pl-pick button').forEach(b=>b.addEventListener('click',()=>{cur=METRICS.find(m=>m.key===b.dataset.k);draw();}));
+  draw();
 })();
 })();
 </script>

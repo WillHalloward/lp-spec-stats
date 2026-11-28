@@ -16,3 +16,11 @@ Everything that grows with the size of a night is a rate (per pull, per minute
 of the stage played before the wipe, per window), because the nights run 18 to
 35 pulls. Only what happened before each wipe counts. The arrows in the table
 compare with the night before; each row declares which direction is better.
+
+Sections: every pull, the checkpoint funnel (past the opening orbs at 25s, each
+stage-one Guillotine, stage two, the first shield broken, the intermission,
+stage three; only the first shield, since Malacrass often dies before a
+second), the night-by-night table, wipe causes, deaths before the wipe, who set
+off the purple explosions (from the night builder's `set_off`), and a player
+table with a picker: deaths, stage-one axe index, Guillotine absences, damage
+per shield and per Soulcoiler, intermission DPS, explosions set off.
