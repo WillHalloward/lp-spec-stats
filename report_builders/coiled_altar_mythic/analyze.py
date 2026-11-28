@@ -424,61 +424,108 @@ class Analysis(_Base):
             near = [o for o in orbs if o["kind"] == kind and o["by"] is None and abs(o["t"] - z) <= 60]
             if near:
                 min(near, key=lambda o: abs(o["t"] - z))["by"] = tid
-        # a pickup takes the nearest live orb of its colour
-        for tid, a, z, kind in sorted(spans_by_id, key=lambda s: s[1]):
-            w = self._where(fid, tid, a)
-            if not w:
+        # Replay the pull in order. A pickup takes the nearest live orb of
+        # its colour. A frontal detonates the orbs in its cone; the log does
+        # not say which, but its Rupture jump says how many, so the ones
+        # nearest the tank go (233 orbs over four nights lay through a frontal
+        # and were picked up later, so it is never all of them). The push into
+        # stage two detonates everything.
+        steps = [(a, 0, ("pick", tid, kind)) for tid, a, z, kind in spans_by_id]
+        steps += [(ts, 1, ("frontal", tank, n)) for ts, tank, n in self._frontal_hits(fid)]
+        p2 = self.phase_bounds(fid).get("P2", (None,))[0]
+        if p2 is not None:
+            steps.append((p2, 2, ("push",)))
+        dist = lambda o, w: ((o["x"] - w[1]) ** 2 + (o["y"] - w[2]) ** 2) ** 0.5
+        for ts, _, step in sorted(steps, key=lambda s: (s[0], s[1])):
+            if step[0] == "push":
+                for o in orbs:
+                    if o["t"] <= ts and o["gone"] is None:
+                        o["gone"] = ts
                 continue
-            live = [o for o in orbs if o["kind"] == kind and o["t"] <= a + 50 and o["gone"] is None]
-            if not live:
+            live = lambda kinds: [o for o in orbs if o["kind"] in kinds and o["t"] <= ts + 50 and o["gone"] is None]
+            if step[0] == "pick":
+                w = self._where(fid, step[1], ts)
+                L = live((step[2],))
+                if w and L:
+                    o = min(L, key=lambda o: dist(o, w))
+                    if dist(o, w) <= S.ORB_PICKUP_YD:
+                        o["gone"] = ts
                 continue
-            o = min(live, key=lambda o: (o["x"] - w[1]) ** 2 + (o["y"] - w[2]) ** 2)
-            if ((o["x"] - w[1]) ** 2 + (o["y"] - w[2]) ** 2) ** 0.5 <= S.ORB_PICKUP_YD:
-                o["gone"] = a
+            _, tank, n = step
+            w = self._where(fid, tank, ts) if tank is not None else None
+            if not w or n <= 0:
+                continue
+            near = sorted((o for o in live(("green", "purple")) if dist(o, w) <= S.FRONTAL_REACH_YD), key=lambda o: dist(o, w))
+            for o in near[:n]:
+                o["gone"] = ts
         return orbs
 
-    def _contact(self, fid: int, T: float, orbs: list[dict], spans_by_id) -> list[dict]:
-        """Pairs that came into contact just before an explosion at T, at
-        least one of them purple. Each side is a carried orb (with its
-        carrier), an orb a carry just dropped (with who dropped it), or one
-        that was already lying there."""
-
-        def things(at):
-            out = []
-            for i, o in enumerate(orbs):
-                if o["t"] <= at and (o["gone"] is None or o["gone"] > at):
-                    out.append({"key": ("g", i), "kind": o["kind"], "x": o["x"], "y": o["y"],
-                                "how": "dropped" if o["by"] is not None and T - o["t"] <= S.ORB_FRESH_MS else "on the ground",
-                                "who": self.name(o["by"]) if o["by"] is not None and T - o["t"] <= S.ORB_FRESH_MS else None})
-            for tid, a, z, kind in spans_by_id:
-                if a <= at <= z:
-                    w = self._where(fid, tid, at)
-                    if w:
-                        out.append({"key": ("c", tid, a), "kind": kind, "x": w[1], "y": w[2],
-                                    "how": "carried", "who": self.name(tid)})
-            return out
-
-        dist = lambda u, v: ((u["x"] - v["x"]) ** 2 + (u["y"] - v["y"]) ** 2) ** 0.5
-        now = things(T - 40)
-        before = {t["key"]: t for t in things(T - S.ORB_FRESH_MS)}
+    def _frontal_hits(self, fid: int) -> list[tuple[float, int | None, int]]:
+        """(cast time, tank id, orbs detonated) for each frontal: the tank is
+        whoever took its debuff, the count the median Rupture jump on it."""
+        frontal = self.ids_of(*S.FRONTALS)
+        rupture = self.ids_named(S.RUPTURE)
+        casts = [e["timestamp"] for e in self.stream("enemy_casts", fid)
+                 if e["type"] == "cast" and e.get("abilityGameID") in frontal]
+        deb = sorted(self.stream("debuffs", fid), key=lambda e: e["timestamp"])
         out = []
-        for i in range(len(now)):
-            for j in range(i + 1, len(now)):
-                u, v = now[i], now[j]
-                if "purple" not in (u["kind"], v["kind"]) or (u["who"] and u["who"] == v["who"]):
+        for c in casts:
+            tank = next((e["targetID"] for e in deb if e.get("abilityGameID") in frontal
+                         and e["type"] == "applydebuff" and 0 <= e["timestamp"] - c <= 500
+                         and self.is_player(e.get("targetID"))), None)
+            stack: dict[int, int] = {}
+            gains = Counter()
+            for e in deb:
+                if e.get("abilityGameID") not in rupture or e["timestamp"] > c + S.FRONTAL_GRACE_MS:
                     continue
-                d = dist(u, v)
+                tid = e["targetID"]
+                if e["type"] == "removedebuff":
+                    stack[tid] = 0
+                elif e["type"] == "removedebuffstack":
+                    stack[tid] = e.get("stack") or 0
+                elif e["type"] in ("applydebuff", "applydebuffstack"):
+                    new = e.get("stack") or 1
+                    if e["timestamp"] >= c:
+                        gains[tid] += new - stack.get(tid, 0) if e["type"] == "applydebuffstack" else new
+                    stack[tid] = new
+            n = int(statistics.median(gains.values())) if gains else 0
+            out.append((c, tank, n))
+        return out
+
+    def _contact(self, fid: int, T: float, orbs: list[dict], spans_by_id) -> list[dict]:
+        """Carried orbs that came into contact just before an explosion at T:
+        a carried purple reaching any orb on the ground, or a carried green
+        reaching a purple on the ground, within ORB_TOUCH_YD, having been
+        further than that (or not carrying yet) ORB_FRESH_MS before.
+
+        Orbs on the ground do not set each other off (two lie within 6 yd of
+        each other in half of all stage-one seconds), and two carried orbs
+        never meet at an explosion, so those pairs are not looked at.
+        """
+        dist = lambda u, v: ((u[0] - v[0]) ** 2 + (u[1] - v[1]) ** 2) ** 0.5
+        at, then = T - 40, T - S.ORB_FRESH_MS
+        ground = lambda ts: [(i, o) for i, o in enumerate(orbs)
+                             if o["t"] <= ts and (o["gone"] is None or o["gone"] > ts)]
+        g_now = ground(at)
+        g_then = {i for i, _ in ground(then)}
+        out = []
+        for tid, a, z, kind in spans_by_id:
+            if not (a <= at <= z):
+                continue
+            w = self._where(fid, tid, at)
+            if not w:
+                continue
+            w0 = self._where(fid, tid, then) if a <= then else None
+            for i, o in g_now:
+                if kind == "green" and o["kind"] != "purple":
+                    continue
+                d = dist((w[1], w[2]), (o["x"], o["y"]))
                 if d > S.ORB_TOUCH_YD:
                     continue
-                pu, pv = before.get(u["key"]), before.get(v["key"])
-                if pu and pv and dist(pu, pv) <= S.ORB_TOUCH_YD:
-                    continue
-                # the side that moved or arrived is the one that made contact
-                sides = sorted((u, v), key=lambda q: q["how"] == "on the ground")
-                out.append({"yd": round(d, 1),
-                            "a": {k: sides[0][k] for k in ("kind", "how", "who")},
-                            "b": {k: sides[1][k] for k in ("kind", "how", "who")},
-                            "_ground": [q["key"][1] for q in (u, v) if q["key"][0] == "g"]})
+                if w0 and i in g_then and dist((w0[1], w0[2]), (o["x"], o["y"])) <= S.ORB_TOUCH_YD:
+                    continue  # already that close: not this moment's contact
+                out.append({"yd": round(d, 1), "who": self.name(tid), "carried": kind,
+                            "into": o["kind"], "_ground": [i]})
         out.sort(key=lambda c: c["yd"])
         return out
 
@@ -618,7 +665,7 @@ class Analysis(_Base):
                             "contacts": contacts,
                             # who made contact: whoever carried or had just
                             # dropped one of the two orbs
-                            "named": sorted({sd["who"] for c in contacts for sd in (c["a"], c["b"]) if sd["who"]}),
+                            "named": sorted({c["who"] for c in contacts}),
                             # the explosion that kills the wipe's first player
                             # lands a hair after that death is logged
                             "before_wipe": t <= cut + 1500,

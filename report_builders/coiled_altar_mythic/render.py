@@ -121,6 +121,7 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
         "fresh_s": f"{S.ORB_FRESH_MS / 1000:g}",
         "contact_of": len(touched),
         "contact_named": sum(1 for e in touched if e["named"]),
+        "false_pct": f"{100 * S.CONTACT_FALSE_RATE:.0f}",
     }
     w_tok = {
         "w_count": len(W),

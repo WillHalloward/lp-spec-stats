@@ -239,7 +239,7 @@ const heat=(v,max,good)=>{if(v==null||!max)return '';const a=Math.min(1,v/max);
       v:p=>p.add_per,show:M1,tip:p=>M1(p.add_per)+' per Soulcoiler'},
     {key:'int',lab:'Intermission DPS',note:'Damage into Zul’jan per second alive in the intermission. Higher is better.',bad:false,
       v:p=>p.int_dps,show:M1,tip:p=>M1(p.int_dps)+' per second'},
-    {key:'named',lab:'Named in an explosion',note:'Purple explosions before a wipe where the orb positions put this player at the contact: carrying a purple into an orb, a green into a purple, or dropping one on top of another. Per ten pulls; hover for how many named only them and how many purples they carried that night. Purple runners handle the most purples, so read it against that. Lower is better.',bad:true,
+    {key:'named',lab:'Named in an explosion',note:'Purple explosions before a wipe where the orb positions put this player at the contact: carrying a purple into an orb on the ground, or a green into a purple. Per ten pulls; hover for how many named only them and how many purples they carried that night. Purple runners handle the most purples, so read it against that, and as evidence rather than a verdict: about one quiet 0.7-second window in eleven with a purple out shows a contact like this with no explosion. Lower is better.',bad:true,
       v:p=>p.pulls&&(p.named_clear+p.named_shared)?10*(p.named_clear+p.named_shared)/p.pulls:(p.pulls?0:null),show:v=>f1(v),tip:p=>`${p.named_clear} named alone, ${p.named_shared} with others, in ${p.pulls} pulls; carried ${p.purples} purples`},
   ];
   const names=[...new Set(N.flatMap(n=>Object.keys(n.players)))];

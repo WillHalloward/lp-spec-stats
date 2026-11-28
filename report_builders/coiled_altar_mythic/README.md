@@ -43,16 +43,19 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   (`Coalesced Venom Stalker` green, `Virulent Mutation` purple) log every orb
   that appears as a `cast` with x/y: on a Deluge, and where a carry ends.
   `Fetcher.source_events` pulls them by `sourceID` (the API ignores `targetID`
-  there). A pickup takes the nearest live orb of its colour within 6 yd; a
-  carried orb is at its carrier (nearest hit taken, within 0.6s). A contact is
-  a pair, one of them purple, within `ORB_TOUCH_YD` (6) at the explosion that
-  was further apart, or not there, `ORB_FRESH_MS` (0.7s) before; the side that
-  was carried or just dropped made it. Ground orbs in a contact are spent after
-  it. Explosions left for a Deluge name nobody. On 26 Nov 17 of 26 explosions have a fresh contact against 7% of random
-  0.7s windows; over four nights it names someone in 23 of 36 touched
-  explosions before a wipe. Not modelled: orbs a Sever or the push detonates
-  (they linger as ground orbs and can only cause false matches if a carrier
-  walks onto that spot), and position lag on carriers.
+  there). `_orb_world` replays the pull: a pickup takes the nearest live orb of
+  its colour within 6 yd (92% of pickups match; 99.9% of carry ends match a
+  drop), a frontal removes the N orbs nearest its tank where N is its Rupture
+  jump (never all: 233 orbs lay through a frontal and were picked up later),
+  and the push removes everything. A contact is a carried purple reaching any
+  ground orb, or a carried green reaching a ground purple, within 6 yd at the
+  explosion, having been further 0.7s before. Ground orbs do not set each other
+  off (they sit within 6 yd in half of all stage-one seconds) and two carried
+  orbs never meet at an explosion, so neither is looked at. Over 19-26 Nov it
+  names someone in 17 of 36 touched explosions before a wipe (16 one person);
+  9.1% of quiet 0.7s windows with a purple out show a contact anyway
+  (`CONTACT_FALSE_RATE`, quoted on the page; 23.7% without the frontal
+  removal). Deluge explosions name nobody.
 - **What does not work** (tested 19-26 Nov, don't rebuild): an orb debuff
   dropping on the explosion's millisecond (31 of the 33 it named died in it;
   debuffs come off 3-50ms before a logged death), a carry cut short with the

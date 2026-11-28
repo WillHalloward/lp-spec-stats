@@ -42,15 +42,22 @@ EXPLOSION_HOLD_MS = 3000
 # Orbs on the ground come from the spawner actors' casts (one per orb, with
 # x/y): on a Deluge, and wherever a carry ends. Fetched by sourceID.
 ORB_ACTORS = {"Coalesced Venom Stalker": "green", "Virulent Mutation": "purple"}
-# Two orbs are in contact inside this. Fresh contacts at explosions sit at
-# 1-6 yd; at 6 yd 17 of 26 explosions on 26 Nov have one, against 7% of random
-# 0.7s windows (8 yd: 18 of 26 against 10%).
+# A carried orb is in contact inside this. At explosions a carried purple sits
+# 4-6 yd from a ground orb (contact happens on the way in, so it never gets
+# nearer); at quiet moments that band holds only ~6% of the time.
 ORB_TOUCH_YD = 6.0
 # A contact is fresh if the pair was further apart than ORB_TOUCH_YD this long
 # before the explosion, or one of the two was not there yet.
 ORB_FRESH_MS = 700
+# Measured over 19-26 Nov: quiet stage-one 0.7s windows with a purple carried
+# that still show a contact (9.1%; 23.7% without the frontal removal). The
+# page quotes it; re-measure if the contact rules change.
+CONTACT_FALSE_RATE = 0.091
 # A pickup takes the nearest live orb of its colour within this.
 ORB_PICKUP_YD = 6.0
+# A frontal's orbs are taken from those nearest its tank, never further than
+# this (the cone is not in the log).
+FRONTAL_REACH_YD = 25.0
 # A carrier's position is the nearest hit they took, within this.
 POS_MAX_AGE_MS = 600
 
