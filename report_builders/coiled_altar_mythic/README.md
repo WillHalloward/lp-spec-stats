@@ -55,7 +55,8 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   names someone in 17 of 36 touched explosions before a wipe (16 one person);
   9.1% of quiet 0.7s windows with a purple out show a contact anyway
   (`CONTACT_FALSE_RATE`, quoted on the page; 23.7% without the frontal
-  removal). Deluge explosions name nobody.
+  removal). Deluge explosions name nobody. Checked against a POV recording:
+  26 Nov pulls 6 and 12 (Aeonara, purple into a green) are both right.
 - **What does not work** (tested 19-26 Nov, don't rebuild): an orb debuff
   dropping on the explosion's millisecond (31 of the 33 it named died in it;
   debuffs come off 3-50ms before a logged death), a carry cut short with the
