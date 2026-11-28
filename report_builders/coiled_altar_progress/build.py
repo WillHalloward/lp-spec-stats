@@ -24,6 +24,9 @@ HERE = Path(__file__).parent
 REPO = HERE.parents[1]
 REPORTS = REPO / "reports"
 TEMPLATE = HERE / "template.html"
+# Fewer purples carried than this over all the nights and a player's
+# explosion rate is shown greyed: one explosion moves it by 5+ points.
+MIN_PURPLES = 20
 PHASE_LONG = {"P1": "stage one", "P2": "stage two", "INT": "the intermission", "P3": "stage three"}
 
 
@@ -55,6 +58,7 @@ def tokens(nights: list[dict], team: str) -> dict:
         "first_pre_pp": f"{f['pre_deaths'] / f['pulls']:.1f}",
         "last_pre_pp": f"{l['pre_deaths'] / l['pulls']:.1f}",
         "codes": " &middot; ".join(n["code"] for n in nights),
+        "min_purples": MIN_PURPLES,
     }
 
 
@@ -69,7 +73,7 @@ def render(nights: list[dict], tok: dict) -> str:
         return str(tok[m.group(1)])
 
     out = re.sub(r"\{\{(\w+)\}\}", sub, src)
-    payload = json.dumps({"nights": nights}, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    payload = json.dumps({"nights": nights, "min_purples": MIN_PURPLES}, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     return out.replace("__PAYLOAD__", payload)
 
 

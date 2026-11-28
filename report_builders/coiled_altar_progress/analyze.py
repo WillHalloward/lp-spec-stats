@@ -95,7 +95,7 @@ def night(code: str, date: str, plan: str | None) -> dict:
 
     players = defaultdict(lambda: {"pulls": 0, "deaths": 0, "groups": Counter(), "ax1": None, "ax2": None,
                                    "g_absent": 0, "g_expected": 0, "veil_per": None, "add_per": None,
-                                   "int_dps": None, "named_clear": 0, "named_shared": 0, "purples": 0})
+                                   "int_dps": None, "named_clear": 0, "named_shared": 0, "purples": 0, "greens": 0})
     for p in pulls:
         for name in a.players.get(next(f for f, k in a.num.items() if k == p["pull"]), []):
             players[name]["pulls"] += 1
@@ -129,6 +129,7 @@ def night(code: str, date: str, plan: str | None) -> dict:
             players[n_]["named_clear" if len(e["named"]) == 1 else "named_shared"] += 1
     for r in d["orbs"]["carriers"]:
         players[r["name"]]["purples"] = r["purple"]
+        players[r["name"]]["greens"] = r["green"]
     roster = a.roster()
 
     return {
@@ -185,7 +186,7 @@ def night(code: str, date: str, plan: str | None) -> dict:
                 "ax1": v["ax1"], "ax2": v["ax2"],
                 "g_absent": v["g_absent"], "g_expected": v["g_expected"],
                 "veil_per": v["veil_per"], "add_per": v["add_per"], "int_dps": v["int_dps"],
-                "named_clear": v["named_clear"], "named_shared": v["named_shared"], "purples": v["purples"],
+                "named_clear": v["named_clear"], "named_shared": v["named_shared"], "purples": v["purples"], "greens": v["greens"],
                 "cls": (roster.get(k) or {}).get("class", ""), "role": (roster.get(k) or {}).get("role", "")}
             for k, v in players.items() if v["pulls"]
         },

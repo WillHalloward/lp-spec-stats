@@ -62,6 +62,12 @@ __SHARED_CSS__
 </section>
 
 <section>
+  <div class="head"><h2>Explosions per orb carried</h2>
+  <p>How often a player&rsquo;s orb was at the contact of a purple explosion before a wipe, against how many orbs they carried, over all {{nights}} nights. The purple runners carry most of the purples, so the raw count mostly measures that; the rate per hundred purples is the comparison. <b>Alone</b> named only them; <b>with others</b> shared the contact (an orb put down in someone&rsquo;s carried purple names both, as does a contact with two candidates). Rates on fewer than {{min_purples}} purples are greyed out: one explosion moves them a lot. About one quiet 0.7-second window in ten with a purple out shows a contact with no explosion, so every rate carries some of that noise, in proportion to time spent carrying.</p></div>
+  <div class="tblwrap"><table id="t-rate"><thead><tr><th class="l">Player</th><th>Purples carried</th><th>Greens carried</th><th>Named alone</th><th>With others</th><th>Per 100 purples</th><th>Per 100 orbs</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
   <div class="head"><h2>Players</h2>
   <p>One mechanic at a time, player by player, night by night. A blank is a night they were not in, or had nothing to count. Hover a cell for the raw numbers.</p></div>
   <div class="legend" id="pl-pick" style="gap:6px"></div>
@@ -223,6 +229,18 @@ const heat=(v,max,good)=>{if(v==null||!max)return '';const a=Math.min(1,v/max);
     const lost=prev-f.n;return `<td title="${lost} of ${prev} lost here">${pc(f.n,n.pulls)} <span class="sm">${f.n}${lost?' −'+lost:''}</span></td>`;}).join('')+'</tr>').join('');
 })();
 
+/* ---------- explosions per orb carried ---------- */
+(function(){
+  const T={};N.forEach(n=>Object.entries(n.players).forEach(([k,p])=>{const r=T[k]=T[k]||{p:0,g:0,a:0,s:0,cls:''};
+    r.p+=p.purples||0;r.g+=p.greens||0;r.a+=p.named_clear||0;r.s+=p.named_shared||0;if(p.cls)r.cls=p.cls;}));
+  const rows=Object.entries(T).filter(([k,r])=>r.p+r.g>0).sort((a,b)=>b[1].p-a[1].p||b[1].g-a[1].g);
+  const MIN=D.min_purples;
+  document.querySelector('#t-rate tbody').innerHTML=rows.map(([k,r])=>{const n=r.a+r.s;const few=r.p<MIN;
+    const per=r.p?100*n/r.p:null,all=100*n/(r.p+r.g);
+    return `<tr><td class="l"><span style="color:${r.cls?`var(--cls-${r.cls})`:'var(--muted)'}">${esc(k)}</span></td><td>${r.p}</td><td>${r.g}</td><td>${r.a||'–'}</td><td>${r.s||'–'}</td>
+    <td${few?' class="muted"':per>=4?' class="neg"':''}><b>${per==null?'–':f1(per)}</b></td><td${few?' class="muted"':''}>${f1(all)}</td></tr>`;}).join('');
+})();
+
 /* ---------- players ---------- */
 (function(){
   const M1=x=>x==null?'–':(x/1e6).toFixed(1)+'M';
@@ -239,8 +257,8 @@ const heat=(v,max,good)=>{if(v==null||!max)return '';const a=Math.min(1,v/max);
       v:p=>p.add_per,show:M1,tip:p=>M1(p.add_per)+' per Soulcoiler'},
     {key:'int',lab:'Intermission DPS',note:'Damage into Zul’jan per second alive in the intermission. Higher is better.',bad:false,
       v:p=>p.int_dps,show:M1,tip:p=>M1(p.int_dps)+' per second'},
-    {key:'named',lab:'Named in an explosion',note:'Purple explosions before a wipe where the orb positions put this player at the contact: carrying a purple into an orb on the ground, or a green into a purple. Per ten pulls; hover for how many named only them and how many purples they carried that night. Purple runners handle the most purples, so read it against that, and as evidence rather than a verdict: about one quiet 0.7-second window in eleven with a purple out shows a contact like this with no explosion. Lower is better.',bad:true,
-      v:p=>p.pulls&&(p.named_clear+p.named_shared)?10*(p.named_clear+p.named_shared)/p.pulls:(p.pulls?0:null),show:v=>f1(v),tip:p=>`${p.named_clear} named alone, ${p.named_shared} with others, in ${p.pulls} pulls; carried ${p.purples} purples`},
+    {key:'named',lab:'Explosions per 100 purples',note:'Purple explosions before a wipe that put this player at the contact, per hundred purples they carried that night (named alone or with others). Nights with fewer than ten purples carried are left blank: one explosion would read as a huge rate. Hover for the counts. Lower is better.',bad:true,
+      v:p=>p.purples>=10?100*(p.named_clear+p.named_shared)/p.purples:null,show:v=>f1(v),tip:p=>`${p.named_clear} named alone, ${p.named_shared} with others; ${p.purples} purples, ${p.greens} greens carried in ${p.pulls} pulls`},
   ];
   const names=[...new Set(N.flatMap(n=>Object.keys(n.players)))];
   const ccol=k=>{for(let i=N.length-1;i>=0;i--){const p=N[i].players[k];if(p&&p.cls)return `var(--cls-${p.cls})`;}return 'var(--muted)';};
@@ -248,7 +266,7 @@ const heat=(v,max,good)=>{if(v==null||!max)return '';const a=Math.min(1,v/max);
   function draw(){
     document.getElementById('pl-note').textContent=cur.note;
     const vals=k=>N.map(n=>n.players[k]?cur.v(n.players[k]):null);
-    const has=names.filter(k=>vals(k).some(v=>v!=null&&(cur.key!=='named'||v>0)));
+    const has=names.filter(k=>vals(k).some(v=>v!=null));
     const mean=k=>{const L=vals(k).filter(v=>v!=null);return L.length?L.reduce((a,b)=>a+b,0)/L.length:0;};
     has.sort((a,b)=>cur.bad?mean(b)-mean(a):mean(b)-mean(a));
     const all=has.flatMap(vals).filter(v=>v!=null);const mx=Math.max(...all),mn=Math.min(...all);
