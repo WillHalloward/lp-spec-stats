@@ -493,10 +493,12 @@ class Analysis(_Base):
         return out
 
     def _contact(self, fid: int, T: float, orbs: list[dict], spans_by_id) -> list[dict]:
-        """Carried orbs that came into contact just before an explosion at T:
-        a carried purple reaching any orb on the ground, or a carried green
-        reaching a purple on the ground, within ORB_TOUCH_YD, having been
-        further than that (or not carrying yet) ORB_FRESH_MS before.
+        """Contacts just before an explosion at T: a carried purple reaching
+        any orb on the ground, or a carried green reaching a purple on the
+        ground, within ORB_TOUCH_YD, having been further than that (or not
+        carrying yet) ORB_FRESH_MS before; or an orb put down (a carry ending,
+        its carrier alive) inside another player's carried purple in the
+        ORB_PLACED_MS before, which names both.
 
         Orbs on the ground do not set each other off (two lie within 6 yd of
         each other in half of all stage-one seconds), and two carried orbs
@@ -526,6 +528,26 @@ class Analysis(_Base):
                     continue  # already that close: not this moment's contact
                 out.append({"yd": round(d, 1), "who": self.name(tid), "carried": kind,
                             "into": o["kind"], "_ground": [i]})
+        # an orb put down inside another player's carried purple
+        died = {}
+        for d in self.deaths[fid]:
+            died.setdefault(d["player"], []).append(d["ts"])
+        for i, o in enumerate(orbs):
+            if o["by"] is None or not (T - S.ORB_PLACED_MS <= o["t"] <= T):
+                continue
+            dropper = self.name(o["by"])
+            if any(abs(o["t"] - x) <= 100 for x in died.get(dropper, [])):
+                continue  # the carrier died there: the death put it down
+            for tid, a, z, kind in spans_by_id:
+                if tid == o["by"] or kind != "purple" or not (a <= o["t"] <= z):
+                    continue
+                w = self._where(fid, tid, o["t"])
+                if not w:
+                    continue
+                d = dist((w[1], w[2]), (o["x"], o["y"]))
+                if d <= S.ORB_TOUCH_YD:
+                    out.append({"yd": round(d, 1), "who": dropper, "carried": o["kind"],
+                                "into": "purple", "circle": self.name(tid), "_ground": [i]})
         out.sort(key=lambda c: c["yd"])
         return out
 
@@ -665,7 +687,7 @@ class Analysis(_Base):
                             "contacts": contacts,
                             # who made contact: whoever carried or had just
                             # dropped one of the two orbs
-                            "named": sorted({c["who"] for c in contacts}),
+                            "named": sorted({n for c in contacts for n in (c["who"], c.get("circle")) if n}),
                             # the explosion that kills the wipe's first player
                             # lands a hair after that death is logged
                             "before_wipe": t <= cut + 1500,

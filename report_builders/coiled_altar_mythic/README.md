@@ -49,14 +49,19 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   jump (never all: 233 orbs lay through a frontal and were picked up later),
   and the push removes everything. A contact is a carried purple reaching any
   ground orb, or a carried green reaching a ground purple, within 6 yd at the
-  explosion, having been further 0.7s before. Ground orbs do not set each other
-  off (they sit within 6 yd in half of all stage-one seconds) and two carried
-  orbs never meet at an explosion, so neither is looked at. Over 19-26 Nov it
-  names someone in 17 of 36 touched explosions before a wipe (16 one person);
-  9.1% of quiet 0.7s windows with a purple out show a contact anyway
+  explosion, having been further 0.7s before; or an orb put down (a carry
+  ending, carrier alive) inside another player's carried purple in the 1.7s
+  before, naming both (a green goes off in 19-51ms, a purple after ~1s; 3 of 8
+  purple placements like that exploded). Ground orbs do not set each other off
+  (they sit within 6 yd in half of all stage-one seconds) and two carried
+  purples overlap safely (POV), so neither is looked at. Over 19-26 Nov it
+  names someone in 21 of 36 touched explosions before a wipe; 9.2% of quiet
+  0.7s windows with a purple out show a contact anyway
   (`CONTACT_FALSE_RATE`, quoted on the page; 23.7% without the frontal
   removal). Deluge explosions name nobody. Checked against a POV recording:
-  26 Nov pulls 6 and 12 (Aeonara, purple into a green) are both right.
+  26 Nov pulls 6 and 12 (Aeonara, purple into a green) are both right, and
+  pull 11 (Indris's purple put down in Huibalast's carried purple) is what
+  the placement rule was built from.
 - **What does not work** (tested 19-26 Nov, don't rebuild): an orb debuff
   dropping on the explosion's millisecond (31 of the 33 it named died in it;
   debuffs come off 3-50ms before a logged death), a carry cut short with the

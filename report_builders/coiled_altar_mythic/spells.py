@@ -49,10 +49,15 @@ ORB_TOUCH_YD = 6.0
 # A contact is fresh if the pair was further apart than ORB_TOUCH_YD this long
 # before the explosion, or one of the two was not there yet.
 ORB_FRESH_MS = 700
+# An orb put down (a carry ending) inside another player's carried purple
+# detonates: a green at once (19-51ms), a purple after about a second
+# (984-1538ms; seen on POV, 26 Nov pull 11). Two carried purples overlapping
+# do not. A placement counts this long before the explosion.
+ORB_PLACED_MS = 1700
 # Measured over 19-26 Nov: quiet stage-one 0.7s windows with a purple carried
-# that still show a contact (9.1%; 23.7% without the frontal removal). The
+# that still show a contact (9.2%; 23.7% without the frontal removal). The
 # page quotes it; re-measure if the contact rules change.
-CONTACT_FALSE_RATE = 0.091
+CONTACT_FALSE_RATE = 0.092
 # A pickup takes the nearest live orb of its colour within this.
 ORB_PICKUP_YD = 6.0
 # A frontal's orbs are taken from those nearest its tank, never further than
