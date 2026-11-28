@@ -95,7 +95,7 @@ def night(code: str, date: str, plan: str | None) -> dict:
 
     players = defaultdict(lambda: {"pulls": 0, "deaths": 0, "groups": Counter(), "ax1": None, "ax2": None,
                                    "g_absent": 0, "g_expected": 0, "veil_per": None, "add_per": None,
-                                   "int_dps": None})
+                                   "int_dps": None, "named_clear": 0, "named_shared": 0, "purples": 0})
     for p in pulls:
         for name in a.players.get(next(f for f, k in a.num.items() if k == p["pull"]), []):
             players[name]["pulls"] += 1
@@ -123,6 +123,12 @@ def night(code: str, date: str, plan: str | None) -> dict:
         players[r["name"]]["add_per"] = round(r["damage"] / r["adds"]) if r["adds"] else None
     for r in d["intermission"]["players"]:
         players[r["name"]]["int_dps"] = r["dps"]
+    touched = [e for e in ex if e["how"] == "touched"]
+    for e in touched:
+        for n_ in e["named"]:
+            players[n_]["named_clear" if len(e["named"]) == 1 else "named_shared"] += 1
+    for r in d["orbs"]["carriers"]:
+        players[r["name"]]["purples"] = r["purple"]
     roster = a.roster()
 
     return {
@@ -172,11 +178,14 @@ def night(code: str, date: str, plan: str | None) -> dict:
         "int_z_best": min(z) if z else None,
         "int_z_med": _med(z),
         "funnel": funnel,
+        "contact_of": len(touched),
+        "contact_named": sum(1 for e in touched if e["named"]),
         "players": {
             k: {"pulls": v["pulls"], "deaths": v["deaths"], "groups": dict(v["groups"]),
                 "ax1": v["ax1"], "ax2": v["ax2"],
                 "g_absent": v["g_absent"], "g_expected": v["g_expected"],
                 "veil_per": v["veil_per"], "add_per": v["add_per"], "int_dps": v["int_dps"],
+                "named_clear": v["named_clear"], "named_shared": v["named_shared"], "purples": v["purples"],
                 "cls": (roster.get(k) or {}).get("class", ""), "role": (roster.get(k) or {}).get("role", "")}
             for k, v in players.items() if v["pulls"]
         },

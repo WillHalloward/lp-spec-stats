@@ -39,23 +39,25 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   count (removals reset it). A jump of 15+ is a purple explosion; one within 1.5s
   of a Toxic Deluge cast is a Mutation left on the ground, otherwise "touched".
   The holders list is proximity in time, not proof of contact.
-- **Who set off an explosion is not in the log.** Tested over four nights
-  (19-26 Nov, 43 explosions before a wipe), so don't rebuild these:
-  - *Orb debuff dropping on the explosion's millisecond*: 31 of the 33 carriers
-    it named died in that same explosion, and death drops every debuff. Those
-    named were 16-88 yd apart (orb radius 6 yd): it lists victims, not causes.
-  - *A carried orb cut short without the carrier dying*: about 2,900 carries,
-    almost all run the full 5s or end on a death; only 2 early drops land on an
-    explosion. Touching a purple does not end the carrier's debuff early.
-  - *A pickup in the 0.7s before*: 6/7 and 7/10 explosions on 19 and 22 Nov
-    against 9-14% of random moments, but 5/16 against 25% on 26 Nov.
-  - *An orb timing out (dropped at the carrier's feet) in the 1.5s before*:
-    6/16 on 26 Nov against 14%, but hits name up to six carriers.
-  What attribution needs is where the orbs are, and that IS in the log, just
-  not in the streams this builder fetches: query events by `sourceID` for the
-  `Coalesced Venom Stalker` and `Virulent Mutation` actors. Each orb that appears
-  (on a Deluge, or dropped when a carry times out) is a `cast` with x/y and a
-  `summon` with an instance id. Untested beyond one pull (26 Nov pull 20).
+- **Contact (who made it)**: from orb positions. The spawner actors
+  (`Coalesced Venom Stalker` green, `Virulent Mutation` purple) log every orb
+  that appears as a `cast` with x/y: on a Deluge, and where a carry ends.
+  `Fetcher.source_events` pulls them by `sourceID` (the API ignores `targetID`
+  there). A pickup takes the nearest live orb of its colour within 6 yd; a
+  carried orb is at its carrier (nearest hit taken, within 0.6s). A contact is
+  a pair, one of them purple, within `ORB_TOUCH_YD` (6) at the explosion that
+  was further apart, or not there, `ORB_FRESH_MS` (0.7s) before; the side that
+  was carried or just dropped made it. Ground orbs in a contact are spent after
+  it. Explosions left for a Deluge name nobody. On 26 Nov 17 of 26 explosions have a fresh contact against 7% of random
+  0.7s windows; over four nights it names someone in 23 of 36 touched
+  explosions before a wipe. Not modelled: orbs a Sever or the push detonates
+  (they linger as ground orbs and can only cause false matches if a carrier
+  walks onto that spot), and position lag on carriers.
+- **What does not work** (tested 19-26 Nov, don't rebuild): an orb debuff
+  dropping on the explosion's millisecond (31 of the 33 it named died in it;
+  debuffs come off 3-50ms before a logged death), a carry cut short with the
+  carrier alive (2 of ~2,900 land on an explosion), and pickups or time-outs
+  just before (some signal, too many names).
 - **Guillotine**: one per window. The marking cast is the one with a player
   target; soakers are everyone hit within 0.6s of the landing. Execution in the
   same instant means a miss. Every soaker gets a 100s `Guillotine` debuff and

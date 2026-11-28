@@ -92,3 +92,29 @@ class Fetcher(_BaseFetcher):
         """Healing on the raid, used to recover health at the moment a healthstone
         or potion was pressed."""
         return self.events(f"heals-{fight_id}", fight_id, "Healing", hostility="Friendlies")
+
+    def source_events(self, fight_id: int, source_id: int) -> list[dict]:
+        """Every event one actor is the source of in a fight, with positions.
+
+        The orb spawners (Coalesced Venom Stalker, Virulent Mutation) log each
+        orb as a cast with x/y; nothing else this builder fetches carries them.
+        The API ignores `targetID` here but honours `sourceID`.
+        """
+
+        def build():
+            q = """
+            query($c:String!,$f:[Int]!,$st:Float!,$en:Float!,$sid:Int){reportData{report(code:$c){
+              events(fightIDs:$f,dataType:All,startTime:$st,endTime:$en,limit:10000,
+                     sourceID:$sid,includeResources:true){data nextPageTimestamp}}}}"""
+            fight = next(x for x in self.meta()["fights"] if x["id"] == fight_id)
+            out: list[dict] = []
+            st = float(fight["startTime"])
+            while True:
+                r = self._q(q, {"c": self.code, "f": [fight_id], "st": st,
+                                "en": float(fight["endTime"]), "sid": source_id})["reportData"]["report"]["events"]
+                out += r["data"]
+                if not r.get("nextPageTimestamp"):
+                    return out
+                st = r["nextPageTimestamp"]
+
+        return self.cached(f"src{source_id}-{fight_id}", build)

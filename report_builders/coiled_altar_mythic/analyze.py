@@ -379,6 +379,109 @@ class Analysis(_Base):
 
     # ---- orbs -----------------------------------------------------------
 
+    # ---- where the orbs are ---------------------------------------------
+
+    def _positions(self, fid: int) -> dict[int, list[tuple[float, float, float]]]:
+        """Player id -> [(ts, x, y)] in yards, from the positions on hits taken."""
+        key = ("pos", fid)
+        if key not in self._memo:
+            out: dict[int, list] = defaultdict(list)
+            for e in self.stream("taken", fid):
+                if e.get("x") is not None and self.is_player(e.get("targetID")):
+                    out[e["targetID"]].append((e["timestamp"], e["x"] / 100, e["y"] / 100))
+            for L in out.values():
+                L.sort()
+            self._memo[key] = out
+        return self._memo[key]
+
+    def _where(self, fid: int, tid: int, ts: float):
+        L = self._positions(fid).get(tid) or []
+        i = bisect_right(L, (ts, float("inf"), 0))
+        best = min(L[max(0, i - 1): i + 1], key=lambda p: abs(p[0] - ts), default=None)
+        return best if best and abs(best[0] - ts) <= S.POS_MAX_AGE_MS else None
+
+    def _orb_world(self, fid: int, spans_by_id: list[tuple[int, float, float, str]]) -> list[dict]:
+        """Every orb that lay on the ground in a pull: where, from when, until
+        when, and whose carry dropped it (None for a Deluge spawn)."""
+        actors = {x["id"]: S.ORB_ACTORS[x["name"]] for x in self.meta["masterData"]["actors"]
+                  if x["name"] in S.ORB_ACTORS}
+        seen, orbs = set(), []
+        for aid, kind in actors.items():
+            for e in self.f.source_events(fid, aid):
+                if e.get("type") != "cast" or e.get("x") is None:
+                    continue
+                k = (e["timestamp"], e["x"], e["y"])
+                if k in seen:
+                    continue
+                seen.add(k)
+                orbs.append({"t": e["timestamp"], "x": e["x"] / 100, "y": e["y"] / 100, "kind": kind,
+                             "gone": None, "by": None})
+        orbs.sort(key=lambda o: o["t"])
+        # a carry that ends puts its orb down where the carrier stands
+        for tid, a, z, kind in spans_by_id:
+            if z == a:
+                continue
+            near = [o for o in orbs if o["kind"] == kind and o["by"] is None and abs(o["t"] - z) <= 60]
+            if near:
+                min(near, key=lambda o: abs(o["t"] - z))["by"] = tid
+        # a pickup takes the nearest live orb of its colour
+        for tid, a, z, kind in sorted(spans_by_id, key=lambda s: s[1]):
+            w = self._where(fid, tid, a)
+            if not w:
+                continue
+            live = [o for o in orbs if o["kind"] == kind and o["t"] <= a + 50 and o["gone"] is None]
+            if not live:
+                continue
+            o = min(live, key=lambda o: (o["x"] - w[1]) ** 2 + (o["y"] - w[2]) ** 2)
+            if ((o["x"] - w[1]) ** 2 + (o["y"] - w[2]) ** 2) ** 0.5 <= S.ORB_PICKUP_YD:
+                o["gone"] = a
+        return orbs
+
+    def _contact(self, fid: int, T: float, orbs: list[dict], spans_by_id) -> list[dict]:
+        """Pairs that came into contact just before an explosion at T, at
+        least one of them purple. Each side is a carried orb (with its
+        carrier), an orb a carry just dropped (with who dropped it), or one
+        that was already lying there."""
+
+        def things(at):
+            out = []
+            for i, o in enumerate(orbs):
+                if o["t"] <= at and (o["gone"] is None or o["gone"] > at):
+                    out.append({"key": ("g", i), "kind": o["kind"], "x": o["x"], "y": o["y"],
+                                "how": "dropped" if o["by"] is not None and T - o["t"] <= S.ORB_FRESH_MS else "on the ground",
+                                "who": self.name(o["by"]) if o["by"] is not None and T - o["t"] <= S.ORB_FRESH_MS else None})
+            for tid, a, z, kind in spans_by_id:
+                if a <= at <= z:
+                    w = self._where(fid, tid, at)
+                    if w:
+                        out.append({"key": ("c", tid, a), "kind": kind, "x": w[1], "y": w[2],
+                                    "how": "carried", "who": self.name(tid)})
+            return out
+
+        dist = lambda u, v: ((u["x"] - v["x"]) ** 2 + (u["y"] - v["y"]) ** 2) ** 0.5
+        now = things(T - 40)
+        before = {t["key"]: t for t in things(T - S.ORB_FRESH_MS)}
+        out = []
+        for i in range(len(now)):
+            for j in range(i + 1, len(now)):
+                u, v = now[i], now[j]
+                if "purple" not in (u["kind"], v["kind"]) or (u["who"] and u["who"] == v["who"]):
+                    continue
+                d = dist(u, v)
+                if d > S.ORB_TOUCH_YD:
+                    continue
+                pu, pv = before.get(u["key"]), before.get(v["key"])
+                if pu and pv and dist(pu, pv) <= S.ORB_TOUCH_YD:
+                    continue
+                # the side that moved or arrived is the one that made contact
+                sides = sorted((u, v), key=lambda q: q["how"] == "on the ground")
+                out.append({"yd": round(d, 1),
+                            "a": {k: sides[0][k] for k in ("kind", "how", "who")},
+                            "b": {k: sides[1][k] for k in ("kind", "how", "who")},
+                            "_ground": [q["key"][1] for q in (u, v) if q["key"][0] == "g"]})
+        out.sort(key=lambda c: c["yd"])
+        return out
+
     def orbs(self) -> dict:
         green = self.ids_named(S.GREEN)
         purple = self.ids_named(S.PURPLE)
@@ -406,6 +509,9 @@ class Analysis(_Base):
                     spans[n].append((a, e["timestamp"], kind))
             for (n, kind), a in open_.items():
                 spans[n].append((a, a, kind))
+            ids = {self.name(e["targetID"]): e["targetID"] for e in deb if self.is_player(e.get("targetID"))}
+            spans_by_id = [(ids[n], a, z, kind) for n, L in spans.items() for a, z, kind in L]
+            world = None
             for n, L in spans.items():
                 for a, z, kind in L:
                     if a >= cut:
@@ -488,6 +594,17 @@ class Analysis(_Base):
                     # A Mutation still on the ground when the next Deluge is
                     # cast blows up on the cast, with nobody carrying it.
                     left = any(abs(t - d) <= S.DELUGE_GRACE_MS for d in deluges)
+                    if world is None:
+                        world = self._orb_world(fid, spans_by_id)
+                    # a Mutation left for the Deluge names nobody: a carry
+                    # ending on the Deluge's millisecond may be the Deluge's doing
+                    contacts = [] if left else self._contact(fid, t, world, spans_by_id)
+                    # the ground orbs in that explosion are spent, so they
+                    # cannot match the next one
+                    for c in contacts:
+                        for i in c.pop("_ground"):
+                            if world[i]["gone"] is None:
+                                world[i]["gone"] = t
                     explosions.append(
                         {
                             "how": "left" if left else "touched",
@@ -498,6 +615,10 @@ class Analysis(_Base):
                             "with_frontal": on_frontal,
                             "killed": sum(1 for d in rup_deaths if 0 <= d - t <= 2500),
                             "holders": holders,
+                            "contacts": contacts,
+                            # who made contact: whoever carried or had just
+                            # dropped one of the two orbs
+                            "named": sorted({sd["who"] for c in contacts for sd in (c["a"], c["b"]) if sd["who"]}),
                             # the explosion that kills the wipe's first player
                             # lands a hair after that death is logged
                             "before_wipe": t <= cut + 1500,

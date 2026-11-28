@@ -22,6 +22,7 @@ stage-one Guillotine, stage two, the first shield broken, the intermission,
 stage three; only the first shield, since Malacrass often dies before a
 second), the night-by-night table, wipe causes, deaths before the wipe, and a player
 table with a picker: deaths, stage-one axe index, Guillotine absences, damage
-per shield and per Soulcoiler, intermission DPS. A stage counts as reached only
-if it started before the wipe, everywhere on the page. There is deliberately no
-"who set off the explosion" count: see the night builder's README.
+per shield and per Soulcoiler, intermission DPS, and named in an explosion
+(from the night builder's orb-position contacts). A stage counts as reached only
+if it started before the wipe, everywhere on the page. Who made contact
+comes from orb positions; see the night builder's README for what was tested.

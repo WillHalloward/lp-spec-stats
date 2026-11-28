@@ -115,6 +115,13 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
     pre = d["wipes"]["before"]
     wc = Counter(r["cause"] for r in W).most_common()
     pc = Counter(x["group"] for x in pre).most_common()
+    touched = [e for e in ex_pre if e["how"] == "touched"]
+    c_tok = {
+        "touch_yd": f"{S.ORB_TOUCH_YD:g}",
+        "fresh_s": f"{S.ORB_FRESH_MS / 1000:g}",
+        "contact_of": len(touched),
+        "contact_named": sum(1 for e in touched if e["named"]),
+    }
     w_tok = {
         "w_count": len(W),
         "w_top": wc[0][0].lower() if wc else "–",
@@ -207,6 +214,7 @@ def tokens(a: Analysis, d: dict, *, date_long: str, night_title: str) -> dict:
         "add_ttk": f"{sorted(x['ttk'] for x in killed)[len(killed) // 2]:.0f}" if killed else "–",
         **i_tok,
         **w_tok,
+        **c_tok,
     }
 
 

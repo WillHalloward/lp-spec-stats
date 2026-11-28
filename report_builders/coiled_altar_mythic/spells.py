@@ -39,6 +39,21 @@ EXPLOSION_STACKS = 15
 # one down, this long before it went off.
 EXPLOSION_HOLD_MS = 3000
 
+# Orbs on the ground come from the spawner actors' casts (one per orb, with
+# x/y): on a Deluge, and wherever a carry ends. Fetched by sourceID.
+ORB_ACTORS = {"Coalesced Venom Stalker": "green", "Virulent Mutation": "purple"}
+# Two orbs are in contact inside this. Fresh contacts at explosions sit at
+# 1-6 yd; at 6 yd 17 of 26 explosions on 26 Nov have one, against 7% of random
+# 0.7s windows (8 yd: 18 of 26 against 10%).
+ORB_TOUCH_YD = 6.0
+# A contact is fresh if the pair was further apart than ORB_TOUCH_YD this long
+# before the explosion, or one of the two was not there yet.
+ORB_FRESH_MS = 700
+# A pickup takes the nearest live orb of its colour within this.
+ORB_PICKUP_YD = 6.0
+# A carrier's position is the nearest hit they took, within this.
+POS_MAX_AGE_MS = 600
+
 # --- frontals ---------------------------------------------------------------
 FRONTALS = ("Sever", "Soul Sever", "Blighted Sever")
 # Soul Sever leaves a DoT under the same name that ticks every 2s for ~48s,

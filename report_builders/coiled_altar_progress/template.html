@@ -135,6 +135,7 @@ const nightHead=()=>N.map(n=>`<th><a href="/reports/${n.slug}">${esc(n.label)}</
     G('Stage one'),
     ['Wipes to a purple explosion',n=>pc(n.wipe_causes['Purple orb explosion']||0,n.wipes),n=>(n.wipe_causes['Purple orb explosion']||0)/n.wipes,-1],
     ['Purple explosions per 10 min of stage one',n=>f1(10*n.explosions_p1/n.p1_min),n=>n.explosions_p1/n.p1_min,-1],
+    ['Touched explosions with a contact named',n=>`${pc(n.contact_named,n.contact_of)} <span class="sm">${n.contact_named} of ${n.contact_of}</span>`,n=>null,0],
     ['Explosions in the first 25s',n=>n.explosions_opening,n=>n.explosions_opening/n.pulls,-1],
     ['Axe ticks per minute alive, stage one',n=>f1(n.ax1),n=>n.ax1,-1],
     ['Guillotines missed',n=>`${n.g_missed} <span class="sm">of ${n.g_windows}</span>`,n=>n.g_missed/Math.max(1,n.g_windows),-1],
@@ -238,6 +239,8 @@ const heat=(v,max,good)=>{if(v==null||!max)return '';const a=Math.min(1,v/max);
       v:p=>p.add_per,show:M1,tip:p=>M1(p.add_per)+' per Soulcoiler'},
     {key:'int',lab:'Intermission DPS',note:'Damage into Zul’jan per second alive in the intermission. Higher is better.',bad:false,
       v:p=>p.int_dps,show:M1,tip:p=>M1(p.int_dps)+' per second'},
+    {key:'named',lab:'Named in an explosion',note:'Purple explosions before a wipe where the orb positions put this player at the contact: carrying a purple into an orb, a green into a purple, or dropping one on top of another. Per ten pulls; hover for how many named only them and how many purples they carried that night. Purple runners handle the most purples, so read it against that. Lower is better.',bad:true,
+      v:p=>p.pulls&&(p.named_clear+p.named_shared)?10*(p.named_clear+p.named_shared)/p.pulls:(p.pulls?0:null),show:v=>f1(v),tip:p=>`${p.named_clear} named alone, ${p.named_shared} with others, in ${p.pulls} pulls; carried ${p.purples} purples`},
   ];
   const names=[...new Set(N.flatMap(n=>Object.keys(n.players)))];
   const ccol=k=>{for(let i=N.length-1;i>=0;i--){const p=N[i].players[k];if(p&&p.cls)return `var(--cls-${p.cls})`;}return 'var(--muted)';};
@@ -245,7 +248,7 @@ const heat=(v,max,good)=>{if(v==null||!max)return '';const a=Math.min(1,v/max);
   function draw(){
     document.getElementById('pl-note').textContent=cur.note;
     const vals=k=>N.map(n=>n.players[k]?cur.v(n.players[k]):null);
-    const has=names.filter(k=>vals(k).some(v=>v!=null));
+    const has=names.filter(k=>vals(k).some(v=>v!=null&&(cur.key!=='named'||v>0)));
     const mean=k=>{const L=vals(k).filter(v=>v!=null);return L.length?L.reduce((a,b)=>a+b,0)/L.length:0;};
     has.sort((a,b)=>cur.bad?mean(b)-mean(a):mean(b)-mean(a));
     const all=has.flatMap(vals).filter(v=>v!=null);const mx=Math.max(...all),mn=Math.min(...all);
