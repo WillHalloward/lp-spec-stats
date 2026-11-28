@@ -52,6 +52,8 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
     frontal and were picked up later. The cone beat "nearest the tank" on
     every measure (pickups 92.9% vs 91.4%, false rate 9% vs 11%), and 30-60
     degrees barely differ;
+  - a frontal only takes orbs already down when it is cast: one its victim
+    drops on dying lands after it and stays;
   - the push removes everything.
   Carrier positions are interpolated between the hits they take.
   A contact is (1) a carried purple reaching any ground orb, or a carried green
@@ -59,20 +61,28 @@ the night's soak teams (team "1" takes the 48s axe, team "2" the 133s one; the s
   a carry that ends up to 0.15s before the explosion (the contact ended it) or
   starts up to 0.15s after (a Demonic Gateway picks orbs up on the way) still
   counts, as does the carrier's position up to 0.1s after (a gateway is a
-  jump that interpolation trails); or (2) an orb put down by a carry ending
+  jump that interpolation trails). Between two position samples further apart
+  than 14 yd/s allows (a gateway, blink or Alter Time) the whole line counts:
+  orbs along it are set off too; or (2) an orb put down by a carry ending
   inside another player's carried purple in the 1.7s before, naming both (a
   green goes off in 19-51ms, a purple after ~1s). The carry's own just-placed
   orb never counts. Ground orbs do not set each other off and two carried
   purples overlap safely (POV), so neither is looked at.
-  Over 19-26 Nov it names someone in 30 of 36 touched explosions before a
-  wipe; 9.6% of quiet 0.7s windows with a purple out show a contact anyway
+  Over 19-26 Nov it names someone in 33 of 36 touched explosions before a
+  wipe; 10.1% of quiet 0.7s windows with a purple out show a contact anyway
   (`CONTACT_FALSE_RATE`, quoted on the page). Deluge explosions name nobody.
   **POV-checked (Aeonara), 26 Nov:** pulls 6 and 12 (Aeonara purple into a
   green), 11 (Indris's purple put down in Huibalast's), 20 and 25 (Huibalast
   purple into a green; 25's he had placed himself), 26 (Twilightnil through a
   gateway, green on the way, purple at the end), 28 (Alfi through a gateway,
   purple on the way, Alfi's own old green at the end), 32 (Huibalast into
-  Valanarr's just-placed purple). All 8 match. Each miss before fixing came
+  Valanarr's just-placed purple). 22 Nov: pull 10 (Iylenvur, Alter Time back
+  across a green while carrying a purple). All 9 match; 22 Nov pull 14
+  (gateway past a green) names Alfi, carrier not visible on the recording.
+  Open: 19 Nov pull 3, where the recording reads as a purple going off by
+  itself ~25s after a frontal victim dropped it, but the log has Huibalast
+  dying to the 60s frontal with a green, and Atheniás carrying a purple 1.6 yd
+  from Huibalast's purple placed at 54s when it went off at 93s. Each miss before fixing came
   from one model gap: the 0.7s window (11), position lag (20), carries starting
   or ending on the explosion (26, 32), and the frontal guess (28).
 - **What does not work** (tested 19-26 Nov, don't rebuild): an orb debuff

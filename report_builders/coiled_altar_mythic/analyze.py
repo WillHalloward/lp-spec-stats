@@ -409,6 +409,14 @@ class Analysis(_Base):
         best = min((p for p in (lo, hi) if p), key=lambda p: abs(p[0] - ts), default=None)
         return best if best and abs(best[0] - ts) <= S.POS_MAX_AGE_MS else None
 
+    @staticmethod
+    def _jump(p, q) -> bool:
+        """Two position samples further apart than running could cover: a
+        gateway, blink or Alter Time between them."""
+        dt = max(1.0, q[0] - p[0]) / 1000
+        d = ((q[1] - p[1]) ** 2 + (q[2] - p[2]) ** 2) ** 0.5
+        return d / dt > S.JUMP_YD_PER_S
+
     def _boss_at(self, fid: int, ts: float):
         """Zul'jan's position, from the raid's hits on him."""
         key = ("boss", fid)
@@ -463,7 +471,11 @@ class Analysis(_Base):
                     if o["t"] <= ts and o["gone"] is None:
                         o["gone"], o["why"] = ts, "push"
                 continue
-            live = lambda kinds: [o for o in orbs if o["kind"] in kinds and o["t"] <= ts + 50 and o["gone"] is None]
+            # a pickup can land a hair before its orb's cast is logged; a
+            # frontal only takes what was already on the ground (an orb its
+            # victim drops on dying lands after it: 19 Nov pull 3, Huibalast)
+            slack = 50 if step[0] == "pick" else 0
+            live = lambda kinds: [o for o in orbs if o["kind"] in kinds and o["t"] <= ts + slack and o["gone"] is None]
             if step[0] == "pick":
                 w = self._where(fid, step[1], ts)
                 L = live((step[2],))
@@ -544,6 +556,14 @@ class Analysis(_Base):
         never meet at an explosion, so those pairs are not looked at.
         """
         dist = lambda u, v: ((u[0] - v[0]) ** 2 + (u[1] - v[1]) ** 2) ** 0.5
+
+        def seg(p, q, o):
+            """Distance from orb o to the straight line from sample p to q."""
+            vx, vy = q[1] - p[1], q[2] - p[2]
+            L2 = vx * vx + vy * vy
+            f = 0.0 if not L2 else max(0.0, min(1.0, ((o["x"] - p[1]) * vx + (o["y"] - p[2]) * vy) / L2))
+            return dist((p[1] + f * vx, p[2] + f * vy), (o["x"], o["y"]))
+
         at, then = T - 40, T - S.ORB_FRESH_MS
         ground = lambda ts: [(i, o) for i, o in enumerate(orbs)
                              if o["t"] <= ts and (o["gone"] is None or o["gone"] > ts)]
@@ -561,13 +581,22 @@ class Analysis(_Base):
             if not ws:
                 continue
             w = ws[0]
+            # the path since the carry started (or since the fresh window
+            # opened): a gateway, a blink or Alter Time crosses ground orbs
+            # between two position samples and still sets them off
+            p0 = max(a, then)
+            path = [(p0, *self._where(fid, tid, p0)[1:])] if self._where(fid, tid, p0) else []
+            path += [p for p in self._positions(fid).get(tid, []) if p0 < p[0] <= T + S.POS_LEAD_MS]
+            path += ws
             w0 = self._where(fid, tid, then) if a <= then else None
             for i, o in g_now:
                 if kind == "green" and o["kind"] != "purple":
                     continue
                 if o["by"] == tid and o["t"] >= a:
                     continue  # the orb this very carry put down
-                d = min(dist((p[1], p[2]), (o["x"], o["y"])) for p in ws)
+                d = min([dist((p[1], p[2]), (o["x"], o["y"])) for p in ws]
+                        + [seg(path[k], path[k + 1], o) for k in range(len(path) - 1)
+                           if self._jump(path[k], path[k + 1])])
                 if d > S.ORB_TOUCH_YD:
                     continue
                 if w0 and i in g_then and dist((w0[1], w0[2]), (o["x"], o["y"])) <= S.ORB_FRESH_YD:

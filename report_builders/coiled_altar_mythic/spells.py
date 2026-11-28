@@ -63,10 +63,10 @@ ORB_PLACED_MS = 1700
 # still counts as carried. Both seen on POV, 26 Nov pulls 26 and 32.
 CARRY_EDGE_MS = 150
 # Measured over 19-26 Nov: quiet stage-one 0.7s windows with a purple carried
-# that still show a contact (9.6% with the cone frontals, interpolated
-# positions and the 0.1s lead; all 8 POV-checked contacts on 26 Nov match). The
+# that still show a contact (10.1% with cone frontals, interpolated positions,
+# the 0.1s lead and jump paths; every POV-checked contact matches). The
 # page quotes it; re-measure if the contact rules change.
-CONTACT_FALSE_RATE = 0.096
+CONTACT_FALSE_RATE = 0.101
 # A pickup takes the nearest live orb of its colour within this.
 ORB_PICKUP_YD = 6.0
 # A frontal's orbs are the ones in a cone from Zul'jan through its tank (his
@@ -78,6 +78,11 @@ FRONTAL_REACH_YD = 40.0
 # Demonic Gateway is a jump, and interpolation trails it (26 Nov pull 28 on
 # POV: 6.9 yd at the explosion, 5.9 yd 0.1s later).
 POS_LEAD_MS = 100
+# Two position samples further apart than this speed allows are a jump (a
+# Demonic Gateway, a blink, Alter Time), and orbs along the line between them
+# count: on POV, 22 Nov pull 10 (Alter Time back across a green) and pull 14
+# (gateway past a green) both set an orb off on the way.
+JUMP_YD_PER_S = 14.0
 # A carrier's position is the nearest hit they took, within this.
 POS_MAX_AGE_MS = 600
 
